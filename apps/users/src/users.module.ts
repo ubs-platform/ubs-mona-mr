@@ -13,7 +13,6 @@ import {
 } from './domain/email-change-request.schema';
 import { EmailChangeRequestService } from './services/email-change-request.service';
 import { UserAdminController } from './web/user-admin.controller';
-import { BackendJwtUtilsExportModule } from '@ubs-platform/users-mona-microservice-helper';
 import {
     PwResetRequest,
     PwResetRequestSchema,
@@ -21,7 +20,6 @@ import {
 import { PasswordResetService } from './services/password-reset.service';
 import { ResetPasswordController } from './web/password-reset.controller';
 import { ClientsModule } from '@nestjs/microservices';
-import { getMicroserviceConnection } from '@ubs-platform/nest-microservice-setup-util';
 import { EmailService } from './services/email.service';
 import {
     EntityOwnership,
@@ -31,6 +29,8 @@ import { EntityOwnershipController } from './web/entity-ownership.controller';
 import { EntityOwnershipService } from './services/entity-ownership.service';
 import { EntityOwnershipMapper } from './mapper/entity-ownership.mapper';
 import { UserMicroserviceController } from './web/user-microservice.controller';
+import { BackendJwtUtilsExportModule } from '@mona/users/microservice-helper';
+import { MicroserviceSetupUtil } from '@mona/microservice-setup-util';
 
 @Module({
     controllers: [
@@ -43,6 +43,14 @@ import { UserMicroserviceController } from './web/user-microservice.controller';
     ],
 
     imports: [
+        MongooseModule.forRoot(
+            `mongodb://${process.env.NX_MONGO_USERNAME}:${
+                process.env.NX_MONGO_PASSWORD
+            }@${process.env.NX_MONGO_URL || 'localhost'}/?authMechanism=DEFAULT`,
+            {
+                dbName: process.env.NX_MONGO_DBNAME || 'ubs_users',
+            },
+        ),
         MongooseModule.forFeature([
             { name: User.name, schema: UserSchema },
             { name: EntityOwnership.name, schema: EntityOwnershipSchema },
@@ -53,7 +61,7 @@ import { UserMicroserviceController } from './web/user-microservice.controller';
         ClientsModule.register([
             {
                 name: 'KAFKA_CLIENT',
-                ...getMicroserviceConnection(''),
+                ...MicroserviceSetupUtil.getMicroserviceConnection(''),
             } as any,
         ]),
     ],
@@ -70,4 +78,4 @@ import { UserMicroserviceController } from './web/user-microservice.controller';
     ],
     exports: [],
 })
-export class UbsUsersCoreModule {}
+export class UsersModule {}

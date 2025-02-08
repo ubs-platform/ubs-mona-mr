@@ -16,8 +16,8 @@ export class UserMapper {
 
     static async createFrom(u: User, user: UserCreateDTO): Promise<User> {
         u.active = user.active;
-        u.username = this.lowerCased(user.username);
-        u.primaryEmail = this.lowerCased(user.primaryEmail);
+        u.username = this.lowerCased(user.username)!;
+        u.primaryEmail = this.lowerCased(user.primaryEmail)!;
         if (user.password) {
             u.passwordEncyripted = await CryptoOp.encrypt(user.password);
         }
@@ -35,8 +35,8 @@ export class UserMapper {
     ): Promise<User> {
         // entity.active = true;
 
-        entity.username = this.lowerCased(dto.username);
-        entity.primaryEmail = this.lowerCased(dto.primaryEmail);
+        entity.username = this.lowerCased(dto.username)!;
+        entity.primaryEmail = this.lowerCased(dto.primaryEmail)!;
         entity.passwordEncyripted = await CryptoOp.encrypt(dto.password);
         entity.name = dto.name;
         entity.surname = dto.surname;
@@ -71,8 +71,8 @@ export class UserMapper {
         }
         user.name = data.name;
         user.surname = data.surname;
-        user.username = this.lowerCased(data.username);
-        user.primaryEmail = this.lowerCased(data.primaryEmail);
+        user.username = this.lowerCased(data.username)!;
+        user.primaryEmail = this.lowerCased(data.primaryEmail)!;
         user.gender = data.gender;
         user.city = data.city;
         user.district = data.district;
@@ -93,8 +93,8 @@ export class UserMapper {
         return {
             name: data.name,
             surname: data.surname,
-            username: this.lowerCased(data.username),
-            primaryEmail: this.lowerCased(data.primaryEmail),
+            username: this.lowerCased(data.username)!,
+            primaryEmail: this.lowerCased(data.primaryEmail)!,
             gender: data.gender,
             city: data.city,
             district: data.district,
@@ -111,8 +111,7 @@ export class UserMapper {
         };
     }
 
-    static toAuthDto(ub?: User): UserDTO | null {
-        if (ub == null) return null;
+    static toAuthDto(ub: User): UserDTO {
         return {
             username: this.lowerCased(ub.username),
             name: ub.name,
@@ -141,8 +140,7 @@ export class UserMapper {
         } as UserAuthBackendDTO;
     }
 
-    static toGeneralDto(ub?: User): UserGeneralInfoDTO {
-        console.info(ub.gender);
+    static toGeneralDto(ub: User): UserGeneralInfoDTO {
         return {
             name: ub.name,
             surname: ub.surname,
@@ -159,7 +157,7 @@ export class UserMapper {
         };
     }
 
-    static toDtoList(ub?: User[]) {
-        return ub.map((a) => this.toAuthDto(a));
+    static toDtoList(ub: User[]) {
+        return ub ? ub.map((a) => this.toAuthDto(a)) : [];
     }
 }

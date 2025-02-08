@@ -4,8 +4,8 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { firstValueFrom } from 'rxjs';
 import { UserService } from '../service/user.service';
-import { SECRET_JWT } from '../utils/jwt-consts';
 import { UserDTO } from '@mona/users/common';
+import { JwtConstants } from '@mona/users/consts';
 
 @Injectable({})
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,7 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
             ignoreExpiration: false,
-            secretOrKey: SECRET_JWT,
+            secretOrKey: JwtConstants.SECRET_JWT,
         });
     }
 

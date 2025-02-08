@@ -42,6 +42,7 @@ export class PasswordResetService {
         });
         await this.passwordResetModel
             .deleteMany({
+                //@ts-ignore
                 $or: [
                     {
                         expireAfter: {
@@ -67,7 +68,7 @@ export class PasswordResetService {
             ech.userId = u.id;
             ech = await ech.save();
             // return { approveId: ech.id };
-            this.sendChangePwLink(u, origin, ech._id);
+            this.sendChangePwLink(u, origin!, ech._id);
         }
     }
 

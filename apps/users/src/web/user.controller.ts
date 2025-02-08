@@ -118,6 +118,6 @@ export class UserController {
 
     @Post('activate/:key')
     public async activate(@Param() { key }: { key: string }) {
-        await this.userService.activateUserByKey(key);
+        await this.userService.enableUser(key);
     }
 }

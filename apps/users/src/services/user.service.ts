@@ -32,12 +32,15 @@ export class UserService {
         this.initOperation();
     }
 
-    async activateUserByKey(key: string) {
-        const u = await this.userModel.findOne({ activationKey: key }).exec();
-        u.active = true;
-        u.activationKey = null;
-        u.activationExpireDate = null;
-        await u.save();
+    async enableUser(activationKey: string) {
+        if (activationKey) {
+            const u = await this.userModel.findOne({ activationKey });
+            if (u) {
+                u.active = true;
+                u.activationKey = '';
+                u.save();
+            }
+        }
     }
 
     async fetchAllUsers() {
@@ -98,7 +101,7 @@ export class UserService {
     async sendRegisteredEmail(u: User, key: string, origin = '') {
         const link =
             origin +
-            process.env['U_USERS_REGISTERED_USER_VALIDATING_URL'].replace(
+            process.env['U_USERS_REGISTERED_USER_VALIDATING_URL']?.replace(
                 ':key',
                 key,
             );
@@ -127,9 +130,11 @@ export class UserService {
 
     async changeEmail(userId: any, newEmail: string) {
         const user = await this.userModel.findById(userId);
-        user!.primaryEmail = newEmail;
-        await user!.save();
-        return UserMapper.toAuthDto(user);
+        if (user) {
+            user.primaryEmail = newEmail;
+            await user.save();
+            return UserMapper.toAuthDto(user);
+        }
     }
 
     async registerUser(user: UserRegisterDTO, origin?: string) {
@@ -148,15 +153,6 @@ export class UserService {
         u.activationExpireDate = date;
         await u.save();
         await this.sendRegisteredEmail(u, u.activationKey, origin);
-    }
-
-    async enableUser(activationKey: string) {
-        if (activationKey) {
-            const u = await this.userModel.findOne({ activationKey });
-            u.active = true;
-            u.activationKey = null;
-            u.save();
-        }
     }
 
     private async assertUserInfoValid(
@@ -186,8 +182,8 @@ export class UserService {
         }
     }
 
-    async findUserByLogin(userLogin: UserAuth): Promise<UserDTO> {
-        let realUser: UserDTO;
+    async findUserByLogin(userLogin: UserAuth): Promise<UserDTO | null> {
+        let realUser: UserDTO | null = null;
         const userUname = await this.findByUsername(userLogin.login);
         if (userUname.length) {
             realUser = userUname[0];
@@ -200,8 +196,8 @@ export class UserService {
         return realUser;
     }
 
-    async findUserByLoginAndPw(userLogin: UserAuth): Promise<UserDTO> {
-        let realUser: UserDTO;
+    async findUserByLoginAndPw(userLogin: UserAuth): Promise<UserDTO | null> {
+        let realUser: UserDTO | null = null;
         const pwHash = await CryptoOp.encrypt(userLogin.password);
 
         const userUname = await this.findByUsernamePwHash(
@@ -270,18 +266,22 @@ export class UserService {
 
     async removeRole(userId: string, role: string): Promise<void> {
         const u = await this.userModel.findById(userId);
-        const roleIndex = u.roles.indexOf(role);
-        if (roleIndex > -1) {
-            u.roles.splice(roleIndex, 1);
-            await u.save();
+        if (u) {
+            const roleIndex = u.roles.indexOf(role);
+            if (roleIndex > -1) {
+                u.roles.splice(roleIndex, 1);
+                await u.save();
+            }
         }
     }
 
     async insertRole(userId: string, role: string): Promise<void> {
         const u = await this.userModel.findById(userId);
-        if (!u.roles.includes(role)) {
-            u.roles.push(role);
-            await u.save();
+        if (u) {
+            if (!u.roles.includes(role)) {
+                u.roles.push(role);
+                await u.save();
+            }
         }
     }
 
@@ -298,11 +298,15 @@ export class UserService {
     }
 
     async findFullInfo(id: any): Promise<UserFullDto> {
-        return UserMapper.toFullDto(await this.userModel.findById(id));
+        return UserMapper.toFullDto((await this.userModel.findById(id))!);
     }
 
     async findUserAuth(id: any): Promise<UserDTO> {
-        return UserMapper.toAuthDto(await this.userModel.findById(id));
+        return UserMapper.toAuthDto(await this.findByIdRaw(id));
+    }
+
+    private async findByIdRaw(id: any) {
+        return (await this.userModel.findById(id))!;
     }
 
     async findUserAuthBackend(id: any): Promise<UserAuthBackendDTO | null> {
@@ -333,7 +337,7 @@ export class UserService {
     }
 
     async findById(id: ObjectId | string) {
-        return UserMapper.toFullDto(await this.userModel.findById(id));
+        return UserMapper.toFullDto(await this.findByIdRaw(id));
     }
 
     async editUserFullInformation(data: UserFullDto) {

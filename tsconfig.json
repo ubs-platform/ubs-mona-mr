@@ -18,11 +18,11 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "@mona/users/microservice-helper": [
-        "libs/users-microservice-helper/src"
+      "@mona/microservice-setup-util": [
+        "libs/microservice-setup-util/src"
       ],
-      "@mona/users/microservice-helper/*": [
-        "libs/users-microservice-helper/src/*"
+      "@mona/microservice-setup-util/*": [
+        "libs/microservice-setup-util/src/*"
       ],
       "@mona/users/common": [
         "libs/users-common/src"
@@ -35,6 +35,12 @@
       ],
       "@mona/users/consts/*": [
         "libs/users-consts/src/*"
+      ],
+      "@mona/users/microservice-helper": [
+        "libs/users-microservice-helper/src"
+      ],
+      "@mona/users/microservice-helper/*": [
+        "libs/users-microservice-helper/src/*"
       ],
       "@mona/users/roles": [
         "libs/users-roles/src"
