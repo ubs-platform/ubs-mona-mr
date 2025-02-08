@@ -1,4 +1,4 @@
-## Library'i pushlama
+# Kütüphaneyi derleyip npm'e gönderme
 
 - Build etme
   `nest build core --tsc`
