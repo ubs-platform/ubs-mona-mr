@@ -3,6 +3,8 @@
 - Build etme
   `nest build core --tsc`
 
+    - --tsc parametresi build ve push yapmak için önemlidir
+
 - dist/core içine bunlar eklemeli:
 
 ```JSON
