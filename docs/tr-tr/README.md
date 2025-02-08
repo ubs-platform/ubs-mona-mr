@@ -2,9 +2,13 @@
 
 ## Sinopsis
 
-UBS Mona, low code backend geliştirmeyi hedefleyen NestJS çevresinde gelişen, daha çok MongoDB kullanan bir rest API çatısıdır. İçerisinde Kullanıcı Giriş/Çıkış işlemleri, sosyalleşme (Yorum yapma), bildirim gibi çok temel işlevler içerir. Mona ismi "MOngo, Nest, Angular" isimlerinin birleşmesiyle meydana geliyor
+UBS Mona, az kodla backend geliştirmeyi hedefleyen NestJS çevresinde gelişen, daha çok MongoDB kullanan bir rest API çatısıdır. İçerisinde Kullanıcı Giriş/Çıkış işlemleri, sosyalleşme (Yorum yapma), bildirim gibi çok temel işlevler içerir. Mona ismi "MOngo, Nest, Angular" isimlerinin birleşmesiyle meydana geliyor
 
 ## İçerikler:
+
+### Ayağa kaldırma
+
+En kısa sürede eklemeye çalışacağım ancak söz veremiyorum
 
 ### API Arayüzleri
 
