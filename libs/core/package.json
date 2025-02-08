@@ -1,0 +1,17 @@
+{
+    "name": "@ubs-platform/mona-experiment-one",
+    "version": "0.0.5",
+    "description": "An experiment on NPM and package managing. please do not install",
+    "author": "",
+    "private": false,
+    "license": "MIT",
+    "scripts": {},
+    "peerDependencies": {
+        "@nestjs/common": "^11.0.1",
+        "@nestjs/core": "^11.0.1",
+        "@nestjs/platform-express": "^11.0.1",
+        "reflect-metadata": "^0.2.2",
+        "rxjs": "^7.8.1"
+    },
+    "main": "index.js"
+}
