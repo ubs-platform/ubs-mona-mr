@@ -36,6 +36,51 @@
       "compilerOptions": {
         "tsConfigPath": "apps/users/tsconfig.app.json"
       }
+    },
+    "users-common": {
+      "type": "library",
+      "root": "libs/users-common",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-common/tsconfig.lib.json"
+      }
+    },
+    "users-consts": {
+      "type": "library",
+      "root": "libs/users-consts",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-consts/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-consts/tsconfig.lib.json"
+      }
+    },
+    "users-core": {
+      "type": "library",
+      "root": "libs/users-core",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-core/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-core/tsconfig.lib.json"
+      }
+    },
+    "users-microservice-helper": {
+      "type": "library",
+      "root": "libs/users-microservice-helper",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-microservice-helper/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-microservice-helper/tsconfig.lib.json"
+      }
+    },
+    "users-roles": {
+      "type": "library",
+      "root": "libs/users-roles",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-roles/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-roles/tsconfig.lib.json"
+      }
     }
   }
 }

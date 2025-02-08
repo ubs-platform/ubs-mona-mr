@@ -18,11 +18,29 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
-      "mona/core": [
-        "libs/core/src"
+      "@mona/users/microservice-helper": [
+        "libs/users-microservice-helper/src"
       ],
-      "mona/core/*": [
-        "libs/core/src/*"
+      "@mona/users/microservice-helper/*": [
+        "libs/users-microservice-helper/src/*"
+      ],
+      "@mona/users/common": [
+        "libs/users-common/src"
+      ],
+      "@mona/users/common/*": [
+        "libs/users-common/src/*"
+      ],
+      "@mona/users/consts": [
+        "libs/users-consts/src"
+      ],
+      "@mona/users/consts/*": [
+        "libs/users-consts/src/*"
+      ],
+      "@mona/users/roles": [
+        "libs/users-roles/src"
+      ],
+      "@mona/users/roles/*": [
+        "libs/users-roles/src/*"
       ]
     }
   }
