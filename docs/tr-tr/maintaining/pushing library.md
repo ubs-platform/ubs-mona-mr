@@ -3,7 +3,7 @@
 - Build etme
   `nest build core --tsc`
 
-    - --tsc parametresi build ve push yapmak için önemlidir
+    - --tsc parametresi build ve push yapmak için önemlidir. yoksa export ettiğiniz metotları başka proje okuyamıyor.
 
 - dist/core içine bunlar eklemeli:
 
