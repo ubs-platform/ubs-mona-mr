@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/ubs-mona-mr/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/ubs-mona-mr/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/ubs-mona-mr",
+  "projects": {
+    "core": {
+      "type": "library",
+      "root": "libs/core",
+      "entryFile": "index",
+      "sourceRoot": "libs/core/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/core/tsconfig.lib.json"
+      }
+    },
+    "ubs-mona-mr": {
+      "type": "application",
+      "root": "apps/ubs-mona-mr",
+      "entryFile": "main",
+      "sourceRoot": "apps/ubs-mona-mr/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/ubs-mona-mr/tsconfig.app.json"
+      }
+    },
+    "users": {
+      "type": "application",
+      "root": "apps/users",
+      "entryFile": "main",
+      "sourceRoot": "apps/users/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/users/tsconfig.app.json"
+      }
+    }
+  }
+}
