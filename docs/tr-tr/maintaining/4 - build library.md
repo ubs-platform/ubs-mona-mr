@@ -30,9 +30,7 @@
 
 Muhtemelen burada kök dizindeki package.json'daki dependency'ler peerDependency olarak eklenmelidir.
 
-Gerektiğinde packages.json da kopyalanmalı ve dist dizinine geçilmelidir...
-
-Ve ardından build edip pushlamalı
+Ve ardından build edip bu şekilde pushlayabilirsiniz
 
 ```
 npm publish --access public
