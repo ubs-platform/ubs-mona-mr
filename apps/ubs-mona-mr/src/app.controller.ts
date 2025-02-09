@@ -10,6 +10,7 @@ export class AppController {
 
     @Get()
     getHello(): string {
+        // console.info(x.BackendJwtUtilsModule);
         return this.coreService.printVerbose();
         // console.info(CoreUtils);
         // return CoreUtils.printVerbose();

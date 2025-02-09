@@ -28,7 +28,22 @@
 
 ```
 
-Muhtemelen burada kök dizindeki package.json'daki dependency'ler peerDependency olarak eklenmelidir.
+giriş noktası yani `main`, yapılan builde göre düzenlenmelidir. Örneğin bu şekilde gözüküyorsa
+
+```
+-users-microservice-helper
+---microservice-setup-util
+---users-common
+---users-consts
+---users-microservice-helper
+------src
+---------index.js
+```
+
+Eğer diğer kütüphanelerden import aldıysanız bu şekilde gözükmesi gayet normal.
+Böyle bir durumda `main`:`users-microservice-helper/src/index.js` olmalıdır. İmport ederken users-microservice-helper/src/ diye uzatmamak için bu idealdir
+
+Muhtemelen burada kök dizindeki package.json'daki nest ve ya benzeri dependency'ler peerDependency olarak eklenmelidir.
 
 Ve ardından build edip bu şekilde pushlayabilirsiniz
 

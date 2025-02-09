@@ -1,6 +1,5 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientProxy, ClientKafka, ClientRMQ } from '@nestjs/microservices';
-import { Kafka } from '@nestjs/microservices/external/kafka.interface';
 import { UserDTO } from '@mona/users/common';
 import { firstValueFrom } from 'rxjs';
 
