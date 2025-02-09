@@ -1,9 +1,8 @@
 # Kütüphaneyi derleyip npm'e gönderme
 
-> Şu anda bunun üstünde çalışıyorum ve kararlaştırmam gereken bir kaç konu var... Öncelikle kullandığı local kütüphaneleri peer yapmalıyım ki (zaten onları büyük ihtimalle npm registry'e pushlarım diye tahmin ediyorum)
+> Şu anda bunun üstünde çalışıyorum ve kararlaştırmam gereken bir kaç konu var... Öncelikle kullandığı local kütüphaneleri peer yapmalıyım ki (zaten onları büyük ihtimalle npm registry'e pushlarım diye tahmin ediyorum) Bu yüzden tools/src içine bakmayı unutmayın. Burada da build olmuş js dosyalarında importları TextUtil vasıtasıyla import isimlerini değiştireceğim
 
 - Build etme
-    <!-- `nest build core --tsc` -->
 
     ` tsc -p tsconfig.lib-publish.json`
 
