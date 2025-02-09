@@ -1,0 +1,8 @@
+{
+    "include": ["./**/*.ts"],
+    "compilerOptions": {
+        "module": "Node16",
+        "outDir": "../"
+    },
+    "exclude": ["node_modules"]
+}

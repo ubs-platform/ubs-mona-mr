@@ -1,9 +1,13 @@
 # Kütüphaneyi derleyip npm'e gönderme
 
-- Build etme
-  `nest build core --tsc`
+> Şu anda bunun üstünde çalışıyorum ve kararlaştırmam gereken bir kaç konu var... Öncelikle kullandığı local kütüphaneleri peer yapmalıyım ki (zaten onları büyük ihtimalle npm registry'e pushlarım diye tahmin ediyorum)
 
-    - --tsc parametresi build ve push yapmak için önemlidir. yoksa export ettiğiniz metotları başka proje okuyamıyor.
+- Build etme
+    <!-- `nest build core --tsc` -->
+
+    ` tsc -p tsconfig.lib-publish.json`
+
+    - tsconfig.lib-publish.json dosyası kullandığı yan kütüphaneler varsa onları exclude etmesi için gereklidir. Yan kütüphaneler `"exclude": [..., "@mona/**"]` olarak dışlanır
 
 - dist/core içine bunlar eklemeli:
 
@@ -20,6 +24,7 @@
         "@nestjs/common": "^11.0.1",
         "@nestjs/core": "^11.0.1",
         "@nestjs/platform-express": "^11.0.1",
+        "<kullandığı diğer kütüphaneler>": "version"
         "reflect-metadata": "^0.2.2",
         "rxjs": "^7.8.1"
     },
