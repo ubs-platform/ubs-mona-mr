@@ -1,53 +1,47 @@
 {
-  "compilerOptions": {
-    "module": "commonjs",
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
-    "sourceMap": true,
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "incremental": true,
-    "skipLibCheck": true,
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
-    "paths": {
-      "@mona/microservice-setup-util": [
-        "libs/microservice-setup-util/src"
-      ],
-      "@mona/microservice-setup-util/*": [
-        "libs/microservice-setup-util/src/*"
-      ],
-      "@mona/users/common": [
-        "libs/users-common/src"
-      ],
-      "@mona/users/common/*": [
-        "libs/users-common/src/*"
-      ],
-      "@mona/users/consts": [
-        "libs/users-consts/src"
-      ],
-      "@mona/users/consts/*": [
-        "libs/users-consts/src/*"
-      ],
-      "@mona/users/microservice-helper": [
-        "libs/users-microservice-helper/src"
-      ],
-      "@mona/users/microservice-helper/*": [
-        "libs/users-microservice-helper/src/*"
-      ],
-      "@mona/users/roles": [
-        "libs/users-roles/src"
-      ],
-      "@mona/users/roles/*": [
-        "libs/users-roles/src/*"
-      ]
+    "compilerOptions": {
+        "module": "commonjs",
+        "declaration": true,
+        "removeComments": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "target": "ES2021",
+        "sourceMap": true,
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "incremental": true,
+        "skipLibCheck": true,
+        "strictNullChecks": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitAny": false,
+        "strictBindCallApply": false,
+        "noFallthroughCasesInSwitch": false,
+        "paths": {
+            "@mona/microservice-setup-util": [
+                "libs/microservice-setup-util/src"
+            ],
+            //   "@mona/microservice-setup-util/*": [
+            //     "libs/microservice-setup-util/src/*"
+            //   ],
+            "@mona/users/common": ["libs/users-common/src"],
+            //   "@mona/users/common/*": [
+            //     "libs/users-common/src/*"
+            //   ],
+            "@mona/users/consts": ["libs/users-consts/src"],
+            //   "@mona/users/consts/*": [
+            //     "libs/users-consts/src/*"
+            //   ],
+            "@mona/users/microservice-helper": [
+                "libs/users-microservice-helper/src"
+            ],
+            //   "@mona/users/microservice-helper/*": [
+            //     "libs/users-microservice-helper/src/*"
+            //   ],
+            "@mona/users/roles": ["libs/users-roles/src"]
+            //   "@mona/users/roles/*": [
+            //     "libs/users-roles/src/*"
+            //   ]
+        }
     }
-  }
 }
