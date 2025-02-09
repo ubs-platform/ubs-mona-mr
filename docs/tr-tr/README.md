@@ -1,5 +1,9 @@
 # UBS Mona Projesi
 
+> ⚠️⚠️ Prodüksiyon için uygun değildir - Sorumluluk size aittir ⚠️⚠️
+
+> Diğer UBS Mona depoları buraya taşınacak. Taşınmadan sonra diğer git depoları arşiv olarak saklanacaktır
+
 ## Sinopsis
 
 UBS Mona, az kodla backend geliştirmeyi hedefleyen NestJS çevresinde gelişen, daha çok MongoDB kullanan bir rest API çatısıdır. İçerisinde Kullanıcı Giriş/Çıkış işlemleri, sosyalleşme (Yorum yapma), bildirim gibi çok temel işlevler içerir. Mona ismi "MOngo, Nest, Angular" isimlerinin birleşmesiyle meydana geliyor
