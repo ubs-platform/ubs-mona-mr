@@ -2,6 +2,11 @@ import * as FileSystem from 'fs/promises';
 import * as path from 'path';
 
 export class DirectoryUtil {
+    /**
+     * List all files in the folder recursively
+     * @param folderPath
+     * @returns the list that contains full file paths
+     */
     static async listAllFiles(folderPath: string) {
         const allFileList: string[] = [];
         await this.operate(folderPath, (a) => {
@@ -10,9 +15,14 @@ export class DirectoryUtil {
         return allFileList;
     }
 
+    /**
+     * Circulates files in the folder recursively
+     * @param folderPath
+     * @method fileAction if encounters a file, that will called with file full path
+     */
     static async operate(
         folderPath: string,
-        method: (fileName: string) => PromiseLike<void> | void,
+        fileAction: (fileName: string) => PromiseLike<void> | void,
     ) {
         const onQueue: string[] = [];
 
@@ -26,7 +36,7 @@ export class DirectoryUtil {
                 if (fileInfo.isDirectory()) {
                     onQueue.push(fullPath);
                 } else if (fileInfo.isFile()) {
-                    await method(fullPath);
+                    await fileAction(fullPath);
                 }
             }
             current = onQueue.pop();
