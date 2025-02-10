@@ -8,7 +8,7 @@ import { ClientKafka, ClientProxy } from '@nestjs/microservices';
 import { EmailDto } from '../dto/email.dto';
 import { lastValueFrom } from 'rxjs';
 import { exec } from 'child_process';
-import { UserDTO } from '@mona/users/common';
+import { UserDTO } from '@ubs-platform/users-common';
 import { EmailService } from './email.service';
 
 @Injectable()

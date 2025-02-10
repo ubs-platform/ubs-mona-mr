@@ -6,7 +6,7 @@ import {
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
     UserCapabilityDTO,
-} from '@mona/users/common';
+} from '@ubs-platform/users-common';
 import { Observable } from 'rxjs';
 
 @Injectable()

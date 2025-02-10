@@ -15,8 +15,8 @@ import {
 } from '@nestjs/common';
 import { UserService } from '../services/user.service';
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
-import { UserFullDto } from '@mona/users/common';
-import { Roles, RolesGuard } from '@mona/users/roles';
+import { UserFullDto } from '@ubs-platform/users-common';
+import { Roles, RolesGuard } from '@ubs-platform/users-mona-roles';
 
 // TODO: Admin ile alakalı sorun çıkarsa tekrar ekle @Roles(['ADMIN'])
 

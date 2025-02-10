@@ -9,7 +9,7 @@ import {
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
     UserCapabilityDTO,
-} from '@mona/users/common';
+} from '@ubs-platform/users-common';
 import { UserService } from './user.service';
 import { exec } from 'child_process';
 

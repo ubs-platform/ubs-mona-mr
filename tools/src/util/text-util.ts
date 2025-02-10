@@ -68,6 +68,6 @@ export class TextUtil {
 
 // TextUtil.replaceText(
 //     '/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr/dist',
-//     `@mona/microservice-setup-util`,
+//     `@ubs-platform/mona-microservice-setup-util`,
 //     '@ubs-platform/nest-microservice-setup-util',
 // ).then(console.info);

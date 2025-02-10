@@ -3,7 +3,7 @@ import {
     UBSUsersErrorConsts,
     UserAuth,
     UserAuthSuccess,
-} from '@mona/users/common';
+} from '@ubs-platform/users-common';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from './user.service';

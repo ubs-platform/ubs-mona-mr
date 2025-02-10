@@ -13,8 +13,8 @@ import { CurrentUser } from '../local-current-user-decorator';
 import { AuthService } from '../services/auth.service';
 import { Request } from 'express';
 import { UserIntercept } from '../guard/user-intercept';
-import { UserAuth, UserAuthBackendDTO } from '@mona/users/common';
-import { matchRolesOrAdm } from '@mona/users/roles';
+import { UserAuth, UserAuthBackendDTO } from '@ubs-platform/users-common';
+import { matchRolesOrAdm } from '@ubs-platform/users-mona-roles';
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) {}

@@ -16,7 +16,7 @@ import {
     UserAuthBackendDTO,
     ErrorInformations,
     UBSUsersErrorConsts,
-} from '@mona/users/common';
+} from '@ubs-platform/users-common';
 import { ClientKafka } from '@nestjs/microservices';
 import { EmailDto } from '../dto/email.dto';
 import { randomUUID } from 'crypto';

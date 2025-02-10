@@ -1,4 +1,4 @@
-import { EntityOwnershipDTO } from '@mona/users/common';
+import { EntityOwnershipDTO } from '@ubs-platform/users-common';
 import { EntityOwnership } from '../domain/entity-ownership.schema';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';

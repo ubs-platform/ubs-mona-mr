@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { EmailDto } from '../dto/email.dto';
-import { UserDTO, UserFullDto } from '@mona/users/common';
+import { UserDTO, UserFullDto } from '@ubs-platform/users-common';
 import { User } from '../domain/user.model';
 
 @Injectable()

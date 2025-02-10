@@ -21,7 +21,7 @@ import {
     UserDTO,
     UserGeneralInfoDTO,
     UserRegisterDTO,
-} from '@mona/users/common';
+} from '@ubs-platform/users-common';
 
 @Controller('user')
 export class UserController {

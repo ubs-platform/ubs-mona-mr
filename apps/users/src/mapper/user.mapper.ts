@@ -5,7 +5,7 @@ import {
     UserFullDto,
     UserDTO,
     UserAuthBackendDTO,
-} from '@mona/users/common';
+} from '@ubs-platform/users-common';
 import { User } from '../domain/user.model';
 import { CryptoOp } from '../util/crypto-op';
 

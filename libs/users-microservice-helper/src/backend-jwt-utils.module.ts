@@ -4,7 +4,7 @@ import { BackendJwtUtilsExportModule } from './backend-jwt-utils-exports.module'
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserService } from './service/user.service';
 import { EntityOwnershipService } from './service/entity-ownership.service';
-import { MicroserviceSetupUtil } from '@mona/microservice-setup-util';
+import { MicroserviceSetupUtil } from '@ubs-platform/mona-microservice-setup-util';
 // import { JwtStrategy } from './strategies/jwt.strategy';
 export const INTERNAL_COMMUNICATION = {
     port: parseInt(process.env['U_USERS_MONA_INTERNAL_COM_PORT'] || '0'),

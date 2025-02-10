@@ -22,7 +22,7 @@ import { UserService } from '../services/user.service';
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import { CurrentUser } from '../local-current-user-decorator';
 import { EmailChangeRequestService } from '../services/email-change-request.service';
-import { UserAuthBackendDTO, UserRegisterDTO } from '@mona/users/common';
+import { UserAuthBackendDTO, UserRegisterDTO } from '@ubs-platform/users-common';
 
 @Controller()
 export class UserMicroserviceController {

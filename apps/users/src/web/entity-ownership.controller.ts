@@ -6,7 +6,7 @@ import {
     EntityOwnershipInsertCapabiltyDTO,
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
-} from '@mona/users/common';
+} from '@ubs-platform/users-common';
 
 @Controller('entity-ownership')
 export class EntityOwnershipController {

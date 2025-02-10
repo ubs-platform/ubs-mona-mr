@@ -19,28 +19,28 @@
         "strictBindCallApply": false,
         "noFallthroughCasesInSwitch": false,
         "paths": {
-            "@mona/microservice-setup-util": [
+            "@ubs-platform/mona-microservice-setup-util": [
                 "libs/microservice-setup-util/src"
             ],
-            //   "@mona/microservice-setup-util/*": [
+            //   "@ubs-platform/mona-microservice-setup-util/*": [
             //     "libs/microservice-setup-util/src/*"
             //   ],
-            "@mona/users/common": ["libs/users-common/src"],
-            //   "@mona/users/common/*": [
+            "@ubs-platform/users-common": ["libs/users-common/src"],
+            //   "@ubs-platform/users-common/*": [
             //     "libs/users-common/src/*"
             //   ],
             "@mona/users/consts": ["libs/users-consts/src"],
             //   "@mona/users/consts/*": [
             //     "libs/users-consts/src/*"
             //   ],
-            "@mona/users/microservice-helper": [
+            "@ubs-platform/users-mona-microservice-helper": [
                 "libs/users-microservice-helper/src"
             ],
-            //   "@mona/users/microservice-helper/*": [
+            //   "@ubs-platform/users-mona-microservice-helper/*": [
             //     "libs/users-microservice-helper/src/*"
             //   ],
-            "@mona/users/roles": ["libs/users-roles/src"]
-            //   "@mona/users/roles/*": [
+            "@ubs-platform/users-mona-roles": ["libs/users-roles/src"]
+            //   "@ubs-platform/users-mona-roles/*": [
             //     "libs/users-roles/src/*"
             //   ]
         }

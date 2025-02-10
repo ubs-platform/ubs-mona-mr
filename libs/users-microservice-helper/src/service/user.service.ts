@@ -1,6 +1,6 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientProxy, ClientKafka, ClientRMQ } from '@nestjs/microservices';
-import { UserDTO } from '@mona/users/common';
+import { UserDTO } from '@ubs-platform/users-common';
 import { firstValueFrom } from 'rxjs';
 
 @Injectable()
