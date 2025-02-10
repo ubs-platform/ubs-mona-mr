@@ -1,23 +1,64 @@
 import { DirectoryUtil } from './directory-util';
 import * as FileSystem from 'fs/promises';
 
+export interface TextFoundItem {
+    path: string;
+    found: RegExpExecArray;
+}
+
+export interface ReplaceTextRecipe {
+    finding: string;
+    replaceWith: string;
+}
+
 export class TextUtil {
+
     /**
      * Replaces a text with a another text recursively
-     * @param path directory
-     * @param finding
-     * @param replacedWith
+     * @param path 
+     * @param replaceTextRecipes please see `ReplaceTextRecipe`
      */
     static async replaceText(
         path: string,
-        finding: string,
-        replacedWith: string,
+        replaceTextRecipes: ReplaceTextRecipe[]
     ) {
-        await DirectoryUtil.operate(path, async (filePath) => {
+        await DirectoryUtil.circulateFilesRecursive(path, async (filePath) => {
             let content = await FileSystem.readFile(filePath, 'utf8');
-            content = content.replaceAll(finding, replacedWith);
+            for (let index = 0; index < replaceTextRecipes.length; index++) {
+                const replaceRecipe = replaceTextRecipes[index];
+                content = content.replaceAll(
+                    replaceRecipe.finding,
+                    replaceRecipe.replaceWith,
+                );
+            }
             await FileSystem.writeFile(filePath, content, 'utf8');
         });
+    }
+
+    static async findByRegex(path: string, findings: RegExp[]) {
+        let founded: Map<RegExp, TextFoundItem[]> = new Map();
+        await DirectoryUtil.circulateFilesRecursive(path, async (filePath) => {
+            for (
+                let findingIndex = 0;
+                findingIndex < findings.length;
+                findingIndex++
+            ) {
+                let items: TextFoundItem[] = [];
+
+                const finding = findings[findingIndex];
+                let content = await FileSystem.readFile(filePath, 'utf8');
+                let a = finding.exec(content);
+                while (a) {
+                    items.push({
+                        found: a,
+                        path: filePath,
+                    });
+                    a = finding.exec(content);
+                }
+            }
+        });
+
+        return founded;
     }
 }
 

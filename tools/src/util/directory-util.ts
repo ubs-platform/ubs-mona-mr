@@ -9,7 +9,7 @@ export class DirectoryUtil {
      */
     static async listAllFiles(folderPath: string) {
         const allFileList: string[] = [];
-        await this.operate(folderPath, (a) => {
+        await this.circulateFilesRecursive(folderPath, (a) => {
             allFileList.push(a);
         });
         return allFileList;
@@ -20,7 +20,7 @@ export class DirectoryUtil {
      * @param folderPath
      * @method fileAction if encounters a file, that will called with file full path
      */
-    static async operate(
+    static async circulateFilesRecursive(
         folderPath: string,
         fileAction: (fileName: string) => PromiseLike<void> | void,
     ) {
