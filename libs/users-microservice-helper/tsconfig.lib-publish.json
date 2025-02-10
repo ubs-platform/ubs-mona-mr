@@ -2,8 +2,13 @@
     "extends": "../../tsconfig.json",
     "compilerOptions": {
         "declaration": true,
+        "skipLibCheck": true,
+        "skipDefaultLibCheck": true,
+        "declarationMap": false,
         "outDir": "../../dist/libs/users-microservice-helper"
     },
+    "module": "Node16",
+
     "include": ["src/**/*"],
     "exclude": [
         "node_modules",

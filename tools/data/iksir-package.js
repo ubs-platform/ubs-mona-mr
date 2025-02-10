@@ -1,33 +1,80 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IksirPackage = void 0;
+const FileSystem = __importStar(require("fs/promises"));
 const path_1 = __importDefault(require("path"));
 const json_util_1 = require("../util/json-util");
 const directory_util_1 = require("../util/directory-util");
+const exec_util_1 = require("../util/exec-util");
 class IksirPackage {
     directory;
     buildDirectory;
     projectMode;
     libraryMode;
     packageObject;
-    typescriptConfiguration;
+    tsConfigFile;
+    tsConfig;
+    tsBuildConfig;
+    tsBuildConfigFile;
     parent;
     children = [];
+    async libraryPrebuild() {
+        if (this.projectMode == 'LIBRARY') {
+            await FileSystem.rm(this.buildDirectory, {
+                recursive: true,
+                force: true,
+            });
+            await exec_util_1.ExecUtil.exec(`tsc -p ${this.tsBuildConfigFile}`);
+        }
+        else {
+            throw 'instance-is-not-library';
+        }
+    }
     static async loadPackage(projectDirectory, parent) {
         const projectPackageJson = await json_util_1.JsonUtil.readJson(projectDirectory, 'package.json');
         const iksirPaket = new IksirPackage();
         iksirPaket.directory = projectDirectory;
         iksirPaket.packageObject = projectPackageJson;
         iksirPaket.projectMode = projectPackageJson.iksir?.type || 'ROOT';
-        projectPackageJson.iksir?.libraryMode || 'PEER';
+        iksirPaket.libraryMode =
+            projectPackageJson.iksir?.libraryMode || 'PEER';
         if (iksirPaket.projectMode == 'ROOT') {
-            iksirPaket.typescriptConfiguration =
-                await json_util_1.JsonUtil.readJson(projectDirectory, 'tsconfig.json');
+            iksirPaket.tsConfigFile = path_1.default.join(projectDirectory, projectPackageJson.iksir?.tsConfigFile || 'tsconfig.json');
+            iksirPaket.tsConfig =
+                await json_util_1.JsonUtil.readJson(iksirPaket.tsConfigFile);
         }
         else if (parent) {
+            iksirPaket.tsBuildConfigFile = path_1.default.join(projectDirectory, projectPackageJson.iksir?.tsBuildConfigFile ||
+                'tsconfig.lib-publish.json');
+            iksirPaket.tsBuildConfig =
+                await json_util_1.JsonUtil.readJson(iksirPaket.tsBuildConfigFile);
+            iksirPaket.buildDirectory = path_1.default.join(projectDirectory, iksirPaket.tsBuildConfig.compilerOptions.outDir);
             iksirPaket.parent = parent;
             parent.children.push(iksirPaket);
         }
@@ -50,12 +97,22 @@ class IksirPackage {
     }
 }
 exports.IksirPackage = IksirPackage;
-IksirPackage.scanPackages('/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr').then((a) => a.forEach((b) => console.info({
-    İsim: b.packageObject.name,
-    'Derleme Klasörü': b.buildDirectory,
-    Klasör: b.directory,
-    'Proje Modu': b.projectMode,
-    'Kütüphane Modu': b.libraryMode,
-    'Çocuk sayısı': b.children.length,
-    Evebeyn: b.parent?.packageObject.name,
-})));
+IksirPackage.scanPackages('/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr').then(async (a) => {
+    for (let index = 0; index < a.length; index++) {
+        const b = a[index];
+        console.info({
+            İsim: b.packageObject.name,
+            'Derleme Klasörü': b.buildDirectory,
+            Klasör: b.directory,
+            'Proje Modu': b.projectMode,
+            'Kütüphane Modu': b.libraryMode,
+            'Çocuk sayısı': b.children.length,
+            Evebeyn: b.parent?.packageObject.name,
+        });
+        if (b.projectMode == 'LIBRARY') {
+            console.info('Build ediliyor');
+            await b.libraryPrebuild();
+            console.info('Build edildi');
+        }
+    }
+});

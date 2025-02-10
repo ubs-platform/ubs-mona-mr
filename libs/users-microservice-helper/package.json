@@ -5,7 +5,8 @@
     "main": "users-microservice-helper/src/index.js",
     "iksir": {
         "type": "LIBRARY",
-        "libraryMode": "PEER"
+        "libraryMode": "PEER",
+        "buildSubFolder": "users-microservice-helper/src"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"

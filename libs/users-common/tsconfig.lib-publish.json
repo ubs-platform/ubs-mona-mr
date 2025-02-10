@@ -2,7 +2,7 @@
     "extends": "../../tsconfig.json",
     "compilerOptions": {
         "declaration": true,
-        "outDir": "../../dist/libs/users-microservice-helper"
+        "outDir": "../../dist/libs/users-common"
     },
     "include": ["src/**/*"],
     "exclude": [
