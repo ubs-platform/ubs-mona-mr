@@ -5699,6 +5699,11 @@ typedarray@^0.0.6:
   resolved "https://registry.npmjs.org/typedarray/-/typedarray-0.0.6.tgz"
   integrity sha512-/aCDEGatGvZ2BIk+HmLf4ifCJFwvKFNb9/JeZPMulfgFracn9QFcAf5GO8B/mweUjSoblS5In0cWhqpfs/5PQA==
 
+types-package-json@^2.0.39:
+  version "2.0.39"
+  resolved "https://registry.npmjs.org/types-package-json/-/types-package-json-2.0.39.tgz"
+  integrity sha512-c8ua5W1Uu6x7LAwtwSGCl46cHmj+r2eAA+lXR1CluIZotu9V03ZHcGB9wKRZE2oIAX5IzMP/rxDV9g9ikCg9Nw==
+
 typescript-eslint@^8.20.0:
   version "8.23.0"
   resolved "https://registry.npmjs.org/typescript-eslint/-/typescript-eslint-8.23.0.tgz"

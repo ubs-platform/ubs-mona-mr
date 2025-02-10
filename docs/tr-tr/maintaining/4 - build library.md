@@ -1,6 +1,6 @@
 # Kütüphaneyi derleyip npm'e gönderme
 
-> Şu anda bunun üstünde çalışıyoru<m ve kararlaştırmam gereken bir kaç konu var... Öncelikle kullandığı local kütüphaneleri peer yapmalıyım ki (zaten onları büyük ihtimalle npm registry'e pushlarım diye tahmin ediyorum) Bu yüzden tools/src içine bakmayı unutmayın. Burada da build olmuş js dosyalarında importları TextUtil vasıtasıyla import isimlerini değiştireceğim. 
+> Şu anda bunun üstünde çalışıyoru<m ve kararlaştırmam gereken bir kaç konu var... Öncelikle kullandığı local kütüphaneleri peer yapmalıyım ki (zaten onları büyük ihtimalle npm registry'e pushlarım diye tahmin ediyorum) Bu yüzden tools/src içine bakmayı unutmayın. Burada da build olmuş js dosyalarında importları TextUtil vasıtasıyla import isimlerini değiştireceğim.
 
 > Kütüphanelerin iki modu olacak **PUBLISHED** ve **EMBEDDED**. Embedded kütüphaneler published olanların ya da uygulamaların içinde embed olacak şekilde çalışacak, diğer türlü NPM registrylerinde paylaşılabilecek ve diğer embedded olanlarla peer şeklinde eklenecek.
 
@@ -8,7 +8,7 @@
 
     ` tsc -p tsconfig.lib-publish.json`
 
-    - tsconfig.lib-publish.json dosyası kullandığı yan kütüphaneler varsa onları exclude etmesi için gereklidir. Yan kütüphaneler `"exclude": [..., "@mona/**"]` olarak dışlanır
+    - tsconfig.lib-publish.json dosyası kullandığı yan kütüphaneler varsa onları exclude etmesi için gereklidir. Yan kütüphaneler `"exclude": [..., "@ubs-platform/**"]` olarak dışlanır
 
 - dist/core içine bunlar eklemeli:
 

@@ -1,8 +1,7 @@
 {
-    "name": "@ubs-platform/users-microservice-helper",
+    "name": "@ubs-platform/microservice-setup-util",
     "version": "1.0.0",
     "description": "",
-    "main": "users-microservice-helper/src/index.js",
     "iksir": {
         "type": "LIBRARY",
         "libraryMode": "PEER"
