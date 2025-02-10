@@ -30,6 +30,7 @@
     "@nestjs/serve-static": "^5.0.1",
     "@ubs-platform/mona-experiment-one": "^0.0.5",
     "axios": "^1.7.9",
+    "comment-json": "^4.2.5",
     "crypto-promise": "^2.1.0",
     "kafkajs": "^2.2.4",
     "passport": "^0.7.0",
