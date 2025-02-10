@@ -90,7 +90,7 @@
       "^@ubs-platform/mona-microservice-setup-util(|/.*)$": "<rootDir>/libs/microservice-setup-util/src/$1",
       "^@mona/users-common(|/.*)$": "<rootDir>/libs/users-common/src/$1",
       "^@mona/users-microservice-helper(|/.*)$": "<rootDir>/libs/users-microservice-helper/src/$1",
-      "^@mona/users/consts/users-consts(|/.*)$": "<rootDir>/libs/users-consts/src/$1",
+      "^@ubs-platform/users-consts/users-consts(|/.*)$": "<rootDir>/libs/users-consts/src/$1",
       "^@mona/users/core/users-core(|/.*)$": "<rootDir>/libs/users-core/src/$1",
       "^mona/core(|/.*)$": "<rootDir>/libs/core/src/$1"
     }

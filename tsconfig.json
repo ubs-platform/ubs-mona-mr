@@ -29,8 +29,8 @@
             //   "@ubs-platform/users-common/*": [
             //     "libs/users-common/src/*"
             //   ],
-            "@mona/users/consts": ["libs/users-consts/src"],
-            //   "@mona/users/consts/*": [
+            "@ubs-platform/users-consts": ["libs/users-consts/src"],
+            //   "@ubs-platform/users-consts/*": [
             //     "libs/users-consts/src/*"
             //   ],
             "@ubs-platform/users-mona-microservice-helper": [

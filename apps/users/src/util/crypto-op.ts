@@ -1,4 +1,4 @@
-import { JwtConstants } from '@mona/users/consts';
+import { JwtConstants } from '@ubs-platform/users-consts';
 import { hash, cipher, decipher } from 'crypto-promise';
 
 export class CryptoOp {

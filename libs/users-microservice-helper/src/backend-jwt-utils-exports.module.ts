@@ -1,4 +1,4 @@
-import { JwtConstants } from '@mona/users/consts';
+import { JwtConstants } from '@ubs-platform/users-consts';
 import { Module } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
