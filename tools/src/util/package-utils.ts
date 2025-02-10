@@ -1,7 +1,10 @@
 import * as FileSystem from 'fs/promises';
+import { DirectoryUtil } from './directory-util';
+import { TextUtil } from './text-util';
 
 export class PackageUtils {
-    static async packageObject() {
-        let content = await FileSystem.readFile(filePath, 'utf8');
+    
+    static async findAllImports(directory: string) {
+        let content = await TextUtil.findByRegex(directory)
     }
 }
