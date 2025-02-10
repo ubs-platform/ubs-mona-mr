@@ -19,4 +19,4 @@ package'da kütüphanenin typescripteki path'i @ubs-platform/... olarak başlama
     },
 ```
 
-eğer kütüphane yayınlanmayacaksa libraryMode `EMBED` olmalıdır. Yoksa NPM'de yayınlanacaksa bu `PEER` olmalıdır.
+eğer kütüphane yayınlanmayacaksa libraryMode `EMBED` olmalıdır. Yoksa NPM'de yayınlanacaksa bu `PEER` olmalıdır. daha detaylı bilgi için tools src içini inceleyebilirsiniz
