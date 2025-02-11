@@ -42,7 +42,7 @@ export class LibBuilder {
                 );
                 await currentBuild.digest(importedLibraryBuild, packageVersion);
             }
-            await currentBuild.finish();
+            await currentBuild.writePackage();
         }
 
         // for (let index = 0; index < packages.length; index++) {

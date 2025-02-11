@@ -1,6 +1,9 @@
+import path from 'path';
 import { TextUtil } from '../util/text-util';
 import { NpmPackageWithIksir } from './iksir-library-config';
 import { IksirPackage } from './iksir-package';
+import * as FileSystem from 'fs/promises';
+
 export interface ImportedPackage {
     scope: 'PROJECT' | 'PARENT_PACKAGE_JSON' | 'UNKNOWN';
     packageName: string;
@@ -19,6 +22,7 @@ export class PackageBuilder {
     parent: IksirPackage;
     packageForFullCompilation: NpmPackageWithIksir;
     private _isPrebuilt = false;
+    buildPath: string;
 
     constructor(public iksirPackage: IksirPackage) {
         this.reset(iksirPackage);
@@ -37,9 +41,10 @@ export class PackageBuilder {
         this.packageForFullCompilation = { ...iksirPackage.packageObject };
         this._isPrebuilt = false;
         this.imports = [];
+        this.buildPath = iksirPackage.buildDirectory;
     }
 
-    async finish() {
+    async writePackage() {
         // todo: package jsonu kaydet
     }
 
@@ -49,12 +54,15 @@ export class PackageBuilder {
             (a) => a.packageName == xrPak.packageObject.name,
         );
         if (xrPak.libraryMode == 'PEER') {
-
             localImport.parentNpmVersion = version;
             this.applyToPackageJsonBuild(localImport);
             // const import =
-        } else (xrPak.libraryMode == "EMBEDDED") {
-
+        } else if (xrPak.libraryMode == 'EMBEDDED') {
+            const theirBuildPath = importedLibraryBuild.buildPath;
+            const ourBuildPath = this.buildPath;
+            const ourEmbedPath = path.join(ourBuildPath, '_iksir-embed');
+            await FileSystem.mkdir(ourEmbedPath, { recursive: true });
+            await FileSystem.copyFile(theirBuildPath, ourEmbedPath);
         }
     }
 
