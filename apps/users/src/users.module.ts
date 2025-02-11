@@ -29,8 +29,8 @@ import { EntityOwnershipController } from './web/entity-ownership.controller';
 import { EntityOwnershipService } from './services/entity-ownership.service';
 import { EntityOwnershipMapper } from './mapper/entity-ownership.mapper';
 import { UserMicroserviceController } from './web/user-microservice.controller';
-import { BackendJwtUtilsExportModule } from '@ubs-platform/users-mona-microservice-helper';
-import { MicroserviceSetupUtil } from '@ubs-platform/mona-microservice-setup-util';
+import { BackendJwtUtilsExportModule } from '@ubs-platform/users-microservice-helper';
+import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 
 @Module({
     controllers: [

@@ -9,7 +9,7 @@ import { NestFactory } from '@nestjs/core';
 import { exec } from 'child_process';
 import { execArgv } from 'process';
 import { Transport } from '@nestjs/microservices';
-import { MicroserviceSetupUtil } from '@ubs-platform/mona-microservice-setup-util';
+import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { UsersModule } from './users.module';
 
 export const INTERNAL_COMMUNICATION = {

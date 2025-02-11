@@ -91,7 +91,7 @@
         ],
         "moduleNameMapper": {
             "^@app/users-roles(|/.*)$": "<rootDir>/libs/users-roles/src/$1",
-            "^@ubs-platform/mona-microservice-setup-util(|/.*)$": "<rootDir>/libs/microservice-setup-util/src/$1",
+            "^@ubs-platform/microservice-setup-util(|/.*)$": "<rootDir>/libs/microservice-setup-util/src/$1",
             "^@mona/users-common(|/.*)$": "<rootDir>/libs/users-common/src/$1",
             "^@mona/users-microservice-helper(|/.*)$": "<rootDir>/libs/users-microservice-helper/src/$1",
             "^@ubs-platform/users-consts/users-consts(|/.*)$": "<rootDir>/libs/users-consts/src/$1",

@@ -16,7 +16,7 @@ import {
 import { UserService } from '../services/user.service';
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import { UserFullDto } from '@ubs-platform/users-common';
-import { Roles, RolesGuard } from '@ubs-platform/users-mona-roles';
+import { Roles, RolesGuard } from '@ubs-platform/users-roles';
 
 // TODO: Admin ile alakalı sorun çıkarsa tekrar ekle @Roles(['ADMIN'])
 

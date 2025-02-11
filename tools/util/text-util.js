@@ -71,6 +71,6 @@ exports.TextUtil = TextUtil;
 // ).then(console.info);
 // TextUtil.replaceText(
 //     '/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr/dist',
-//     `@ubs-platform/mona-microservice-setup-util`,
+//     `@ubs-platform/microservice-setup-util`,
 //     '@ubs-platform/nest-microservice-setup-util',
 // ).then(console.info);

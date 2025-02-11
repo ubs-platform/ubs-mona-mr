@@ -6,7 +6,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { MicroserviceSetupUtil } from '@ubs-platform/mona-microservice-setup-util';
+import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);

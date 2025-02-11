@@ -14,7 +14,7 @@ import { AuthService } from '../services/auth.service';
 import { Request } from 'express';
 import { UserIntercept } from '../guard/user-intercept';
 import { UserAuth, UserAuthBackendDTO } from '@ubs-platform/users-common';
-import { matchRolesOrAdm } from '@ubs-platform/users-mona-roles';
+import { matchRolesOrAdm } from '@ubs-platform/users-roles';
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) {}

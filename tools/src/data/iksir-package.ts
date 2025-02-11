@@ -13,12 +13,7 @@ import { TypescriptConfiguration } from '../util/typescript-util';
 import { DirectoryUtil } from '../util/directory-util';
 import { ExecUtil } from '../util/exec-util';
 import { TextUtil } from '../util/text-util';
-export interface ImportedPackage {
-    scope: 'PROJECT' | 'PARENT_PACKAGE_JSON' | 'UNKNOWN';
-    packageName: string;
-    parentNpmVersion?: string;
-    iksirPackage?: IksirPackage;
-}
+
 export class IksirPackage {
     directory: string;
     rawBuildDirectory: string;
@@ -44,76 +39,6 @@ export class IksirPackage {
         } else {
             throw 'instance-is-not-library';
         }
-    }
-
-    public async collectImports() {
-        const regex = /require\(\"(.*)\"\)/g;
-        const imports = await TextUtil.findByRegex(this.buildDirectory, [
-            regex,
-        ]);
-
-        const usedPackages: ImportedPackage[] = [];
-        const founds = imports.get(regex);
-        for (let index = 0; index < founds.length; index++) {
-            const found = founds[index];
-            let packageName = found.found[1];
-            if (
-                !packageName.startsWith('./') &&
-                !packageName.startsWith('../') &&
-                !packageName.startsWith('/')
-            ) {
-                const deps = this.parent.packageObject.dependencies;
-                let packageNameTwoSegment = packageName
-                        .split('/')
-                        .slice(0, 2)
-                        .join('/'),
-                    packageNameOneSegment = packageName.split('/')[0];
-
-                let projectLibrary = this.parent.children.find(
-                    (a) =>
-                        a.projectMode == 'LIBRARY' &&
-                        a.packageObject.name == packageNameTwoSegment,
-                );
-
-                if (
-                    projectLibrary &&
-                    !usedPackages.find(
-                        (a) =>
-                            a.packageName == projectLibrary.packageObject.name,
-                    )
-                ) {
-                    usedPackages.push({
-                        packageName: packageNameTwoSegment,
-                        iksirPackage: projectLibrary,
-                        scope: 'PROJECT',
-                    });
-                } else if (
-                    deps[packageNameTwoSegment] &&
-                    !usedPackages.find(
-                        (a) => a.packageName == packageNameTwoSegment,
-                    )
-                ) {
-                    usedPackages.push({
-                        packageName: packageNameTwoSegment,
-                        parentNpmVersion: deps[packageNameTwoSegment],
-                        scope: 'PARENT_PACKAGE_JSON',
-                    });
-                } else if (
-                    deps[packageNameOneSegment] &&
-                    !usedPackages.find(
-                        (a) => a.packageName == packageNameOneSegment,
-                    )
-                ) {
-                    usedPackages.push({
-                        packageName: packageNameOneSegment,
-                        parentNpmVersion: deps[packageNameOneSegment],
-                        scope: 'PARENT_PACKAGE_JSON',
-                    });
-                }
-            }
-        }
-        return usedPackages;
-        // .forEach((a) => console.info());
     }
 
     static async loadPackage(projectDirectory: string, parent?: IksirPackage) {
@@ -184,30 +109,3 @@ export class IksirPackage {
         return packageList;
     }
 }
-
-IksirPackage.scanPackages(
-    '/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr',
-).then(async (a) => {
-    for (let index = 0; index < a.length; index++) {
-        const b = a[index];
-        console.info({
-            İsim: b.packageObject.name,
-            'Ham Derleme Klasörü': b.rawBuildDirectory,
-            'Derleme Klasörü': b.buildDirectory,
-            Klasör: b.directory,
-            'Proje Modu': b.projectMode,
-            'Kütüphane Modu': b.libraryMode,
-            'Çocuk sayısı': b.children.length,
-            Evebeyn: b.parent?.packageObject.name,
-        });
-        if (b.projectMode == 'LIBRARY') {
-            console.info('Build ediliyor');
-            await b.beginPrebuild();
-            console.info('Build edildi');
-            const imports = await b.collectImports();
-            imports.forEach((a) =>
-                console.info({ ...a, iksirPackage: undefined }),
-            );
-        }
-    }
-});
