@@ -45,10 +45,10 @@ class TextUtil {
     static async findByRegex(path, findings) {
         let founded = new Map();
         await directory_util_1.DirectoryUtil.circulateFilesRecursive(path, async (filePath) => {
+            let content = await FileSystem.readFile(filePath, 'utf8');
             for (let findingIndex = 0; findingIndex < findings.length; findingIndex++) {
                 let items = [];
                 const finding = findings[findingIndex];
-                let content = await FileSystem.readFile(filePath, 'utf8');
                 let a = finding.exec(content);
                 while (a) {
                     items.push({
@@ -57,6 +57,9 @@ class TextUtil {
                     });
                     a = finding.exec(content);
                 }
+                let arr = founded.get(finding) || [];
+                arr.push(...items);
+                founded.set(finding, arr);
             }
         });
         return founded;

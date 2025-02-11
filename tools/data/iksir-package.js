@@ -32,8 +32,10 @@ const path_1 = __importDefault(require("path"));
 const json_util_1 = require("../util/json-util");
 const directory_util_1 = require("../util/directory-util");
 const exec_util_1 = require("../util/exec-util");
+const text_util_1 = require("../util/text-util");
 class IksirPackage {
     directory;
+    rawBuildDirectory;
     buildDirectory;
     projectMode;
     libraryMode;
@@ -44,9 +46,9 @@ class IksirPackage {
     tsBuildConfigFile;
     parent;
     children = [];
-    async libraryPrebuild() {
+    async beginPrebuild() {
         if (this.projectMode == 'LIBRARY') {
-            await FileSystem.rm(this.buildDirectory, {
+            await FileSystem.rm(this.rawBuildDirectory, {
                 recursive: true,
                 force: true,
             });
@@ -55,6 +57,55 @@ class IksirPackage {
         else {
             throw 'instance-is-not-library';
         }
+    }
+    async collectImports() {
+        const regex = /require\(\"(.*)\"\)/g;
+        const imports = await text_util_1.TextUtil.findByRegex(this.buildDirectory, [
+            regex,
+        ]);
+        const usedPackages = [];
+        const founds = imports.get(regex);
+        for (let index = 0; index < founds.length; index++) {
+            const found = founds[index];
+            let packageName = found.found[1];
+            if (!packageName.startsWith('./') &&
+                !packageName.startsWith('../') &&
+                !packageName.startsWith('/')) {
+                const deps = this.parent.packageObject.dependencies;
+                let packageNameTwoSegment = packageName
+                    .split('/')
+                    .slice(0, 2)
+                    .join('/'), packageNameOneSegment = packageName.split('/')[0];
+                let projectLibrary = this.parent.children.find((a) => a.projectMode == 'LIBRARY' &&
+                    a.packageObject.name == packageNameTwoSegment);
+                if (projectLibrary &&
+                    !usedPackages.find((a) => a.packageName == projectLibrary.packageObject.name)) {
+                    usedPackages.push({
+                        packageName: packageNameTwoSegment,
+                        iksirPackage: projectLibrary,
+                        scope: 'PROJECT',
+                    });
+                }
+                else if (deps[packageNameTwoSegment] &&
+                    !usedPackages.find((a) => a.packageName == packageNameTwoSegment)) {
+                    usedPackages.push({
+                        packageName: packageNameTwoSegment,
+                        parentNpmVersion: deps[packageNameTwoSegment],
+                        scope: 'PARENT_PACKAGE_JSON',
+                    });
+                }
+                else if (deps[packageNameOneSegment] &&
+                    !usedPackages.find((a) => a.packageName == packageNameOneSegment)) {
+                    usedPackages.push({
+                        packageName: packageNameOneSegment,
+                        parentNpmVersion: deps[packageNameOneSegment],
+                        scope: 'PARENT_PACKAGE_JSON',
+                    });
+                }
+            }
+        }
+        return usedPackages;
+        // .forEach((a) => console.info());
     }
     static async loadPackage(projectDirectory, parent) {
         const projectPackageJson = await json_util_1.JsonUtil.readJson(projectDirectory, 'package.json');
@@ -74,7 +125,8 @@ class IksirPackage {
                 'tsconfig.lib-publish.json');
             iksirPaket.tsBuildConfig =
                 await json_util_1.JsonUtil.readJson(iksirPaket.tsBuildConfigFile);
-            iksirPaket.buildDirectory = path_1.default.join(projectDirectory, iksirPaket.tsBuildConfig.compilerOptions.outDir);
+            iksirPaket.rawBuildDirectory = path_1.default.join(projectDirectory, iksirPaket.tsBuildConfig.compilerOptions.outDir);
+            iksirPaket.buildDirectory = path_1.default.join(iksirPaket.rawBuildDirectory, projectPackageJson.iksir?.buildSubFolder || '');
             iksirPaket.parent = parent;
             parent.children.push(iksirPaket);
         }
@@ -102,6 +154,7 @@ IksirPackage.scanPackages('/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr')
         const b = a[index];
         console.info({
             İsim: b.packageObject.name,
+            'Ham Derleme Klasörü': b.rawBuildDirectory,
             'Derleme Klasörü': b.buildDirectory,
             Klasör: b.directory,
             'Proje Modu': b.projectMode,
@@ -111,8 +164,10 @@ IksirPackage.scanPackages('/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr')
         });
         if (b.projectMode == 'LIBRARY') {
             console.info('Build ediliyor');
-            await b.libraryPrebuild();
+            await b.beginPrebuild();
             console.info('Build edildi');
+            const imports = await b.collectImports();
+            imports.forEach((a) => console.info({ ...a, iksirPackage: undefined }));
         }
     }
 });

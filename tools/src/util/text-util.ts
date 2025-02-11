@@ -12,15 +12,14 @@ export interface ReplaceTextRecipe {
 }
 
 export class TextUtil {
-
     /**
      * Replaces a text with a another text recursively
-     * @param path 
+     * @param path
      * @param replaceTextRecipes please see `ReplaceTextRecipe`
      */
     static async replaceText(
         path: string,
-        replaceTextRecipes: ReplaceTextRecipe[]
+        replaceTextRecipes: ReplaceTextRecipe[],
     ) {
         await DirectoryUtil.circulateFilesRecursive(path, async (filePath) => {
             let content = await FileSystem.readFile(filePath, 'utf8');
@@ -38,6 +37,8 @@ export class TextUtil {
     static async findByRegex(path: string, findings: RegExp[]) {
         let founded: Map<RegExp, TextFoundItem[]> = new Map();
         await DirectoryUtil.circulateFilesRecursive(path, async (filePath) => {
+            let content = await FileSystem.readFile(filePath, 'utf8');
+
             for (
                 let findingIndex = 0;
                 findingIndex < findings.length;
@@ -46,7 +47,6 @@ export class TextUtil {
                 let items: TextFoundItem[] = [];
 
                 const finding = findings[findingIndex];
-                let content = await FileSystem.readFile(filePath, 'utf8');
                 let a = finding.exec(content);
                 while (a) {
                     items.push({
@@ -55,6 +55,9 @@ export class TextUtil {
                     });
                     a = finding.exec(content);
                 }
+                let arr = founded.get(finding) || [];
+                arr.push(...items);
+                founded.set(finding, arr);
             }
         });
 

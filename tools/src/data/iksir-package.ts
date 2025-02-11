@@ -12,9 +12,16 @@ import { JsonUtil } from '../util/json-util';
 import { TypescriptConfiguration } from '../util/typescript-util';
 import { DirectoryUtil } from '../util/directory-util';
 import { ExecUtil } from '../util/exec-util';
-
+import { TextUtil } from '../util/text-util';
+export interface ImportedPackage {
+    scope: 'PROJECT' | 'PARENT_PACKAGE_JSON' | 'UNKNOWN';
+    packageName: string;
+    parentNpmVersion?: string;
+    iksirPackage?: IksirPackage;
+}
 export class IksirPackage {
     directory: string;
+    rawBuildDirectory: string;
     buildDirectory: string;
     projectMode: IksirProjectType;
     libraryMode: IksirLibraryMode;
@@ -27,9 +34,9 @@ export class IksirPackage {
     parent?: IksirPackage;
     children: IksirPackage[] = [];
 
-    public async libraryPrebuild() {
+    public async beginPrebuild() {
         if (this.projectMode == 'LIBRARY') {
-            await FileSystem.rm(this.buildDirectory, {
+            await FileSystem.rm(this.rawBuildDirectory, {
                 recursive: true,
                 force: true,
             });
@@ -37,6 +44,76 @@ export class IksirPackage {
         } else {
             throw 'instance-is-not-library';
         }
+    }
+
+    public async collectImports() {
+        const regex = /require\(\"(.*)\"\)/g;
+        const imports = await TextUtil.findByRegex(this.buildDirectory, [
+            regex,
+        ]);
+
+        const usedPackages: ImportedPackage[] = [];
+        const founds = imports.get(regex);
+        for (let index = 0; index < founds.length; index++) {
+            const found = founds[index];
+            let packageName = found.found[1];
+            if (
+                !packageName.startsWith('./') &&
+                !packageName.startsWith('../') &&
+                !packageName.startsWith('/')
+            ) {
+                const deps = this.parent.packageObject.dependencies;
+                let packageNameTwoSegment = packageName
+                        .split('/')
+                        .slice(0, 2)
+                        .join('/'),
+                    packageNameOneSegment = packageName.split('/')[0];
+
+                let projectLibrary = this.parent.children.find(
+                    (a) =>
+                        a.projectMode == 'LIBRARY' &&
+                        a.packageObject.name == packageNameTwoSegment,
+                );
+
+                if (
+                    projectLibrary &&
+                    !usedPackages.find(
+                        (a) =>
+                            a.packageName == projectLibrary.packageObject.name,
+                    )
+                ) {
+                    usedPackages.push({
+                        packageName: packageNameTwoSegment,
+                        iksirPackage: projectLibrary,
+                        scope: 'PROJECT',
+                    });
+                } else if (
+                    deps[packageNameTwoSegment] &&
+                    !usedPackages.find(
+                        (a) => a.packageName == packageNameTwoSegment,
+                    )
+                ) {
+                    usedPackages.push({
+                        packageName: packageNameTwoSegment,
+                        parentNpmVersion: deps[packageNameTwoSegment],
+                        scope: 'PARENT_PACKAGE_JSON',
+                    });
+                } else if (
+                    deps[packageNameOneSegment] &&
+                    !usedPackages.find(
+                        (a) => a.packageName == packageNameOneSegment,
+                    )
+                ) {
+                    usedPackages.push({
+                        packageName: packageNameOneSegment,
+                        parentNpmVersion: deps[packageNameOneSegment],
+                        scope: 'PARENT_PACKAGE_JSON',
+                    });
+                }
+            }
+        }
+        return usedPackages;
+        // .forEach((a) => console.info());
     }
 
     static async loadPackage(projectDirectory: string, parent?: IksirPackage) {
@@ -73,9 +150,13 @@ export class IksirPackage {
                     iksirPaket.tsBuildConfigFile,
                 );
 
-            iksirPaket.buildDirectory = path.join(
+            iksirPaket.rawBuildDirectory = path.join(
                 projectDirectory,
                 iksirPaket.tsBuildConfig!.compilerOptions.outDir,
+            );
+            iksirPaket.buildDirectory = path.join(
+                iksirPaket.rawBuildDirectory,
+                projectPackageJson.iksir?.buildSubFolder || '',
             );
             iksirPaket.parent = parent;
             parent.children.push(iksirPaket);
@@ -111,6 +192,7 @@ IksirPackage.scanPackages(
         const b = a[index];
         console.info({
             İsim: b.packageObject.name,
+            'Ham Derleme Klasörü': b.rawBuildDirectory,
             'Derleme Klasörü': b.buildDirectory,
             Klasör: b.directory,
             'Proje Modu': b.projectMode,
@@ -120,8 +202,12 @@ IksirPackage.scanPackages(
         });
         if (b.projectMode == 'LIBRARY') {
             console.info('Build ediliyor');
-            await b.libraryPrebuild();
+            await b.beginPrebuild();
             console.info('Build edildi');
+            const imports = await b.collectImports();
+            imports.forEach((a) =>
+                console.info({ ...a, iksirPackage: undefined }),
+            );
         }
     }
 });
