@@ -8,7 +8,7 @@ nest generate lib <kütüphane ismi>
 
 **ÖNEMLİ NOTLAR**
 
-1 - BÜTÜN EXPORTLAR `index.js` ÜZERİNDEN OLMALIDIR
+1 - BÜTÜN EXPORTLAR `index.ts` ÜZERİNDEN OLMALIDIR
 
 2 - Her kütüphanede 3 dosya olmalı. package.json, tsconfig-lib.json ve tsconfi-lib-publish.json
 
