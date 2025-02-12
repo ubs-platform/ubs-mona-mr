@@ -37,7 +37,16 @@ class TextUtil {
             let content = await FileSystem.readFile(filePath, 'utf8');
             for (let index = 0; index < replaceTextRecipes.length; index++) {
                 const replaceRecipe = replaceTextRecipes[index];
-                content = content.replaceAll(replaceRecipe.finding, replaceRecipe.replaceWith);
+                let replaceWith = '';
+                if (typeof replaceRecipe.replaceWith == 'function') {
+                    replaceWith = await replaceRecipe.replaceWith(filePath);
+                }
+                else {
+                    replaceWith = replaceRecipe.replaceWith;
+                }
+                if (replaceWith != null && replaceWith != undefined) {
+                    content = content.replaceAll(replaceRecipe.finding, replaceWith);
+                }
             }
             await FileSystem.writeFile(filePath, content, 'utf8');
         });

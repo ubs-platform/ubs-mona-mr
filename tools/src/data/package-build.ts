@@ -3,7 +3,7 @@ import { TextUtil } from '../util/text-util';
 import { NpmPackageWithIksir } from './iksir-library-config';
 import { IksirPackage } from './iksir-package';
 import * as FileSystem from 'fs/promises';
-
+import * as cJSON from 'comment-json';
 export interface ImportedPackage {
     scope: 'PROJECT' | 'PARENT_PACKAGE_JSON' | 'UNKNOWN';
     packageName: string;
@@ -23,9 +23,14 @@ export class PackageBuilder {
     packageForFullCompilation: NpmPackageWithIksir;
     private _isPrebuilt = false;
     buildPath: string;
+    readonly EMBED_DIRECTORY_NAME: string = '_monaembed';
 
     constructor(public iksirPackage: IksirPackage) {
         this.reset(iksirPackage);
+    }
+
+    get packageName() {
+        return this.iksirPackage.packageName;
     }
 
     get projectImports() {
@@ -44,25 +49,94 @@ export class PackageBuilder {
         this.buildPath = iksirPackage.buildDirectory;
     }
 
-    async writePackage() {
+    async writePackage(version: string) {
+        console.info('Package.json is writing');
+        this.packageForFullCompilation.version = version;
+        await FileSystem.writeFile(
+            path.join(this.buildPath, 'package.json'),
+            JSON.stringify(this.packageForFullCompilation),
+            'utf-8',
+        );
         // todo: package jsonu kaydet
     }
 
     async digest(importedLibraryBuild: PackageBuilder, version: string) {
+        console.info(
+            importedLibraryBuild.packageName +
+                ' is digesting into ' +
+                this.packageName,
+        );
+
         const xrPak = importedLibraryBuild.iksirPackage;
         const localImport = this.projectImports.find(
             (a) => a.packageName == xrPak.packageObject.name,
         );
         if (xrPak.libraryMode == 'PEER') {
+            console.info(
+                importedLibraryBuild.packageName +
+                    "'s library mode is PEER, that is mean you need to publish to registry",
+            );
             localImport.parentNpmVersion = version;
             this.applyToPackageJsonBuild(localImport);
             // const import =
         } else if (xrPak.libraryMode == 'EMBEDDED') {
+            console.info(
+                importedLibraryBuild.packageName + 'is being embedded',
+            );
             const theirBuildPath = importedLibraryBuild.buildPath;
             const ourBuildPath = this.buildPath;
-            const ourEmbedPath = path.join(ourBuildPath, '_iksir-embed');
+            const ourEmbedPath = path.join(
+                ourBuildPath,
+                this.EMBED_DIRECTORY_NAME,
+                importedLibraryBuild.packageName,
+            );
+            console.info(importedLibraryBuild.packageName + 'is copying');
             await FileSystem.mkdir(ourEmbedPath, { recursive: true });
-            await FileSystem.copyFile(theirBuildPath, ourEmbedPath);
+            await FileSystem.cp(theirBuildPath, ourEmbedPath, {
+                recursive: true,
+            });
+
+            await TextUtil.replaceText(ourBuildPath, [
+                {
+                    finding: `"${xrPak.packageName}"`,
+                    replaceWith: (filePath: string) => {
+                        if (filePath.includes(this.EMBED_DIRECTORY_NAME)) {
+                            console.info(
+                                'Embed directory is about to be ignored',
+                            );
+                            return;
+                        }
+                        const directory = path.join(filePath, '..');
+                        let relativeOfEmbed = path.relative(
+                            directory,
+                            path.join(ourEmbedPath),
+                        );
+
+                        if (
+                            !relativeOfEmbed.startsWith('.') &&
+                            !relativeOfEmbed.startsWith('/')
+                        ) {
+                            relativeOfEmbed = './' + relativeOfEmbed;
+                        }
+
+                        console.info(
+                            xrPak.packageName +
+                                ' import is being replaced with ' +
+                                relativeOfEmbed +
+                                ' for ' +
+                                filePath,
+                        );
+
+                        return `"${relativeOfEmbed}"`;
+                    },
+                },
+            ]);
+            localImport.digested = true;
+        } else {
+            console.warn(
+                importedLibraryBuild.packageName +
+                    "'s library mode is not defined or configured wrongly. To fix this, please set 'iksir.libraryMode' as EMBEDDED or PEER",
+            );
         }
     }
 
@@ -71,7 +145,9 @@ export class PackageBuilder {
     }
 
     public async prebuild() {
+        console.info(this.packageName + ' is pre-building via tsc');
         await this.iksirPackage.beginPrebuild();
+        console.info('Collecting imports for' + this.packageName);
         this.imports = await this.collectImports();
         for (let index = 0; index < this.imports.length; index++) {
             const libImport = this.imports[index];
@@ -84,6 +160,9 @@ export class PackageBuilder {
     }
 
     private applyToPackageJsonBuild(libImport: ImportedPackage) {
+        if (this.packageForFullCompilation.peerDependencies == null) {
+            this.packageForFullCompilation.peerDependencies = {};
+        }
         this.packageForFullCompilation.peerDependencies[libImport.packageName] =
             libImport.parentNpmVersion;
         libImport.digested = true;
@@ -101,6 +180,7 @@ export class PackageBuilder {
         for (let index = 0; index < founds.length; index++) {
             const found = founds[index];
             let packageName = found.found[1];
+
             if (
                 !packageName.startsWith('./') &&
                 !packageName.startsWith('../') &&
@@ -160,31 +240,3 @@ export class PackageBuilder {
         // .forEach((a) => console.info());
     }
 }
-IksirPackage.scanPackages('/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr')
-    .then(async (a) => {
-        for (let index = 0; index < a.length; index++) {
-            if (a[index].projectMode == 'ROOT') continue;
-
-            const packageBuild = new PackageBuilder(a[index]);
-            console.info(a[index].packageObject.name);
-            await packageBuild.prebuild();
-            console.info('_-----_');
-            packageBuild.projectImports.forEach((a) =>
-                console.info(a.packageName),
-            );
-            console.info('-_____-');
-            // console.info({
-            //     İsim: b.packageObject.name,
-            //     'Ham Derleme Klasörü': b.rawBuildDirectory,
-            //     'Derleme Klasörü': b.buildDirectory,
-            //     Klasör: b.directory,
-            //     'Proje Modu': b.projectMode,
-            //     'Kütüphane Modu': b.libraryMode,
-            //     'Çocuk sayısı': b.children.length,
-            //     Evebeyn: b.parent?.packageObject.name,
-            // });
-            // if (b.projectMode == 'LIBRARY') {
-            // }
-        }
-    })
-    .catch(console.error);

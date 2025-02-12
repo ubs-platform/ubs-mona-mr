@@ -57,7 +57,11 @@ class IksirPackage {
             throw 'instance-is-not-library';
         }
     }
+    get packageName() {
+        return this.packageObject.name;
+    }
     static async loadPackage(projectDirectory, parent) {
+        console.info('Package is loading');
         const projectPackageJson = await json_util_1.JsonUtil.readJson(projectDirectory, 'package.json');
         const iksirPaket = new IksirPackage();
         iksirPaket.directory = projectDirectory;
@@ -86,7 +90,9 @@ class IksirPackage {
         const packageList = [];
         let parent;
         await directory_util_1.DirectoryUtil.circulateFilesRecursive(parentProjectDirectory, async (a) => {
-            if (a.endsWith('package.json') && !a.includes('node_modules')) {
+            if (a.endsWith('package.json') &&
+                !a.includes('node_modules') &&
+                !a.includes('dist')) {
                 const directory = path_1.default.dirname(a);
                 const pkg = await this.loadPackage(directory, parent);
                 if (pkg.projectMode == 'ROOT') {

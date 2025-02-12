@@ -4,7 +4,7 @@
     "description": "",
     "iksir": {
         "type": "LIBRARY",
-        "libraryMode": "EMBED"
+        "libraryMode": "EMBEDDED"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"

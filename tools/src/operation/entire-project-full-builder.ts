@@ -26,7 +26,7 @@ export class LibBuilder {
             builderMap.set(builder.iksirPackage.packageObject.name, builder);
         }
         const packageBuildersArranged = packageBuilders.sort(
-            (a, b) => a.projectImports.length - a.projectImports.length,
+            (a, b) => a.projectImports.length - b.projectImports.length,
         );
 
         for (let index = 0; index < packageBuildersArranged.length; index++) {
@@ -42,7 +42,7 @@ export class LibBuilder {
                 );
                 await currentBuild.digest(importedLibraryBuild, packageVersion);
             }
-            await currentBuild.writePackage();
+            await currentBuild.writePackage(packageVersion);
         }
 
         // for (let index = 0; index < packages.length; index++) {
@@ -52,3 +52,24 @@ export class LibBuilder {
         // }
     }
 }
+
+IksirPackage.scanPackages('/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr')
+    .then(async (a) => {
+        for (let index = 0; index < a.length; index++) {
+            if (a[index].projectMode == 'ROOT') {
+                const builder = new LibBuilder(a[index]);
+                await builder.initiateBuildPublish('31.69.77', false);
+            } else {
+            }
+
+            // const packageBuild = new PackageBuilder(a[index]);
+            // console.info(a[index].packageObject.name);
+            // await packageBuild.prebuild();
+            // console.info('_-----_');
+            // packageBuild.projectImports.forEach((a) =>
+            //     console.info(a.packageName),
+            // );
+            // console.info('-_____-');
+        }
+    })
+    .catch(console.error);
