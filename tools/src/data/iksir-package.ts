@@ -28,6 +28,9 @@ export class IksirPackage {
     tsBuildConfigFile?: string;
     parent?: IksirPackage;
     children: IksirPackage[] = [];
+    childrenVersionTag: string;
+    version: string;
+    childrenAccess: string;
 
     public async beginPrebuild() {
         if (this.projectMode == 'LIBRARY') {
@@ -63,7 +66,11 @@ export class IksirPackage {
                 projectDirectory,
                 projectPackageJson.iksir?.tsConfigFile || 'tsconfig.json',
             );
-
+            iksirPaket.childrenVersionTag =
+                iksirPaket.packageObject.iksir.childrenVersionTag || 'stable';
+            iksirPaket.childrenAccess =
+                iksirPaket.packageObject.iksir.childrenAccess || 'public';
+            iksirPaket.version = iksirPaket.packageObject.version;
             iksirPaket.tsConfig =
                 await JsonUtil.readJson<TypescriptConfiguration>(
                     iksirPaket.tsConfigFile,

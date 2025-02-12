@@ -1,12 +1,14 @@
 {
     "name": "ubs-mona-mr",
-    "version": "0.0.1",
+    "version": "5.0.0",
     "description": "",
     "author": "",
     "private": true,
     "license": "MIT",
     "iksir": {
-        "type": "ROOT"
+        "type": "ROOT",
+        "childrenVersionTag": "beta-1",
+        "childrenAccess": "public"
     },
     "scripts": {
         "build": "nest build",

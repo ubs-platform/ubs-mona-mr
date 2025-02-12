@@ -11,6 +11,8 @@ export interface IIksirLibraryConfig {
     tsConfigFile?: string;
     tsBuildConfigFile?: string;
     buildSubFolder?: string;
+    childrenVersionTag?: string;
+    childrenAccess?: string;
 }
 
 export type NpmPackageWithIksir = PackageJson & { iksir?: IIksirLibraryConfig };

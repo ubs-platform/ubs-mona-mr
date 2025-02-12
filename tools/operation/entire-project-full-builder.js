@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.LibBuilder = void 0;
 const iksir_package_1 = require("../data/iksir-package");
 const package_build_1 = require("../data/package-build");
+const exec_util_1 = require("../util/exec-util");
 class LibBuilder {
     xrRootPackage;
     constructor(xrRootPackage) {
@@ -11,9 +12,12 @@ class LibBuilder {
             throw 'Library Iksir package is not supported';
         }
     }
-    async initiateBuildPublish(packageVersion, publishNpm) {
+    async initiateBuildPublish(publishNpm) {
         // PREBUILD
         const packageBuilders = [];
+        const version = this.xrRootPackage.version;
+        const versionTag = this.xrRootPackage.childrenVersionTag;
+        const versionVisibility = this.xrRootPackage.childrenAccess;
         //  = this.xrRootPackage.children.map(
         //     (a) => new PackageBuilder(a),
         // );
@@ -32,9 +36,19 @@ class LibBuilder {
             for (let index = 0; index < currentBuild.projectImports.length; index++) {
                 const projectImprt = currentBuild.projectImports[index];
                 const importedLibraryBuild = builderMap.get(projectImprt.packageName);
-                await currentBuild.digest(importedLibraryBuild, packageVersion);
+                await currentBuild.digest(importedLibraryBuild);
             }
-            await currentBuild.writePackage(packageVersion);
+            await currentBuild.writePackage(version);
+        }
+        if (publishNpm) {
+            for (let index = 0; index < packageBuildersArranged.length; index++) {
+                const currentBuild = packageBuildersArranged[index];
+                console.info(`${currentBuild.packageName} is about to be published on NPM Registry`);
+                await exec_util_1.ExecUtil.exec(`cd "${currentBuild.buildPath}" && npm publish --tag ${versionTag} --access ${versionVisibility}`);
+            }
+        }
+        else {
+            console.info('These packages will not published');
         }
         // for (let index = 0; index < packages.length; index++) {
         //     const pkg = packages[index];
@@ -49,7 +63,7 @@ iksir_package_1.IksirPackage.scanPackages('/home/huseyin/Belgeler/dev/tk/lotus-u
     for (let index = 0; index < a.length; index++) {
         if (a[index].projectMode == 'ROOT') {
             const builder = new LibBuilder(a[index]);
-            await builder.initiateBuildPublish('31.69.77', false);
+            await builder.initiateBuildPublish(true);
         }
         else {
         }

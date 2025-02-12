@@ -45,6 +45,9 @@ class IksirPackage {
     tsBuildConfigFile;
     parent;
     children = [];
+    childrenVersionTag;
+    version;
+    childrenAccess;
     async beginPrebuild() {
         if (this.projectMode == 'LIBRARY') {
             await FileSystem.rm(this.rawBuildDirectory, {
@@ -71,6 +74,11 @@ class IksirPackage {
             projectPackageJson.iksir?.libraryMode || 'PEER';
         if (iksirPaket.projectMode == 'ROOT') {
             iksirPaket.tsConfigFile = path_1.default.join(projectDirectory, projectPackageJson.iksir?.tsConfigFile || 'tsconfig.json');
+            iksirPaket.childrenVersionTag =
+                iksirPaket.packageObject.iksir.childrenVersionTag || 'stable';
+            iksirPaket.childrenAccess =
+                iksirPaket.packageObject.iksir.childrenAccess || 'public';
+            iksirPaket.version = iksirPaket.packageObject.version;
             iksirPaket.tsConfig =
                 await json_util_1.JsonUtil.readJson(iksirPaket.tsConfigFile);
         }

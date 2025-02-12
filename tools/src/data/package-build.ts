@@ -60,12 +60,14 @@ export class PackageBuilder {
         // todo: package jsonu kaydet
     }
 
-    async digest(importedLibraryBuild: PackageBuilder, version: string) {
+    async digest(importedLibraryBuild: PackageBuilder) {
         console.info(
             importedLibraryBuild.packageName +
                 ' is digesting into ' +
                 this.packageName,
         );
+
+        const version = this.iksirPackage.parent.packageObject.version;
 
         const xrPak = importedLibraryBuild.iksirPackage;
         const localImport = this.projectImports.find(

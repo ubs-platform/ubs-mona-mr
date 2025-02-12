@@ -1,5 +1,7 @@
+import { exec } from 'child_process';
 import { IksirPackage } from '../data/iksir-package';
 import { PackageBuilder } from '../data/package-build';
+import { ExecUtil } from '../util/exec-util';
 
 export class LibBuilder {
     constructor(private xrRootPackage: IksirPackage) {
@@ -8,9 +10,13 @@ export class LibBuilder {
         }
     }
 
-    async initiateBuildPublish(packageVersion: string, publishNpm: boolean) {
+    async initiateBuildPublish(publishNpm: boolean) {
         // PREBUILD
         const packageBuilders: PackageBuilder[] = [];
+
+        const version = this.xrRootPackage.version;
+        const versionTag = this.xrRootPackage.childrenVersionTag;
+        const versionVisibility = this.xrRootPackage.childrenAccess;
 
         //  = this.xrRootPackage.children.map(
         //     (a) => new PackageBuilder(a),
@@ -40,9 +46,27 @@ export class LibBuilder {
                 const importedLibraryBuild = builderMap.get(
                     projectImprt.packageName,
                 );
-                await currentBuild.digest(importedLibraryBuild, packageVersion);
+                await currentBuild.digest(importedLibraryBuild);
             }
-            await currentBuild.writePackage(packageVersion);
+            await currentBuild.writePackage(version);
+        }
+        if (publishNpm) {
+            for (
+                let index = 0;
+                index < packageBuildersArranged.length;
+                index++
+            ) {
+                const currentBuild = packageBuildersArranged[index];
+                console.info(
+                    `${currentBuild.packageName} is about to be published on NPM Registry`,
+                );
+
+                await ExecUtil.exec(
+                    `cd "${currentBuild.buildPath}" && npm publish --tag ${versionTag} --access ${versionVisibility}`,
+                );
+            }
+        } else {
+            console.info('These packages will not published');
         }
 
         // for (let index = 0; index < packages.length; index++) {
@@ -58,7 +82,7 @@ IksirPackage.scanPackages('/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr')
         for (let index = 0; index < a.length; index++) {
             if (a[index].projectMode == 'ROOT') {
                 const builder = new LibBuilder(a[index]);
-                await builder.initiateBuildPublish('31.69.77', false);
+                await builder.initiateBuildPublish(true);
             } else {
             }
 
