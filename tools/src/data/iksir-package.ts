@@ -114,10 +114,11 @@ export class IksirPackage {
                 ) {
                     const directory = path.dirname(a);
                     const pkg = await this.loadPackage(directory, parent);
-                    if (pkg.projectMode == 'ROOT') {
+                    if (pkg.projectMode == 'ROOT' && !parent) {
                         parent = pkg;
+                    } else {
+                        packageList.push(pkg);
                     }
-                    packageList.push(pkg);
                 }
             },
         );

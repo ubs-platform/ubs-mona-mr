@@ -4,13 +4,11 @@ const colors_1 = require("./util/colors");
 const all_libraries_builder_1 = require("./operation/all-libraries-builder");
 const iksir_package_1 = require("./data/iksir-package");
 console.info(`
-██╗   ██╗██████╗ ███████╗    ███╗   ███╗ ██████╗ ███╗   ██╗ █████╗     ███████╗
-██║   ██║██╔══██╗██╔════╝    ████╗ ████║██╔═══██╗████╗  ██║██╔══██╗    ██╔════╝
-██║   ██║██████╔╝███████╗    ██╔████╔██║██║   ██║██╔██╗ ██║███████║    ███████╗
-██║   ██║██╔══██╗╚════██║    ██║╚██╔╝██║██║   ██║██║╚██╗██║██╔══██║    ╚════██║
-╚██████╔╝██████╔╝███████║    ██║ ╚═╝ ██║╚██████╔╝██║ ╚████║██║  ██║    ███████║
- ╚═════╝ ╚═════╝ ╚══════╝    ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝    ╚══════╝
-UBS MonaXr Tools                        UNLIMITED BUNDLE SYSTEMS         H.C.G`);
+▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖▗▄▄▖ 
+▐▛▚▞▜▌▐▌ ▐▌▐▛▚▖▐▌▐▌ ▐▌ ▝▚▞▘ ▐▌ ▐▌
+▐▌  ▐▌▐▌ ▐▌▐▌ ▝▜▌▐▛▀▜▌  ▐▌  ▐▛▀▚▖
+▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌▐▌ ▐▌▗▞▘▝▚▖▐▌ ▐▌
+MonaXr for Mona5            H.C.G`);
 const actionList = {
     'publish-lib': {
         info: 'Builds libraries and pushes into NPM Registry',
@@ -40,6 +38,7 @@ const actionList = {
     help: {
         info: 'Prints actions and parameters that can be used for monaxr command',
         action: async (params) => {
+            console.info('MonaXr (iksir) is a tool that helps compile and ship microservice applications and publish their auxiliary libraries safely and quickly. This is not a replacement for "Nestjs CLI". It just helps with more orderly development in the Mona repository');
             console.info('Usage: node ./index.js [COMMAND] [Extra Parameters]');
             console.info('Available Commands:\n', Object.entries(actionList)
                 .map(([key, val]) => `${key} => ${val.info}`)

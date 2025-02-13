@@ -78,33 +78,5 @@ export class AllLibrariesBuilder {
                 'These packages will not published or another project will not be patched',
             );
         }
-
-        // for (let index = 0; index < packages.length; index++) {
-        //     const pkg = packages[index];
-        //     await pkg.beginPrebuild();
-        //     const imports = await pkg.collectImports();
-        // }
     }
 }
-
-// IksirPackage.scanPackages('/home/huseyin/dev/tk-ubs/users-mona-mr')
-//     .then(async (a) => {
-//         for (let index = 0; index < a.length; index++) {
-//             if (a[index].projectMode == 'ROOT') {
-//                 const builder = new AllLibrariesBuilder(a[index]);
-//                 await builder.initiateBuildPublish({ publishNpm: false });
-//                 break;
-//             } else {
-//             }
-
-//             // const packageBuild = new PackageBuilder(a[index]);
-//             // console.info(a[index].packageObject.name);
-//             // await packageBuild.prebuild();
-//             // console.info('_-----_');
-//             // packageBuild.projectImports.forEach((a) =>
-//             //     console.info(a.packageName),
-//             // );
-//             // console.info('-_____-');
-//         }
-//     })
-//     .catch(console.error);
