@@ -6,7 +6,7 @@ export interface EntireBuildOptions {
     publishNpm?: boolean;
     patchToProject?: boolean;
 }
-export class LibBuilder {
+export class AllLibrariesBuilder {
     constructor(private xrRootPackage: IksirPackage) {
         if (xrRootPackage.projectMode == 'LIBRARY') {
             throw 'Library Iksir package is not supported';
@@ -87,23 +87,24 @@ export class LibBuilder {
     }
 }
 
-IksirPackage.scanPackages('/home/huseyin/dev/tk-ubs/users-mona-mr')
-    .then(async (a) => {
-        for (let index = 0; index < a.length; index++) {
-            if (a[index].projectMode == 'ROOT') {
-                const builder = new LibBuilder(a[index]);
-                await builder.initiateBuildPublish({ publishNpm: false });
-            } else {
-            }
+// IksirPackage.scanPackages('/home/huseyin/dev/tk-ubs/users-mona-mr')
+//     .then(async (a) => {
+//         for (let index = 0; index < a.length; index++) {
+//             if (a[index].projectMode == 'ROOT') {
+//                 const builder = new AllLibrariesBuilder(a[index]);
+//                 await builder.initiateBuildPublish({ publishNpm: false });
+//                 break;
+//             } else {
+//             }
 
-            // const packageBuild = new PackageBuilder(a[index]);
-            // console.info(a[index].packageObject.name);
-            // await packageBuild.prebuild();
-            // console.info('_-----_');
-            // packageBuild.projectImports.forEach((a) =>
-            //     console.info(a.packageName),
-            // );
-            // console.info('-_____-');
-        }
-    })
-    .catch(console.error);
+//             // const packageBuild = new PackageBuilder(a[index]);
+//             // console.info(a[index].packageObject.name);
+//             // await packageBuild.prebuild();
+//             // console.info('_-----_');
+//             // packageBuild.projectImports.forEach((a) =>
+//             //     console.info(a.packageName),
+//             // );
+//             // console.info('-_____-');
+//         }
+//     })
+//     .catch(console.error);

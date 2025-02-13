@@ -49,7 +49,7 @@ export class IksirPackage {
     }
 
     static async loadPackage(projectDirectory: string, parent?: IksirPackage) {
-        console.info('Package is loading');
+        console.info('Package is loading', projectDirectory);
         const projectPackageJson = await JsonUtil.readJson<NpmPackageWithIksir>(
             projectDirectory,
             'package.json',

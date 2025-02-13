@@ -64,7 +64,7 @@ class IksirPackage {
         return this.packageObject.name;
     }
     static async loadPackage(projectDirectory, parent) {
-        console.info('Package is loading');
+        console.info('Package is loading', projectDirectory);
         const projectPackageJson = await json_util_1.JsonUtil.readJson(projectDirectory, 'package.json');
         const iksirPaket = new IksirPackage();
         iksirPaket.directory = projectDirectory;
