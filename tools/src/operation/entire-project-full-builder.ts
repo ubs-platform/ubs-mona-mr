@@ -87,12 +87,12 @@ export class LibBuilder {
     }
 }
 
-IksirPackage.scanPackages('/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr')
+IksirPackage.scanPackages('/home/huseyin/dev/tk-ubs/users-mona-mr')
     .then(async (a) => {
         for (let index = 0; index < a.length; index++) {
             if (a[index].projectMode == 'ROOT') {
                 const builder = new LibBuilder(a[index]);
-                await builder.initiateBuildPublish({ publishNpm: true });
+                await builder.initiateBuildPublish({ publishNpm: false });
             } else {
             }
 
