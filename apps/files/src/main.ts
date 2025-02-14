@@ -15,6 +15,7 @@ async function bootstrap() {
         MicroserviceSetupUtil.getMicroserviceConnection(''),
     );
     app.setGlobalPrefix(globalPrefix);
+    debugger;
     const port = process.env.PORT || 3000;
     app.startAllMicroservices();
     await app.listen(port);
