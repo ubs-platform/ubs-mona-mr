@@ -3,8 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NestJsCliWrap = void 0;
 const json_util_1 = require("../util/json-util");
 const colors_1 = require("../util/colors");
+const exec_util_1 = require("../util/exec-util");
 class NestJsCliWrap {
-    constructor(workingDirectory) { }
+    workingDirectory;
+    constructor(workingDirectory) {
+        this.workingDirectory = workingDirectory;
+    }
     async checkPrefixIsSame() {
         const nestCliJson = await json_util_1.JsonUtil.readJson('nest-cli.json'), pak = await json_util_1.JsonUtil.readJson('package.json');
         const ourPrefix = pak.iksir.childrenPrefix, nestPrefix = nestCliJson['defaultLibraryPrefix'] || '@app';
@@ -14,6 +18,12 @@ class NestJsCliWrap {
                 'are the same in these two files and that the library paths start with this value.');
         }
     }
+    async generateLib(name) {
+        await exec_util_1.ExecUtil.exec(`nest generate lib ${name} --source-root="${this.workingDirectory}"`);
+    }
 }
 exports.NestJsCliWrap = NestJsCliWrap;
-new NestJsCliWrap('/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr').checkPrefixIsSame();
+const wrp = new NestJsCliWrap('/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr');
+wrp.checkPrefixIsSame().then((a) => {
+    wrp.generateLib('users-testo');
+});

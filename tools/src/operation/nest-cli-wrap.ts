@@ -8,7 +8,7 @@ import { strColor, TEXTCOLORS } from '../util/colors';
 import { ExecUtil } from '../util/exec-util';
 
 export class NestJsCliWrap {
-    constructor(workingDirectory: string) {}
+    constructor(private workingDirectory: string) {}
 
     async checkPrefixIsSame() {
         const nestCliJson = await JsonUtil.readJson('nest-cli.json'),
@@ -26,7 +26,9 @@ export class NestJsCliWrap {
     }
 
     async generateLib(name: string) {
-        ExecUtil.exec(`nest generate lib ${name}`);
+        await ExecUtil.exec(
+            `node @nestjs/schematics:library --name=${name} --source-root="${this.workingDirectory}" --no-dry-run --no-skip-import --language="ts" --spec --no-flat --spec-file-suffix="spec"`,
+        );
     }
 }
 
