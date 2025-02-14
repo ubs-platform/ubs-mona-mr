@@ -4,6 +4,7 @@ import { NpmPackageWithIksir } from './iksir-library-config';
 import { IksirPackage } from './iksir-package';
 import * as FileSystem from 'fs/promises';
 import * as cJSON from 'comment-json';
+import { JsonUtil } from '../util/json-util';
 export interface ImportedPackage {
     scope: 'PROJECT' | 'PARENT_PACKAGE_JSON' | 'UNKNOWN';
     packageName: string;
@@ -52,11 +53,16 @@ export class PackageBuilder {
     async writePackage(version: string) {
         console.info('Package.json is writing');
         this.packageForFullCompilation.version = version;
-        await FileSystem.writeFile(
-            path.join(this.buildPath, 'package.json'),
-            JSON.stringify(this.packageForFullCompilation),
-            'utf-8',
+        await JsonUtil.writeJson(
+            this.packageForFullCompilation,
+            this.buildPath,
+            'package.json',
         );
+        // await FileSystem.writeFile(
+        //     path.join(this.buildPath, 'package.json'),
+        //     JSON.stringify(this.packageForFullCompilation),
+        //     'utf-8',
+        // );
         // todo: package jsonu kaydet
     }
 

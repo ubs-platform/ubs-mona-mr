@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const colors_1 = require("./util/colors");
 const all_libraries_builder_1 = require("./operation/all-libraries-builder");
 const iksir_package_1 = require("./data/iksir-package");
+const nest_cli_wrap_1 = require("./operation/nest-cli-wrap");
 console.info(`
 ▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖▗▄▄▖ 
 ▐▛▚▞▜▌▐▌ ▐▌▐▛▚▖▐▌▐▌ ▐▌ ▝▚▞▘ ▐▌ ▐▌
@@ -31,6 +32,18 @@ const actionList = {
             }
             else {
                 throw 'Target directory is needed. If you want to patch your another project that uses Mona, that directory should end with node_modules. More details, use "npm run xr:help"';
+            }
+        },
+    },
+    'extend-lib': {
+        info: 'Makes a nestjs library compitable for xr',
+        action: async (workDir, targetDirectory) => {
+            if (targetDirectory) {
+                const a = await new nest_cli_wrap_1.NestJsCliWrap(workDir);
+                a.extendLib(targetDirectory);
+            }
+            else {
+                throw "Target directory is needed. Usually it is 'libs/library-name'";
             }
         },
     },

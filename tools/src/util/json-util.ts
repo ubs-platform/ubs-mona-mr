@@ -8,4 +8,12 @@ export class JsonUtil {
             await FileSystem.readFile(path.join(...paths), 'utf-8'),
         ) as any as T;
     }
+
+    static async writeJson(obj: any, ...paths: string[]) {
+        await FileSystem.writeFile(
+            path.join(...paths),
+            cJSON.stringify(obj),
+            'utf-8',
+        );
+    }
 }

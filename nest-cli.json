@@ -10,7 +10,6 @@
     },
     "monorepo": true,
     "root": "apps/ubs-mona-mr",
-
     "projects": {
         "files": {
             "type": "application",
@@ -30,6 +29,7 @@
                 "tsConfigPath": "libs/microservice-setup-util/tsconfig.lib.json"
             }
         },
+
         "ubs-mona-mr": {
             "type": "application",
             "root": "apps/ubs-mona-mr",

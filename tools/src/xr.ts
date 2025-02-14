@@ -2,6 +2,7 @@ import path from 'path';
 import { TEXTCOLORS, strColor } from './util/colors';
 import { AllLibrariesBuilder } from './operation/all-libraries-builder';
 import { IksirPackage } from './data/iksir-package';
+import { NestJsCliWrap } from './operation/nest-cli-wrap';
 
 console.info(
     `
@@ -38,6 +39,18 @@ const actionList: { [key: string]: IAction } = {
                 });
             } else {
                 throw 'Target directory is needed. If you want to patch your another project that uses Mona, that directory should end with node_modules. More details, use "npm run xr:help"';
+            }
+        },
+    },
+
+    'extend-lib': {
+        info: 'Makes a nestjs library compitable for xr',
+        action: async (workDir, targetDirectory) => {
+            if (targetDirectory) {
+                const a = await new NestJsCliWrap(workDir);
+                a.extendLib(targetDirectory);
+            } else {
+                throw "Target directory is needed. Usually it is 'libs/library-name'";
             }
         },
     },

@@ -40,6 +40,7 @@ exports.PackageBuilder = void 0;
 const path_1 = __importDefault(require("path"));
 const text_util_1 = require("../util/text-util");
 const FileSystem = __importStar(require("fs/promises"));
+const json_util_1 = require("../util/json-util");
 class PackageBuilder {
     iksirPackage;
     /**
@@ -76,7 +77,12 @@ class PackageBuilder {
     async writePackage(version) {
         console.info('Package.json is writing');
         this.packageForFullCompilation.version = version;
-        await FileSystem.writeFile(path_1.default.join(this.buildPath, 'package.json'), JSON.stringify(this.packageForFullCompilation), 'utf-8');
+        await json_util_1.JsonUtil.writeJson(this.packageForFullCompilation, this.buildPath, 'package.json');
+        // await FileSystem.writeFile(
+        //     path.join(this.buildPath, 'package.json'),
+        //     JSON.stringify(this.packageForFullCompilation),
+        //     'utf-8',
+        // );
         // todo: package jsonu kaydet
     }
     async digest(importedLibraryBuild) {

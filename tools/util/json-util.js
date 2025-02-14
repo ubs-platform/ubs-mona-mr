@@ -44,5 +44,8 @@ class JsonUtil {
     static async readJson(...paths) {
         return comment_json_1.default.parse(await FileSystem.readFile(path_1.default.join(...paths), 'utf-8'));
     }
+    static async writeJson(obj, ...paths) {
+        await FileSystem.writeFile(path_1.default.join(...paths), comment_json_1.default.stringify(obj), 'utf-8');
+    }
 }
 exports.JsonUtil = JsonUtil;

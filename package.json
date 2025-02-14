@@ -17,6 +17,7 @@
         "xr": "node ./tools/xr.js",
         "xr:publish-libs": "node ./tools/xr.js publish-libs",
         "xr:patch-libs": "node ./tools/xr.js patch-libs $1",
+        "xr:extend-lib": "node ./tools/xr.js extend-lib $1",
         "rebuild-xr": "cd ./tools/src && tsc",
         "start": "PROJECT=$1 ./tools/envload.sh && nest start",
         "start:dev": "nest start --watch",
