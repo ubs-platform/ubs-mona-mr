@@ -44,7 +44,7 @@ const actionList: { [key: string]: IAction } = {
     },
 
     'extend-lib': {
-        info: 'Makes a nestjs library compitable for xr',
+        info: 'Makes a nestjs library compitable for xr (extend-lib ./libs/library-name)',
         action: async (workDir, targetDirectory) => {
             if (targetDirectory) {
                 const a = await new NestJsCliWrap(workDir);
