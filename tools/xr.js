@@ -34,18 +34,10 @@ const actionList = {
             }
         },
     },
-    'publish-app': {
-        info: 'Builds App and pushes into related positions',
-        action: async (workDir, params) => { },
-    },
-    'ready-lib': {
-        info: 'Prepares a library for buildable for xr (Ex: ready-lib ./libs/<library-name>)',
-        action: async (workDir, params) => { },
-    },
     help: {
         info: 'Prints actions and parameters that can be used for monaxr command',
         action: async (params) => {
-            console.info('MonaXr (iksir) is a tool that helps compile and ship microservice applications and publish their auxiliary libraries safely and quickly. This is not a replacement for "Nestjs CLI". It just helps with more orderly development in the Mona repository');
+            console.info('MonaXr  is a tool that helps compile and publish their auxiliary libraries safely and quickly. This is not a replacement for "Nestjs CLI". It just helps with more orderly development in the Mona repository');
             console.info('Usage: npm run xr [COMMAND] [Extra Parameters]');
             console.info('Available Commands:\n', Object.entries(actionList)
                 .map(([key, val]) => `${key} => ${val.info}`)

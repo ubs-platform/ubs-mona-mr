@@ -3,7 +3,7 @@ import path from 'path';
 import cJSON, { CommentObject } from 'comment-json';
 import type { PackageJson } from 'types-package-json';
 import {
-    IIksirLibraryConfig,
+    IIksirPackageConfig,
     IksirLibraryMode,
     IksirProjectType,
     NpmPackageWithIksir,

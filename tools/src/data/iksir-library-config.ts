@@ -4,7 +4,7 @@ export type IksirProjectType = 'ROOT' | 'LIBRARY';
 
 export type IksirLibraryMode = 'EMBEDDED' | 'PEER';
 
-export interface IIksirLibraryConfig {
+export interface IIksirPackageConfig {
     type?: IksirProjectType;
     libraryMode?: IksirLibraryMode;
     // nameInProject?: string;
@@ -13,6 +13,7 @@ export interface IIksirLibraryConfig {
     buildSubFolder?: string;
     childrenVersionTag?: string;
     childrenAccess?: string;
+    childrenPrefix?: string;
 }
 
-export type NpmPackageWithIksir = PackageJson & { iksir?: IIksirLibraryConfig };
+export type NpmPackageWithIksir = PackageJson & { iksir?: IIksirPackageConfig };
