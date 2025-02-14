@@ -25,8 +25,8 @@ export class NestJsCliWrap {
         }
     }
 
-    async generateLib() {
-        ExecUtil.exec();
+    async generateLib(name: string) {
+        ExecUtil.exec(`nest generate lib ${name}`);
     }
 }
 
@@ -35,5 +35,5 @@ const wrp = new NestJsCliWrap(
 );
 
 wrp.checkPrefixIsSame().then((a) => {
-    wrp.generateLib('testo');
+    wrp.generateLib('users-testo');
 });
