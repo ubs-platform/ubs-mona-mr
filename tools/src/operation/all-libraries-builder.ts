@@ -2,9 +2,13 @@ import { exec } from 'child_process';
 import { IksirPackage } from '../data/iksir-package';
 import { PackageBuilder } from '../data/package-build';
 import { ExecUtil } from '../util/exec-util';
+import * as FileSystem from 'fs/promises';
+import path from 'path';
+import { strColor, TEXTCOLORS } from '../util/colors';
 export interface EntireBuildOptions {
     publishNpm?: boolean;
-    patchToProject?: boolean;
+    patchAnotherDirectory?: boolean;
+    patchTarget?: string;
 }
 export class AllLibrariesBuilder {
     constructor(private xrRootPackage: IksirPackage) {
@@ -53,7 +57,7 @@ export class AllLibrariesBuilder {
             }
             await currentBuild.writePackage(version);
         }
-        if (props.publishNpm || props.patchToProject) {
+        if (props.publishNpm || props.patchAnotherDirectory) {
             for (
                 let index = 0;
                 index < packageBuildersArranged.length;
@@ -62,14 +66,32 @@ export class AllLibrariesBuilder {
                 const currentBuild = packageBuildersArranged[index];
                 if (currentBuild.iksirPackage.libraryMode == 'PEER') {
                     if (props.publishNpm) {
-                        console.info(
-                            `${currentBuild.packageName} is about to be published on NPM Registry`,
-                        );
-
-                        await ExecUtil.exec(
-                            `cd "${currentBuild.buildPath}" && npm publish --tag ${versionTag} --access ${versionVisibility}`,
+                        await this.publishOnNpm(
+                            currentBuild,
+                            versionTag,
+                            versionVisibility,
                         );
                     } else {
+                        const patchDirectory = path.join(
+                            this.xrRootPackage.directory,
+                            props.patchTarget,
+                            currentBuild.packageName,
+                        );
+                        console.info(
+                            strColor(
+                                TEXTCOLORS.FgBlue,
+                                `Patching ${currentBuild.packageName} into ${patchDirectory}`,
+                            ),
+                        );
+                        FileSystem.cp(currentBuild.buildPath, patchDirectory, {
+                            recursive: true,
+                        });
+                        console.info(
+                            strColor(
+                                TEXTCOLORS.FgGreen,
+                                `Patched ${currentBuild.packageName} into ${patchDirectory}`,
+                            ),
+                        );
                     }
                 }
             }
@@ -78,5 +100,19 @@ export class AllLibrariesBuilder {
                 'These packages will not published or another project will not be patched',
             );
         }
+    }
+
+    private async publishOnNpm(
+        currentBuild: PackageBuilder,
+        versionTag: string,
+        versionVisibility: string,
+    ) {
+        console.info(
+            `${currentBuild.packageName} is about to be published on NPM Registry`,
+        );
+
+        await ExecUtil.exec(
+            `cd "${currentBuild.buildPath}" && npm publish --tag ${versionTag} --access ${versionVisibility}`,
+        );
     }
 }

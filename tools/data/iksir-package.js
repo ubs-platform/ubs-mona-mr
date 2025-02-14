@@ -15,13 +15,23 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 }) : function(o, v) {
     o["default"] = v;
 });
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -73,14 +83,20 @@ class IksirPackage {
         iksirPaket.libraryMode =
             projectPackageJson.iksir?.libraryMode || 'PEER';
         if (iksirPaket.projectMode == 'ROOT') {
-            iksirPaket.tsConfigFile = path_1.default.join(projectDirectory, projectPackageJson.iksir?.tsConfigFile || 'tsconfig.json');
-            iksirPaket.childrenVersionTag =
-                iksirPaket.packageObject.iksir.childrenVersionTag || 'stable';
-            iksirPaket.childrenAccess =
-                iksirPaket.packageObject.iksir.childrenAccess || 'public';
-            iksirPaket.version = iksirPaket.packageObject.version;
-            iksirPaket.tsConfig =
-                await json_util_1.JsonUtil.readJson(iksirPaket.tsConfigFile);
+            if (!parent) {
+                iksirPaket.tsConfigFile = path_1.default.join(projectDirectory, projectPackageJson.iksir?.tsConfigFile || 'tsconfig.json');
+                iksirPaket.childrenVersionTag =
+                    iksirPaket.packageObject.iksir.childrenVersionTag ||
+                        'stable';
+                iksirPaket.childrenAccess =
+                    iksirPaket.packageObject.iksir.childrenAccess || 'public';
+                iksirPaket.version = iksirPaket.packageObject.version;
+                iksirPaket.tsConfig =
+                    await json_util_1.JsonUtil.readJson(iksirPaket.tsConfigFile);
+            }
+            else {
+                return null;
+            }
         }
         else if (parent) {
             iksirPaket.tsBuildConfigFile = path_1.default.join(projectDirectory, projectPackageJson.iksir?.tsBuildConfigFile ||
@@ -94,7 +110,7 @@ class IksirPackage {
         }
         return iksirPaket;
     }
-    static async scanPackages(parentProjectDirectory) {
+    static async scanRoot(parentProjectDirectory) {
         const packageList = [];
         let parent;
         await directory_util_1.DirectoryUtil.circulateFilesRecursive(parentProjectDirectory, async (a) => {
@@ -103,13 +119,14 @@ class IksirPackage {
                 !a.includes('dist')) {
                 const directory = path_1.default.dirname(a);
                 const pkg = await this.loadPackage(directory, parent);
-                if (pkg.projectMode == 'ROOT') {
-                    parent = pkg;
+                if (pkg) {
+                    if (pkg.projectMode == 'ROOT' && !parent) {
+                        parent = pkg;
+                    }
                 }
-                packageList.push(pkg);
             }
         });
-        return packageList;
+        return parent;
     }
 }
 exports.IksirPackage = IksirPackage;

@@ -1,6 +1,6 @@
 {
     "name": "ubs-mona-mr",
-    "version": "5.0.1",
+    "version": "5.0.2",
     "description": "",
     "author": "",
     "private": true,
@@ -8,11 +8,16 @@
     "iksir": {
         "type": "ROOT",
         "childrenVersionTag": "beta",
-        "childrenAccess": "public"
+        "childrenAccess": "public",
+        "childrenPrefix": "@ubs-platform/"
     },
     "scripts": {
         "build": "nest build",
         "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
+        "xr": "node ./tools/xr.js",
+        "xr:publish-libs": "node ./tools/xr.js publish-libs",
+        "xr:patch-libs": "node ./tools/xr.js patch-libs $1",
+        "rebuild-xr": "cd ./tools/src && tsc",
         "start": "nest start",
         "start:dev": "nest start --watch",
         "start:debug": "nest start --debug --watch",

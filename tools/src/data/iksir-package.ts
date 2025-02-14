@@ -48,7 +48,10 @@ export class IksirPackage {
         return this.packageObject.name;
     }
 
-    static async loadPackage(projectDirectory: string, parent?: IksirPackage) {
+    static async loadPackage(
+        projectDirectory: string,
+        parent?: IksirPackage,
+    ): Promise<IksirPackage | null> {
         console.info('Package is loading', projectDirectory);
         const projectPackageJson = await JsonUtil.readJson<NpmPackageWithIksir>(
             projectDirectory,
@@ -62,19 +65,24 @@ export class IksirPackage {
         iksirPaket.libraryMode =
             projectPackageJson.iksir?.libraryMode || 'PEER';
         if (iksirPaket.projectMode == 'ROOT') {
-            iksirPaket.tsConfigFile = path.join(
-                projectDirectory,
-                projectPackageJson.iksir?.tsConfigFile || 'tsconfig.json',
-            );
-            iksirPaket.childrenVersionTag =
-                iksirPaket.packageObject.iksir.childrenVersionTag || 'stable';
-            iksirPaket.childrenAccess =
-                iksirPaket.packageObject.iksir.childrenAccess || 'public';
-            iksirPaket.version = iksirPaket.packageObject.version;
-            iksirPaket.tsConfig =
-                await JsonUtil.readJson<TypescriptConfiguration>(
-                    iksirPaket.tsConfigFile,
+            if (!parent) {
+                iksirPaket.tsConfigFile = path.join(
+                    projectDirectory,
+                    projectPackageJson.iksir?.tsConfigFile || 'tsconfig.json',
                 );
+                iksirPaket.childrenVersionTag =
+                    iksirPaket.packageObject.iksir.childrenVersionTag ||
+                    'stable';
+                iksirPaket.childrenAccess =
+                    iksirPaket.packageObject.iksir.childrenAccess || 'public';
+                iksirPaket.version = iksirPaket.packageObject.version;
+                iksirPaket.tsConfig =
+                    await JsonUtil.readJson<TypescriptConfiguration>(
+                        iksirPaket.tsConfigFile,
+                    );
+            } else {
+                return null;
+            }
         } else if (parent) {
             iksirPaket.tsBuildConfigFile = path.join(
                 projectDirectory,
@@ -101,7 +109,7 @@ export class IksirPackage {
         return iksirPaket;
     }
 
-    static async scanPackages(parentProjectDirectory: string) {
+    static async scanRoot(parentProjectDirectory: string) {
         const packageList: IksirPackage[] = [];
         let parent: IksirPackage;
         await DirectoryUtil.circulateFilesRecursive(
@@ -114,15 +122,14 @@ export class IksirPackage {
                 ) {
                     const directory = path.dirname(a);
                     const pkg = await this.loadPackage(directory, parent);
-                    if (pkg.projectMode == 'ROOT' && !parent) {
-                        parent = pkg;
-                    } else {
-                        packageList.push(pkg);
+                    if (pkg) {
+                        if (pkg.projectMode == 'ROOT' && !parent) {
+                            parent = pkg;
+                        }
                     }
                 }
             },
         );
-
-        return packageList;
+        return parent;
     }
 }

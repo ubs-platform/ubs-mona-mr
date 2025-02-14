@@ -1,5 +1,5 @@
 import path from 'path';
-import { ANSI, strColor } from './util/colors';
+import { TEXTCOLORS, strColor } from './util/colors';
 import { AllLibrariesBuilder } from './operation/all-libraries-builder';
 import { IksirPackage } from './data/iksir-package';
 
@@ -14,47 +14,42 @@ MonaXr for Mona5            H.C.G`,
 
 export interface IAction {
     info: string;
-    action: (workingDirectory: string, parameters: string[]) => Promise<void>;
+    action: (...workingDirectoryAndParameters: string[]) => Promise<void>;
 }
 
 const actionList: { [key: string]: IAction } = {
-    'publish-lib': {
+    'publish-libs': {
         info: 'Builds libraries and pushes into NPM Registry',
-        action: async (workDir, params) => {
-            const p = await IksirPackage.scanPackages(workDir);
-            const paket = p.find((a) => a.projectMode == 'ROOT');
+        action: async (workDir) => {
+            const paket = await IksirPackage.scanRoot(workDir);
             const paketBuilder = new AllLibrariesBuilder(paket);
             await paketBuilder.initiateBuildPublish({ publishNpm: true });
         },
     },
-    'publish-app': {
-        info: 'Builds App and pushes into related positions',
-        action: async (workDir, params) => {},
+    'patch-libs': {
+        info: "Builds libraries and patches them into another directory (like your project's node_modules directory)",
+        action: async (workDir, targetDirectory) => {
+            if (targetDirectory) {
+                const paket = await IksirPackage.scanRoot(workDir);
+                const paketBuilder = new AllLibrariesBuilder(paket);
+                await paketBuilder.initiateBuildPublish({
+                    patchAnotherDirectory: true,
+                    patchTarget: targetDirectory,
+                });
+            } else {
+                throw 'Target directory is needed. If you want to patch your another project that uses Mona, that directory should end with node_modules. More details, use "npm run xr:help"';
+            }
+        },
     },
-    'ready-lib': {
-        info: 'Prepares a library for iksir compilation (Ex: ready-lib ./libs/<library-name>)',
-        action: async (workDir, params) => {},
-    },
-    // patch: {
-    //     info: 'Builds libraries and patches into another library (such as node_modules)',
-    //     action: async (workDir, params) => {
-    //         const p = await IksirPackage.scanPackages(workDir);
-    //         const paket = p.find((a) => a.projectMode == 'ROOT');
-    //         const paketBuilder = new AllLibrariesBuilder(paket);
-    //         await paketBuilder.initiateBuildPublish({
-    //             publishNpm: false,
-    //             patchToProject: true,
-    //         });
-    //     },
-    // },
+
     help: {
         info: 'Prints actions and parameters that can be used for monaxr command',
         action: async (params) => {
             console.info(
-                'MonaXr (iksir) is a tool that helps compile and ship microservice applications and publish their auxiliary libraries safely and quickly. This is not a replacement for "Nestjs CLI". It just helps with more orderly development in the Mona repository',
+                'MonaXr  is a tool that helps compile and publish their auxiliary libraries safely and quickly. This is not a replacement for "Nestjs CLI". It just helps with more orderly development in the Mona repository',
             );
 
-            console.info('Usage: node ./index.js [COMMAND] [Extra Parameters]');
+            console.info('Usage: npm run xr [COMMAND] [Extra Parameters]');
             console.info(
                 'Available Commands:\n',
                 Object.entries(actionList)
@@ -71,7 +66,7 @@ let actionObj = actionList[action];
 if (actionObj == null) {
     console.warn(
         strColor(
-            ANSI.FgYellow,
+            TEXTCOLORS.FgYellow,
             `${action} action is not found. You can review the available commands`,
         ),
     );
@@ -79,14 +74,16 @@ if (actionObj == null) {
 }
 
 actionObj
-    .action(workingDirectory, parameters)
+    .action(workingDirectory, ...parameters)
     .then(() => {
-        console.info(strColor(ANSI.FgGreen, 'It seems there is no problem'));
+        console.info(
+            strColor(TEXTCOLORS.FgGreen, 'It seems there is no problem'),
+        );
     })
     .catch((error) => {
         console.info(
             strColor(
-                ANSI.FgRed,
+                TEXTCOLORS.FgRed,
                 'Task has been failed. You can review error via following output',
             ),
         );

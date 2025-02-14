@@ -1,4 +1,4 @@
-export const ANSI = {
+export const TEXTCOLORS = {
     Reset: '\x1b[0m',
     Bright: '\x1b[1m',
     Dim: '\x1b[2m',
@@ -29,5 +29,5 @@ export const ANSI = {
 };
 
 export const strColor = (color: string, text: string) => {
-    return color + text + ANSI.Reset;
-}
+    return color + text + TEXTCOLORS.Reset;
+};
