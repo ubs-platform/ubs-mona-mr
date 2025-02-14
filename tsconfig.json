@@ -1,48 +1,47 @@
 {
-    "exclude": ["./tools"],
-    "compilerOptions": {
-        "module": "commonjs",
-        "declaration": true,
-        "removeComments": true,
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "allowSyntheticDefaultImports": true,
-        "target": "ES2021",
-        "sourceMap": true,
-        "outDir": "./dist",
-        "baseUrl": "./",
-        "incremental": true,
-        "skipLibCheck": true,
-        "strictNullChecks": true,
-        "forceConsistentCasingInFileNames": true,
-        "noImplicitAny": false,
-        "strictBindCallApply": false,
-        "noFallthroughCasesInSwitch": false,
-        "paths": {
-            "@ubs-platform/microservice-setup-util": [
-                "libs/microservice-setup-util/src"
-            ],
-            //   "@ubs-platform/microservice-setup-util/*": [
-            //     "libs/microservice-setup-util/src/*"
-            //   ],
-            "@ubs-platform/users-common": ["libs/users-common/src"],
-            //   "@ubs-platform/users-common/*": [
-            //     "libs/users-common/src/*"
-            //   ],
-            "@ubs-platform/users-consts": ["libs/users-consts/src"],
-            //   "@ubs-platform/users-consts/*": [
-            //     "libs/users-consts/src/*"
-            //   ],
-            "@ubs-platform/users-microservice-helper": [
-                "libs/users-microservice-helper/src"
-            ],
-            //   "@ubs-platform/users-mona-microservice-helper/*": [
-            //     "libs/users-microservice-helper/src/*"
-            //   ],
-            "@ubs-platform/users-roles": ["libs/users-roles/src"]
-            //   "@ubs-platform/users-roles/*": [
-            //     "libs/users-roles/src/*"
-            //   ]
-        }
+  "exclude": [
+    "./tools"
+  ],
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitAny": false,
+    "strictBindCallApply": false,
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@ubs-platform/file-helper": [
+        "libs/file-helper/src"
+      ],
+      "@ubs-platform/file-helper/*": [
+        "libs/file-helper/src/*"
+      ],
+      "@ubs-platform/microservice-setup-util": [
+        "libs/microservice-setup-util/src"
+      ],
+      "@ubs-platform/users-common": [
+        "libs/users-common/src"
+      ],
+      "@ubs-platform/users-consts": [
+        "libs/users-consts/src"
+      ],
+      "@ubs-platform/users-microservice-helper": [
+        "libs/users-microservice-helper/src"
+      ],
+      "@ubs-platform/users-roles": [
+        "libs/users-roles/src"
+      ]
     }
+  }
 }
