@@ -9,7 +9,7 @@
         "type": "ROOT",
         "childrenVersionTag": "beta",
         "childrenAccess": "public",
-        "childrenPrefix": "@ubs-platform/"
+        "childrenPrefix": "@ubs-platform"
     },
     "scripts": {
         "build": "nest build",
