@@ -1,1 +1,15 @@
-{"extends":"../../tsconfig.json","compilerOptions":{"declaration":true,"outDir":"../../dist/libs/file-helper"},"include":["src/**/*"],"exclude":["node_modules","dist","test","**/*spec.ts"],"excludes":["@ubs-platform/**"]}
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "../../dist/libs/file-helper"
+    },
+    "include": ["src/**/*"],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "test",
+        "**/*spec.ts",
+        "@ubs-platform/**"
+    ]
+}

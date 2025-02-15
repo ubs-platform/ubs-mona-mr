@@ -52,10 +52,10 @@ export class NestJsCliWrap {
             tsPublishJsonPath,
         );
         const tsPublishObj = await JsonUtil.readJson(tsPublishJsonPath);
-        if (tsPublishObj['excludes'] == null) {
-            tsPublishObj['excludes'] = [];
+        if (tsPublishObj['exclude'] == null) {
+            tsPublishObj['exclude'] = [];
         }
-        tsPublishObj['excludes'].push(
+        tsPublishObj['exclude'].push(
             path.join(configs.nestCliJson['defaultLibraryPrefix'], '**'),
         );
         await JsonUtil.writeJson(tsPublishObj, tsPublishJsonPath);
