@@ -1,4 +1,4 @@
-# Kütüphaneyi derleyip npm'e gönderme
+# Kütüphaneyi derleyip npm'e gönderme (ya da patchleme)
 
 Bütün kütüphaneleri build edip npm'e pushlamak için bu çalıştırılmalıdır.
 
@@ -6,9 +6,15 @@ Bütün kütüphaneleri build edip npm'e pushlamak için bu çalıştırılmalı
 npm run xr publish-libs
 ```
 
-Npm'e gönderirken kök dizindeki `package.json`'da `"version": "..."` ya da `"iksir": {...}` bloğundaki bilgiler kullanılır.
-
 > ⚠️⚠️ Şu anda OTP desteklenmiyor
+
+Aynı şekilde başka bir projeyi NPM'e göndermeden çalışabilmek için bu çalıştırılmalıdır
+
+```
+npm run xr patch-libs ../diger_proje/node_modules
+```
+
+Npm'e gönderirken kök dizindeki `package.json`'da `"version": "..."` ya da `"iksir": {...}` bloğundaki bilgiler kullanılır.
 
 Bu komut şunları yapacaktır
 
