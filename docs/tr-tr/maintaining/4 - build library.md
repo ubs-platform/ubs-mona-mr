@@ -1,40 +1,35 @@
 # Kütüphaneyi derleyip npm'e gönderme
 
-> Şu anda bunun üstünde çalışıyoru<m ve kararlaştırmam gereken bir kaç konu var... Öncelikle kullandığı local kütüphaneleri peer yapmalıyım ki (zaten onları büyük ihtimalle npm registry'e pushlarım diye tahmin ediyorum) Bu yüzden tools/src içine bakmayı unutmayın. Burada da build olmuş js dosyalarında importları TextUtil vasıtasıyla import isimlerini değiştireceğim.
-
-> Kütüphanelerin iki modu olacak **PUBLISHED** ve **EMBEDDED**. Embedded kütüphaneler published olanların ya da uygulamaların içinde embed olacak şekilde çalışacak, diğer türlü NPM registrylerinde paylaşılabilecek ve diğer embedded olanlarla peer şeklinde eklenecek.
-
-- Build etme
-
-    ` tsc -p tsconfig.lib-publish.json`
-
-    - tsconfig.lib-publish.json dosyası kullandığı yan kütüphaneler varsa onları exclude etmesi için gereklidir. Yan kütüphaneler `"exclude": [..., "@ubs-platform/**"]` olarak dışlanır
-
-- dist/core içine bunlar eklemeli:
-
-```JSON
-{
-    "name": "@ubs-platform/mona-experiment-one",
-    "version": "0.0.5",
-    "description": "An experiment on NPM and package managing. please do not install",
-    "author": "",
-    "private": false,
-    "license": "MIT",
-    "scripts": {},
-    "peerDependencies": {
-        "@nestjs/common": "^11.0.1",
-        "@nestjs/core": "^11.0.1",
-        "@nestjs/platform-express": "^11.0.1",
-        "<kullandığı diğer kütüphaneler>": "version"
-        "reflect-metadata": "^0.2.2",
-        "rxjs": "^7.8.1"
-    },
-    "main": "index.js"
-}
+Bütün kütüphaneleri build edip npm'e pushlamak için bu çalıştırılmalıdır.
 
 ```
+npm run xr publish-libs
+```
 
-giriş noktası yani `main`, yapılan builde göre düzenlenmelidir. Örneğin bu şekilde gözüküyorsa
+Npm'e gönderirken kök dizindeki `package.json`'da `"version": "..."` ya da `"iksir": {...}` bloğundaki bilgiler kullanılır.
+
+> ⚠️⚠️ Şu anda OTP desteklenmiyor
+
+Bu komut şunları yapacaktır
+
+- `tsc` yardımıyla `tsconfig.lib-publish.json` dosyasıyla ön derleme yapmaktadır.
+
+- Yapılan importlara göre kök dizindeki `package.json`dan paketlerin versiyonları alınarak gönderilecek kütüphanenin package.json içine peerDependencyler yerleşirilir
+
+- en az import yapan kütüphane en çok import yapan kütüphane sayısına göre tekrar sıralanır.
+
+- Bu seferki döngüde bir kütüphane, import edilen proje kütüphanesini içine alır (digesting). Bu işlemde import edilen kütüphane modune göre farklı işlemler yer alır
+
+    - `PEER`: kök dizindeki projenin sürümü olarak Peer dependency olarak yayınlanacak kütüphanenin `package.json` dosyasına eklenir
+
+    - `EMBEDDED`: Buildin içinde `_monaembed` klasörü açılır ve import edilen kütüphanenin ismi neyse ona göre değiştirilir. Örneğin; kütüphane ismi `@ubs-platform/users-consts` ise, şu anki dosyanın konumuna göre `./_monaembed/@ubs-platform/users-consts` ya da `../../_monaembed/@ubs-platform/users-consts` haline getirilecek
+
+- package.json yazdırılır
+- NPM Registry'e gönderilir ya da `patch` modundaysa belirtilen klasöre kopyalanır.
+
+## Ekstra önemli olabilecek notlar
+
+Eğer tsc ile build ettiğinizde `dist/kütüphane` klasörü böyle gözüküyorsa.
 
 ```
 -users-microservice-helper
@@ -46,17 +41,12 @@ giriş noktası yani `main`, yapılan builde göre düzenlenmelidir. Örneğin b
 ---------index.js
 ```
 
-Eğer diğer kütüphanelerden import aldıysanız bu şekilde gözükmesi gayet normal.
-Böyle bir durumda `main`:`users-microservice-helper/src/index.js` olmalıdır. İmport ederken users-microservice-helper/src/ diye uzatmamak için bu idealdir
-
-Muhtemelen burada kök dizindeki package.json'daki nest ve ya benzeri dependency'ler peerDependency olarak eklenmelidir.
-
-Ve ardından build edip bu şekilde pushlayabilirsiniz
+Bu durumda kütüphanedeki `package.json` buna göre düzenlenmelidir
 
 ```
-npm publish --access public
+"iksir": {
+        "type": "LIBRARY",
+        "libraryMode": "PEER",
+        "buildSubFolder": "users-microservice-helper/src"
+    },
 ```
-
-Eğer `--access public` unutursan npm buna dönüşüyor:
-
-![Aykut elmas](https://media.tenor.com/0zqGGmG01tcAAAAM/bana-para-ver.gif)
