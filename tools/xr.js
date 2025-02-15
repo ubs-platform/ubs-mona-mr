@@ -40,7 +40,8 @@ const actionList = {
         action: async (workDir, targetDirectory) => {
             if (targetDirectory) {
                 const a = await new nest_cli_wrap_1.NestJsCliWrap(workDir);
-                a.extendLib(targetDirectory);
+                await a.checkPrefixIsSame();
+                await a.extendLib(targetDirectory);
             }
             else {
                 throw "Target directory is needed. Usually it is 'libs/library-name'";
