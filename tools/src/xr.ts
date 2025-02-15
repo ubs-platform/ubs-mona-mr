@@ -67,7 +67,7 @@ const actionList: { [key: string]: IAction } = {
             console.info(
                 'Available Commands:\n',
                 Object.entries(actionList)
-                    .map(([key, val]) => `${key} => ${val.info}`)
+                    .map(([key, val]) => '\t' + key + ' => ' + val.info)
                     .join('\n'),
             );
         },

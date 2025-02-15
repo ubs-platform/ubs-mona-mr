@@ -54,7 +54,7 @@ const actionList = {
             console.info('MonaXr  is a tool that helps compile and publish their auxiliary libraries safely and quickly. This is not a replacement for "Nestjs CLI". It just helps with more orderly development in the Mona repository');
             console.info('Usage: npm run xr [COMMAND] [Extra Parameters]');
             console.info('Available Commands:\n', Object.entries(actionList)
-                .map(([key, val]) => `${key} => ${val.info}`)
+                .map(([key, val]) => '\t' + key + ' => ' + val.info)
                 .join('\n'));
         },
     },
