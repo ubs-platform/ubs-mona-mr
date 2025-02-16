@@ -17,7 +17,9 @@ else
     DOCKER_FULL_TAG=$DOCKER_ORGNAME/$IMG_PREFIX$APP_NAME:$VERSION$VERSION_TAG
     echo determined docker tag: $DOCKER_FULL_TAG
     echo "start to build $DOCKER_FULL_TAG"
-    docker build . --build-arg "APP_NAME=$APP_NAME" --tag "$DOCKER_FULL_TAG"
-    echo "start to push $DOCKER_FULL_TAG"
-    docker push "$DOCKER_FULL_TAG"
+    set -x
+    docker build --build-arg APP_NAME="${APP_NAME}" --tag "$DOCKER_FULL_TAG" .
+    set +x
+    # echo "start to push $DOCKER_FULL_TAG"
+    # docker push "$DOCKER_FULL_TAG"
 fi
