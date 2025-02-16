@@ -5,6 +5,9 @@
     "defaultLibraryPrefix": "@ubs-platform",
     "monorepo": true,
     "root": "apps/ubs-mona-mr",
+    "compilerOptions": {
+        "deleteOutDir": true
+    },
     "projects": {
         "file-helper": {
             "type": "library",
