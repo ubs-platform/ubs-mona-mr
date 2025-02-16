@@ -27,7 +27,6 @@ async function bootstrap() {
             `,
         );
     } else {
-        exec('wall ' + process.env.NX_KAFKA_PORT);
         const app = await NestFactory.create(UsersModule);
         console.info(
             'U_USERS_MONA_INTERNAL_COM_PORT: ' + INTERNAL_COMMUNICATION.port,
