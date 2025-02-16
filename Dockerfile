@@ -4,7 +4,7 @@ FROM node:20.11.0-alpine AS build
 WORKDIR /app
 # COPY package.json  package-lock.json ./
 COPY . ./
-RUN yarn install
+RUN yarn install --force
 RUN npx nest build ${APP_NAME}
 
 FROM node:20.11.0-alpine
