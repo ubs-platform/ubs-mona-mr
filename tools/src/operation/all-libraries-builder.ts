@@ -4,7 +4,7 @@ import { PackageBuilder } from '../data/package-build';
 import { ExecUtil } from '../util/exec-util';
 import * as FileSystem from 'fs/promises';
 import path from 'path';
-import { strColor, TEXTCOLORS } from '../util/colors';
+import { strColor, COLORS } from '../util/colors';
 export interface EntireBuildOptions {
     publishNpm?: boolean;
     patchAnotherDirectory?: boolean;
@@ -79,7 +79,7 @@ export class AllLibrariesBuilder {
                         );
                         console.info(
                             strColor(
-                                TEXTCOLORS.FgBlue,
+                                COLORS.FgBlue,
                                 `Patching ${currentBuild.packageName} into ${patchDirectory}`,
                             ),
                         );
@@ -88,7 +88,7 @@ export class AllLibrariesBuilder {
                         });
                         console.info(
                             strColor(
-                                TEXTCOLORS.FgGreen,
+                                COLORS.FgGreen,
                                 `Patched ${currentBuild.packageName} into ${patchDirectory}`,
                             ),
                         );

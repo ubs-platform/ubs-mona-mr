@@ -4,7 +4,7 @@ import {
     IIksirPackageConfig,
     NpmPackageWithIksir,
 } from '../data/iksir-library-config';
-import { strColor, TEXTCOLORS } from '../util/colors';
+import { strColor, COLORS } from '../util/colors';
 import { ExecUtil } from '../util/exec-util';
 import * as FileSystem from 'fs/promises';
 import path from 'path';
@@ -19,7 +19,7 @@ export class NestJsCliWrap {
         if (ourPrefix != nestPrefix) {
             console.warn(
                 strColor(
-                    TEXTCOLORS.FgYellow,
+                    COLORS.FgYellow,
                     '<nest-cli.json>defaultLibraryPrefix is not same with <package.json>iksir.childrenPrefix.\n' +
                         'Therefore, to avoid any errors, make sure that these values\n' +
                         'are the same in these two files and that the library paths start with this value.',
@@ -72,14 +72,14 @@ export class NestJsCliWrap {
 
         console.info(
             strColor(
-                TEXTCOLORS.BgYellow,
+                COLORS.BgYellow,
                 "If you don't want to push to NPM Registry, set iksir.libraryMode to 'EMBEDDED' in package.json",
             ),
         );
 
         console.info(
             strColor(
-                TEXTCOLORS.BgYellow,
+                COLORS.BgYellow,
                 `And if another libraries is being imported, tsc will compile with others. So you should set iksir.buildSubFolder to '${libName}/src'`,
             ),
         );

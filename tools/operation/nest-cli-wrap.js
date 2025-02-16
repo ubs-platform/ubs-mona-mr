@@ -50,7 +50,7 @@ class NestJsCliWrap {
         const { pak, nestCliJson } = await this.readConfig();
         const ourPrefix = pak.iksir.childrenPrefix, nestPrefix = nestCliJson['defaultLibraryPrefix'] || '@app';
         if (ourPrefix != nestPrefix) {
-            console.warn((0, colors_1.strColor)(colors_1.TEXTCOLORS.FgYellow, '<nest-cli.json>defaultLibraryPrefix is not same with <package.json>iksir.childrenPrefix.\n' +
+            console.warn((0, colors_1.strColor)(colors_1.COLORS.FgYellow, '<nest-cli.json>defaultLibraryPrefix is not same with <package.json>iksir.childrenPrefix.\n' +
                 'Therefore, to avoid any errors, make sure that these values\n' +
                 'are the same in these two files and that the library paths start with this value.'));
         }
@@ -82,8 +82,8 @@ class NestJsCliWrap {
                 buildSubFolder: '',
             },
         };
-        console.info((0, colors_1.strColor)(colors_1.TEXTCOLORS.BgYellow, "If you don't want to push to NPM Registry, set iksir.libraryMode to 'EMBEDDED' in package.json"));
-        console.info((0, colors_1.strColor)(colors_1.TEXTCOLORS.BgYellow, `And if another libraries is being imported, tsc will compile with others. So you should set iksir.buildSubFolder to '${libName}/src'`));
+        console.info((0, colors_1.strColor)(colors_1.COLORS.BgYellow, "If you don't want to push to NPM Registry, set iksir.libraryMode to 'EMBEDDED' in package.json"));
+        console.info((0, colors_1.strColor)(colors_1.COLORS.BgYellow, `And if another libraries is being imported, tsc will compile with others. So you should set iksir.buildSubFolder to '${libName}/src'`));
         await json_util_1.JsonUtil.writeJson(libNodePackage, libPackageJsonPath);
         // await ExecUtil.exec(
         //     `node node_modules/@nestjs/schematics/dist/index.js --name=${name} --source-root="${this.workingDirectory}" --no-dry-run --no-skip-import --language="ts" --spec --no-flat --spec-file-suffix="spec"`,

@@ -64,15 +64,15 @@ const workingDirectory = process.cwd();
 console.info('Working directory is ' + workingDirectory);
 let actionObj = actionList[action];
 if (actionObj == null) {
-    console.warn((0, colors_1.strColor)(colors_1.TEXTCOLORS.FgYellow, `${action} action is not found. You can review the available commands`));
+    console.warn((0, colors_1.strColor)(colors_1.COLORS.FgYellow, `${action} action is not found. You can review the available commands`));
     actionObj = actionList['help'];
 }
 actionObj
     .action(workingDirectory, ...parameters)
     .then(() => {
-    console.info((0, colors_1.strColor)(colors_1.TEXTCOLORS.FgGreen, 'It seems there is no problem'));
+    console.info((0, colors_1.strColor)(colors_1.COLORS.FgGreen, 'It seems there is no problem'));
 })
     .catch((error) => {
-    console.info((0, colors_1.strColor)(colors_1.TEXTCOLORS.FgRed, 'Task has been failed. You can review error via following output'));
+    console.info((0, colors_1.strColor)(colors_1.COLORS.FgRed, 'Task has been failed. You can review error via following output'));
     console.error(error);
 });

@@ -1,6 +1,7 @@
 FROM node:20-alpine AS build
 ARG APP_NAME
 # COPY package.json  package-lock.json ./
+WORKDIR /app
 COPY . ./
 RUN echo appname: ${APP_NAME}
 RUN npm install

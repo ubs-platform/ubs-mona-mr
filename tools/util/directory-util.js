@@ -36,6 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DirectoryUtil = void 0;
 const FileSystem = __importStar(require("fs/promises"));
 const path = __importStar(require("path"));
+const colors_1 = require("./colors");
 class DirectoryUtil {
     /**
      * List all files in the folder recursively
@@ -58,17 +59,24 @@ class DirectoryUtil {
         const onQueue = [];
         let current = folderPath;
         while (current) {
-            const fileList = await FileSystem.readdir(current);
-            for (let index = 0; index < fileList.length; index++) {
-                const fileName = fileList[index];
-                const fullPath = path.join(current, fileName);
-                const fileInfo = await FileSystem.stat(fullPath);
-                if (fileInfo.isDirectory()) {
-                    onQueue.push(fullPath);
+            try {
+                const fileList = await FileSystem.readdir(current);
+                for (let index = 0; index < fileList.length; index++) {
+                    const fileName = fileList[index];
+                    const fullPath = path.join(current, fileName);
+                    const fileInfo = await FileSystem.stat(fullPath);
+                    if (fileInfo.isDirectory()) {
+                        onQueue.push(fullPath);
+                    }
+                    else if (fileInfo.isFile()) {
+                        await fileAction(fullPath);
+                    }
                 }
-                else if (fileInfo.isFile()) {
-                    await fileAction(fullPath);
-                }
+            }
+            catch (error) {
+                console.warn((0, colors_1.strColor)(colors_1.COLORS.BgYellow, 'An error occured while reading file: ' +
+                    current +
+                    '\nSo we skip this'));
             }
             current = onQueue.pop();
         }

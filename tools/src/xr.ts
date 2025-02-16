@@ -1,5 +1,5 @@
 import path from 'path';
-import { TEXTCOLORS, strColor } from './util/colors';
+import { COLORS, strColor } from './util/colors';
 import { AllLibrariesBuilder } from './operation/all-libraries-builder';
 import { IksirPackage } from './data/iksir-package';
 import { NestJsCliWrap } from './operation/nest-cli-wrap';
@@ -80,7 +80,7 @@ let actionObj = actionList[action];
 if (actionObj == null) {
     console.warn(
         strColor(
-            TEXTCOLORS.FgYellow,
+            COLORS.FgYellow,
             `${action} action is not found. You can review the available commands`,
         ),
     );
@@ -90,14 +90,12 @@ if (actionObj == null) {
 actionObj
     .action(workingDirectory, ...parameters)
     .then(() => {
-        console.info(
-            strColor(TEXTCOLORS.FgGreen, 'It seems there is no problem'),
-        );
+        console.info(strColor(COLORS.FgGreen, 'It seems there is no problem'));
     })
     .catch((error) => {
         console.info(
             strColor(
-                TEXTCOLORS.FgRed,
+                COLORS.FgRed,
                 'Task has been failed. You can review error via following output',
             ),
         );

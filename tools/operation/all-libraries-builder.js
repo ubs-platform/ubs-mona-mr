@@ -87,11 +87,11 @@ class AllLibrariesBuilder {
                     }
                     else {
                         const patchDirectory = path_1.default.join(this.xrRootPackage.directory, props.patchTarget, currentBuild.packageName);
-                        console.info((0, colors_1.strColor)(colors_1.TEXTCOLORS.FgBlue, `Patching ${currentBuild.packageName} into ${patchDirectory}`));
+                        console.info((0, colors_1.strColor)(colors_1.COLORS.FgBlue, `Patching ${currentBuild.packageName} into ${patchDirectory}`));
                         FileSystem.cp(currentBuild.buildPath, patchDirectory, {
                             recursive: true,
                         });
-                        console.info((0, colors_1.strColor)(colors_1.TEXTCOLORS.FgGreen, `Patched ${currentBuild.packageName} into ${patchDirectory}`));
+                        console.info((0, colors_1.strColor)(colors_1.COLORS.FgGreen, `Patched ${currentBuild.packageName} into ${patchDirectory}`));
                     }
                 }
             }

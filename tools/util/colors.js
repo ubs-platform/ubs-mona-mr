@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.strColor = exports.TEXTCOLORS = void 0;
-exports.TEXTCOLORS = {
+exports.strColor = exports.COLORS = void 0;
+exports.COLORS = {
     Reset: '\x1b[0m',
     Bright: '\x1b[1m',
     Dim: '\x1b[2m',
@@ -29,6 +29,6 @@ exports.TEXTCOLORS = {
     BgGray: '\x1b[100m',
 };
 const strColor = (color, text) => {
-    return color + text + exports.TEXTCOLORS.Reset;
+    return color + text + exports.COLORS.Reset;
 };
 exports.strColor = strColor;
