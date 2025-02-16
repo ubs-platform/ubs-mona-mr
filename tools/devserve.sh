@@ -1,2 +1,2 @@
 source tools/loadenv.sh dev.env apps/$1/dev.env
-nest start $1
+nest start -w $1

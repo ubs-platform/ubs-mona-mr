@@ -5,7 +5,8 @@
 
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
+
+import { AppModule } from './app/app.module';
 import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 
 async function bootstrap() {
@@ -14,9 +15,10 @@ async function bootstrap() {
     app.connectMicroservice(
         MicroserviceSetupUtil.getMicroserviceConnection(''),
     );
+
     app.setGlobalPrefix(globalPrefix);
-    const port = process.env.PORT || 3000;
-    app.startAllMicroservices();
+    const port = process.env.PORT || 3169;
+    await app.startAllMicroservices();
     await app.listen(port);
     Logger.log(
         `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,

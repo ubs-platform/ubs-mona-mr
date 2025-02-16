@@ -1,94 +1,149 @@
 {
-    "$schema": "https://json.schemastore.org/nest-cli",
-    "collection": "@nestjs/schematics",
-    "sourceRoot": "apps/ubs-mona-mr/src",
-    "defaultLibraryPrefix": "@ubs-platform",
-    "monorepo": true,
-    "root": "apps/ubs-mona-mr",
-    "compilerOptions": {
-        "deleteOutDir": true
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/ubs-mona-mr/src",
+  "defaultLibraryPrefix": "@ubs-platform",
+  "monorepo": true,
+  "root": "apps/ubs-mona-mr",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true
+  },
+  "projects": {
+    "crud-base": {
+      "type": "library",
+      "root": "libs/crud-base",
+      "entryFile": "index",
+      "sourceRoot": "libs/crud-base/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/crud-base/tsconfig.lib.json"
+      }
     },
-    "projects": {
-        "file-helper": {
-            "type": "library",
-            "root": "libs/file-helper",
-            "entryFile": "index",
-            "sourceRoot": "libs/file-helper/src",
-            "compilerOptions": {
-                "tsConfigPath": "libs/file-helper/tsconfig.lib.json"
-            }
-        },
-        "files": {
-            "type": "application",
-            "root": "apps/files",
-            "entryFile": "main",
-            "sourceRoot": "apps/files/src",
-            "compilerOptions": {
-                "tsConfigPath": "apps/files/tsconfig.app.json"
-            }
-        },
-        "microservice-setup-util": {
-            "type": "library",
-            "root": "libs/microservice-setup-util",
-            "entryFile": "index",
-            "sourceRoot": "libs/microservice-setup-util/src",
-            "compilerOptions": {
-                "tsConfigPath": "libs/microservice-setup-util/tsconfig.lib.json"
-            }
-        },
-        "users": {
-            "type": "application",
-            "root": "apps/users",
-            "entryFile": "main",
-            "sourceRoot": "apps/users/src",
-            "compilerOptions": {
-                "tsConfigPath": "apps/users/tsconfig.app.json"
-            }
-        },
-        "users-common": {
-            "type": "library",
-            "root": "libs/users-common",
-            "entryFile": "index",
-            "sourceRoot": "libs/users-common/src",
-            "compilerOptions": {
-                "tsConfigPath": "libs/users-common/tsconfig.lib.json"
-            }
-        },
-        "users-consts": {
-            "type": "library",
-            "root": "libs/users-consts",
-            "entryFile": "index",
-            "sourceRoot": "libs/users-consts/src",
-            "compilerOptions": {
-                "tsConfigPath": "libs/users-consts/tsconfig.lib.json"
-            }
-        },
-        "users-core": {
-            "type": "library",
-            "root": "libs/users-core",
-            "entryFile": "index",
-            "sourceRoot": "libs/users-core/src",
-            "compilerOptions": {
-                "tsConfigPath": "libs/users-core/tsconfig.lib.json"
-            }
-        },
-        "users-microservice-helper": {
-            "type": "library",
-            "root": "libs/users-microservice-helper",
-            "entryFile": "index",
-            "sourceRoot": "libs/users-microservice-helper/src",
-            "compilerOptions": {
-                "tsConfigPath": "libs/users-microservice-helper/tsconfig.lib.json"
-            }
-        },
-        "users-roles": {
-            "type": "library",
-            "root": "libs/users-roles",
-            "entryFile": "index",
-            "sourceRoot": "libs/users-roles/src",
-            "compilerOptions": {
-                "tsConfigPath": "libs/users-roles/tsconfig.lib.json"
-            }
-        }
+    "crud-base-common": {
+      "type": "library",
+      "root": "libs/crud-base-common",
+      "entryFile": "index",
+      "sourceRoot": "libs/crud-base-common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/crud-base-common/tsconfig.lib.json"
+      }
+    },
+    "feedback": {
+      "type": "application",
+      "root": "apps/feedback",
+      "entryFile": "main",
+      "sourceRoot": "apps/feedback/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/feedback/tsconfig.app.json"
+      }
+    },
+    "feedback-common": {
+      "type": "library",
+      "root": "libs/feedback-common",
+      "entryFile": "index",
+      "sourceRoot": "libs/feedback-common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/feedback-common/tsconfig.lib.json"
+      }
+    },
+    "file-helper": {
+      "type": "library",
+      "root": "libs/file-helper",
+      "entryFile": "index",
+      "sourceRoot": "libs/file-helper/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/file-helper/tsconfig.lib.json"
+      }
+    },
+    "files": {
+      "type": "application",
+      "root": "apps/files",
+      "entryFile": "main",
+      "sourceRoot": "apps/files/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/files/tsconfig.app.json"
+      }
+    },
+    "microservice-setup-util": {
+      "type": "library",
+      "root": "libs/microservice-setup-util",
+      "entryFile": "index",
+      "sourceRoot": "libs/microservice-setup-util/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/microservice-setup-util/tsconfig.lib.json"
+      }
+    },
+    "notify": {
+      "type": "application",
+      "root": "apps/notify",
+      "entryFile": "main",
+      "sourceRoot": "apps/notify/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notify/tsconfig.app.json"
+      }
+    },
+    "notify-common": {
+      "type": "library",
+      "root": "libs/notify-common",
+      "entryFile": "index",
+      "sourceRoot": "libs/notify-common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/notify-common/tsconfig.lib.json"
+      }
+    },
+    "users": {
+      "type": "application",
+      "root": "apps/users",
+      "entryFile": "main",
+      "sourceRoot": "apps/users/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/users/tsconfig.app.json"
+      }
+    },
+    "users-common": {
+      "type": "library",
+      "root": "libs/users-common",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-common/tsconfig.lib.json"
+      }
+    },
+    "users-consts": {
+      "type": "library",
+      "root": "libs/users-consts",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-consts/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-consts/tsconfig.lib.json"
+      }
+    },
+    "users-core": {
+      "type": "library",
+      "root": "libs/users-core",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-core/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-core/tsconfig.lib.json"
+      }
+    },
+    "users-microservice-helper": {
+      "type": "library",
+      "root": "libs/users-microservice-helper",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-microservice-helper/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-microservice-helper/tsconfig.lib.json"
+      }
+    },
+    "users-roles": {
+      "type": "library",
+      "root": "libs/users-roles",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-roles/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-roles/tsconfig.lib.json"
+      }
     }
+  }
 }

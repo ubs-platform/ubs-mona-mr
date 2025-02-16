@@ -21,6 +21,24 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
+      "@ubs-platform/crud-base": [
+        "libs/crud-base/src"
+      ],
+      "@ubs-platform/crud-base-common": [
+        "libs/crud-base-common/src"
+      ],
+      "@ubs-platform/crud-base-common/*": [
+        "libs/crud-base-common/src/*"
+      ],
+      "@ubs-platform/crud-base/*": [
+        "libs/crud-base/src/*"
+      ],
+      "@ubs-platform/feedback-common": [
+        "libs/feedback-common/src"
+      ],
+      "@ubs-platform/feedback-common/*": [
+        "libs/feedback-common/src/*"
+      ],
       "@ubs-platform/file-helper": [
         "libs/file-helper/src"
       ],
@@ -29,6 +47,12 @@
       ],
       "@ubs-platform/microservice-setup-util": [
         "libs/microservice-setup-util/src"
+      ],
+      "@ubs-platform/notify-common": [
+        "libs/notify-common/src"
+      ],
+      "@ubs-platform/notify-common/*": [
+        "libs/notify-common/src/*"
       ],
       "@ubs-platform/users-common": [
         "libs/users-common/src"

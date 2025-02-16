@@ -35,6 +35,7 @@
         "test:e2e": "jest --config ./apps/ubs-mona-mr/test/jest-e2e.json"
     },
     "dependencies": {
+        "@nestjs-modules/mailer": "^2.0.2",
         "@nestjs/common": "11.0.7",
         "@nestjs/core": "11.0.7",
         "@nestjs/jwt": "^11.0.0",
@@ -109,8 +110,12 @@
             "^@mona/users-common(|/.*)$": "<rootDir>/libs/users-common/src/$1",
             "^@mona/users-microservice-helper(|/.*)$": "<rootDir>/libs/users-microservice-helper/src/$1",
             "^@mona/users/core/users-core(|/.*)$": "<rootDir>/libs/users-core/src/$1",
+            "^@ubs-platform/crud-base(|/.*)$": "<rootDir>/libs/crud-base/src/$1",
+            "^@ubs-platform/crud-base-common(|/.*)$": "<rootDir>/libs/crud-base-common/src/$1",
+            "^@ubs-platform/feedback-common(|/.*)$": "<rootDir>/libs/feedback-common/src/$1",
             "^@ubs-platform/file-helper(|/.*)$": "<rootDir>/libs/file-helper/src/$1",
             "^@ubs-platform/microservice-setup-util(|/.*)$": "<rootDir>/libs/microservice-setup-util/src/$1",
+            "^@ubs-platform/notify-common(|/.*)$": "<rootDir>/libs/notify-common/src/$1",
             "^@ubs-platform/users-consts/users-consts(|/.*)$": "<rootDir>/libs/users-consts/src/$1",
             "^mona/core(|/.*)$": "<rootDir>/libs/core/src/$1"
         }
