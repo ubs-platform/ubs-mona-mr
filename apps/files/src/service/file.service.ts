@@ -2,10 +2,9 @@ import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { FileDoc, FileModel } from '../model/file.schema';
 import { Model, ObjectId, Schema } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserDTO } from '@ubs-platform/users-common';
 import { FileMeta } from '../dto/file-meta';
 import { FileRequest } from '../dto/file-request';
-import sharp from 'sharp';
+import * as sharp from 'sharp';
 import { FileVolatileTag } from '../dto/file-volatile-tag';
 import { Cron } from '@nestjs/schedule';
 @Injectable()
