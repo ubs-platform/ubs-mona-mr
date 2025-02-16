@@ -5,6 +5,10 @@
     "author": "",
     "private": true,
     "license": "MIT",
+    "docker": {
+        "organisation": "hcangunduz",
+        "imageNamePrefix": "ubs-mona-"
+    },
     "iksir": {
         "type": "ROOT",
         "childrenVersionTag": "beta",
