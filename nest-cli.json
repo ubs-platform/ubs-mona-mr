@@ -91,6 +91,33 @@
         "tsConfigPath": "libs/notify-common/tsconfig.lib.json"
       }
     },
+    "social": {
+      "type": "application",
+      "root": "apps/social",
+      "entryFile": "main",
+      "sourceRoot": "apps/social/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/social/tsconfig.app.json"
+      }
+    },
+    "social-common": {
+      "type": "library",
+      "root": "libs/social-common",
+      "entryFile": "index",
+      "sourceRoot": "libs/social-common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/social-common/tsconfig.lib.json"
+      }
+    },
+    "social-consts": {
+      "type": "library",
+      "root": "libs/social-consts",
+      "entryFile": "index",
+      "sourceRoot": "libs/social-consts/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/social-consts/tsconfig.lib.json"
+      }
+    },
     "users": {
       "type": "application",
       "root": "apps/users",

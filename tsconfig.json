@@ -54,6 +54,18 @@
       "@ubs-platform/notify-common/*": [
         "libs/notify-common/src/*"
       ],
+      "@ubs-platform/social-common": [
+        "libs/social-common/src"
+      ],
+      "@ubs-platform/social-common/*": [
+        "libs/social-common/src/*"
+      ],
+      "@ubs-platform/social-consts": [
+        "libs/social-consts/src"
+      ],
+      "@ubs-platform/social-consts/*": [
+        "libs/social-consts/src/*"
+      ],
       "@ubs-platform/users-common": [
         "libs/users-common/src"
       ],
