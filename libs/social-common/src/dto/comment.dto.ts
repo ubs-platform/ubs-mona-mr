@@ -1,118 +1,113 @@
-import {
-  EntityOwnershipDTO,
-  UserAuthBackendDTO,
-} from '@ubs-platform/users-common';
-
 export interface CommentAddDTO {
-  _id?: String;
-  entityGroup: String;
-  mainEntityName: String;
-  mainEntityId: String;
-  childEntityName: String;
-  childEntityId: String;
-  textContent: String;
-  childOfCommentId?: string;
+    _id?: String;
+    entityGroup: String;
+    mainEntityName: String;
+    mainEntityId: String;
+    childEntityName: String;
+    childEntityId: String;
+    textContent: String;
+    childOfCommentId?: string;
 }
 
 export interface BanUserDTO {
-  entityGroup: string;
-  mainEntityName: string;
-  mainEntityId: string;
-  byUserId: string;
+    entityGroup: string;
+    mainEntityName: string;
+    mainEntityId: string;
+    byUserId: string;
 }
 
 export interface CommentMetaSearchDTO {
-  entityGroup: String;
-  mainEntityName: String;
-  mainEntityId: String;
+    entityGroup: String;
+    mainEntityName: String;
+    mainEntityId: String;
 }
 
 export interface CommentSearchDTO {
-  entityGroup: String;
-  mainEntityName: String;
-  mainEntityId: String;
-  childEntityName: String;
-  childEntityId: String;
-  childOfCommentId?: string;
+    entityGroup: String;
+    mainEntityName: String;
+    mainEntityId: String;
+    childEntityName: String;
+    childEntityId: String;
+    childOfCommentId?: string;
 }
 
 export interface CommentDTO {
-  _id: String;
+    _id: String;
 
-  entityGroup: String;
+    entityGroup: String;
 
-  mainEntityName: String;
+    mainEntityName: String;
 
-  mainEntityId: String;
+    mainEntityId: String;
 
-  childEntityName: String;
+    childEntityName: String;
 
-  childEntityId: String;
+    childEntityId: String;
 
-  textContent: String;
+    textContent: String;
 
-  byUserId: String;
+    byUserId: String;
 
-  byFullName: String;
+    byFullName: String;
 
-  creationDate: Date;
+    creationDate: Date;
 
-  lastEditDate: Date;
+    lastEditDate: Date;
 
-  editCount: number;
+    editCount: number;
 
-  isChild?: boolean;
+    isChild?: boolean;
 
-  childOfCommentId?: string;
+    childOfCommentId?: string;
 
-  userDownVoted: boolean;
+    userDownVoted: boolean;
 
-  userUpVoted: boolean;
+    userUpVoted: boolean;
 
-  votesLength: number;
+    votesLength: number;
 
-  childCommentsCount: number;
+    childCommentsCount: number;
 
-  canRemove: boolean;
-  canEdit: boolean;
-  userCommentAdmin: boolean;
-  userBanned: boolean;
+    canRemove: boolean;
+    canEdit: boolean;
+    userCommentAdmin: boolean;
+    userBanned: boolean;
 }
 
 export interface CommentAbilityDTO {
-  userCanComment: boolean;
-  userCommentBlockReason: string;
-  extraNote?: string;
+    userCanComment: boolean;
+    userCommentBlockReason: string;
+    extraNote?: string;
 }
 
 export interface CommentEditDTO {
-  textContent: String;
+    textContent: String;
 }
 
 export interface CanManuplateComment {
-  // entityOwnership: EntityOwnershipDTO;
-  allow: boolean;
+    // entityOwnership: EntityOwnershipDTO;
+    allow: boolean;
 }
 
 export type SORT_FIELD = 'VOTE' | 'CREATIONDATE';
 export type SORT_ROTATION = 'ASC' | 'DESC';
 
 export interface PaginationRequest {
-  page: number;
-  size: number;
-  sortField: SORT_FIELD;
-  sortRotation: SORT_ROTATION;
+    page: number;
+    size: number;
+    sortField: SORT_FIELD;
+    sortRotation: SORT_ROTATION;
 }
 
 export interface PaginationResult {
-  page: number;
-  size: number;
-  maxItemLength: number;
-  list: CommentDTO[];
+    page: number;
+    size: number;
+    maxItemLength: number;
+    list: CommentDTO[];
 }
 
 export type CommentStatus = 'ALLOW' | 'DISABLE' | 'ARCHIVE';
 
 export type NewCommentingStatus = CommentMetaSearchDTO & {
-  newStatus: 'ALLOW' | 'DISABLE' | 'ARCHIVE';
+    newStatus: 'ALLOW' | 'DISABLE' | 'ARCHIVE';
 };
