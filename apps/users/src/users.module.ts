@@ -31,6 +31,7 @@ import { EntityOwnershipMapper } from './mapper/entity-ownership.mapper';
 import { UserMicroserviceController } from './web/user-microservice.controller';
 import { BackendJwtUtilsExportModule } from '@ubs-platform/users-microservice-helper';
 import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { UserCandiate, UserCandiateSchema } from './domain/user-candiate.model';
 
 @Module({
     controllers: [
@@ -56,6 +57,7 @@ import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
             { name: EntityOwnership.name, schema: EntityOwnershipSchema },
             { name: EmailChangeRequest.name, schema: EmailChangeRequestSchema },
             { name: PwResetRequest.name, schema: PwResetRequestSchema },
+            { name: UserCandiate.name, schema: UserCandiateSchema },
         ]),
         ...BackendJwtUtilsExportModule,
         ClientsModule.register([
