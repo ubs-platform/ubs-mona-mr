@@ -7,7 +7,7 @@ if [ "${VERSION}" != "" ]; then
     git commit -m "Version upgrade to $VERSION"
     git push
     git switch -c "v$VERSION"
-    git push --set-origin origin "v$VERSION"
+    git push --set-origin origin
 
 else
     echo "Version is needed"
