@@ -5,8 +5,10 @@ import {
     EntityOwnershipInsertCapabiltyDTO,
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
+    EntityOwnershipUserSearch,
     UserCapabilityDTO,
 } from '@ubs-platform/users-common';
+import { EOChannelConsts } from '@ubs-platform/users-consts';
 import { Observable } from 'rxjs';
 
 @Injectable()
@@ -23,25 +25,31 @@ export class EntityOwnershipService implements OnModuleInit {
     }
 
     async insertOwnership(oe: EntityOwnershipDTO) {
-        this.kafkaClient.emit('insert-ownership', oe);
+        this.kafkaClient.emit(EOChannelConsts.insertOwnership, oe);
     }
 
     async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO) {
-        this.kafkaClient.emit('insert-user-capability', oe);
+        this.kafkaClient.emit(EOChannelConsts.insertUserCapability, oe);
     }
 
     hasOwnership(eo: EntityOwnershipUserCheck): Observable<UserCapabilityDTO> {
-        return this.userClient.send('check-ownership', eo);
+        return this.userClient.send(EOChannelConsts.checkOwnership, eo);
     }
 
     searchOwnership(
         eo: EntityOwnershipSearch,
     ): Observable<EntityOwnershipDTO[]> {
-        return this.userClient.send('search-ownership', eo);
+        return this.userClient.send(EOChannelConsts.searchOwnership, eo);
+    }
+
+    searchOwnershipUser(
+        eo: EntityOwnershipUserSearch,
+    ): Observable<EntityOwnershipDTO[]> {
+        return this.userClient.send(EOChannelConsts.searchOwnershipUser, eo);
     }
 
     async deleteOwnership(oe: EntityOwnershipSearch) {
-        this.kafkaClient.emit('delete-ownership', oe);
+        this.kafkaClient.emit(EOChannelConsts.deleteOwnership, oe);
     }
 
     // async findUserAuth(userId: any): Promise<UserDTO> {

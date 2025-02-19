@@ -8,6 +8,7 @@ import {
     EntityOwnershipInsertCapabiltyDTO,
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
+    EntityOwnershipUserSearch,
     UserCapabilityDTO,
 } from '@ubs-platform/users-common';
 import { UserService } from './user.service';
@@ -169,6 +170,17 @@ export class EntityOwnershipService {
         } else return null;
     }
 
+    async searchByUser(eo: EntityOwnershipUserSearch) {
+        const entityOwnerships = await this.model.find({
+            entityGroup: eo.entityGroup,
+            entityName: eo.entityName,
+            'userCapabilities.userId': eo.userId,
+            ...(eo.capability ? { capability: eo.capability } : {}),
+        });
+
+        entityOwnerships.map((a) => this.mapper.toDto(a));
+    }
+
     private async findExisting(
         eouc: EntityOwnershipUserCheck,
     ): Promise<EntityOwnershipDTO> {
@@ -177,7 +189,7 @@ export class EntityOwnershipService {
             entityId: eouc.entityId,
             entityName: eouc.entityName,
         });
-        return entityOwnership ? this.mapper.toDto(entityOwnership) : null;
+        return entityOwnership ? this.mapper.toDto(entityOwnership) : null!;
     }
 
     public async search(
