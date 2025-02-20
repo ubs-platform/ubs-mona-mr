@@ -35,6 +35,7 @@ import { UserCandiate, UserCandiateSchema } from './domain/user-candiate.model';
 import { UserCommonService } from './services/user-common.service';
 import { UserRegisterService } from './services/user-register.service';
 import { UserRegisterController } from './web/user-registration.controller';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     controllers: [
@@ -48,6 +49,7 @@ import { UserRegisterController } from './web/user-registration.controller';
     ],
 
     imports: [
+        ScheduleModule.forRoot(),
         MongooseModule.forRoot(
             `mongodb://${process.env.NX_MONGO_USERNAME}:${
                 process.env.NX_MONGO_PASSWORD

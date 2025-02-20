@@ -188,8 +188,12 @@ export class UserService {
         pwHash: string,
     ): Promise<UserDTO[]> {
         const us = await this.userModel.find({
-            username: username,
-            passwordEncyripted: pwHash,
+            $and: [
+                {
+                    $or: [{ username: username }, { primaryEmail: username }],
+                },
+                { passwordEncyripted: pwHash },
+            ],
         });
         return UserMapper.toDtoList(us);
     }

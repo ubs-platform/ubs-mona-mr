@@ -33,6 +33,13 @@ export class UserRegisterService {
         private userCommon: UserCommonService,
     ) {}
 
+    @Cron('* */5 * * * *')
+    async handleCron() {
+        await this.userCandiateModel.deleteMany({
+            expireDate: { $lt: new Date().toISOString() },
+        });
+    }
+
     async sendRegisteredEmail(u: UserCandiate, key: string, origin = '') {
         const link =
             origin +
