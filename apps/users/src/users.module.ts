@@ -32,6 +32,9 @@ import { UserMicroserviceController } from './web/user-microservice.controller';
 import { BackendJwtUtilsExportModule } from '@ubs-platform/users-microservice-helper';
 import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { UserCandiate, UserCandiateSchema } from './domain/user-candiate.model';
+import { UserCommonService } from './services/user-common.service';
+import { UserRegisterService } from './services/user-register.service';
+import { UserRegisterController } from './web/user-registration.controller';
 
 @Module({
     controllers: [
@@ -41,6 +44,7 @@ import { UserCandiate, UserCandiateSchema } from './domain/user-candiate.model';
         ResetPasswordController,
         EntityOwnershipController,
         UserMicroserviceController,
+        UserRegisterController,
     ],
 
     imports: [
@@ -69,6 +73,8 @@ import { UserCandiate, UserCandiateSchema } from './domain/user-candiate.model';
     ],
     providers: [
         UserService,
+        UserCommonService,
+        UserRegisterService,
         AuthService,
         EmailChangeRequestService,
         JwtAuthLocalGuard,

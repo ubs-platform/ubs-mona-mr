@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../domain/user.model';
 import { EmailService } from './email.service';
@@ -14,13 +18,16 @@ import { UserMapper } from '../mapper/user.mapper';
 import { Mode } from 'fs';
 import { randomUUID } from 'crypto';
 import { UserCommonService } from './user-common.service';
+import { UserService } from './user.service';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class UserRegisterService {
     constructor(
         @InjectModel(UserCandiate.name)
         private userCandiateModel: Model<UserCandiate>,
-        private userModel: Model<User>,
+        // private userModel: Model<User>,
+        private userService: UserService,
         // @Inject('KAFKA_CLIENT') private client: ClientKafka,
         private emailService: EmailService,
         private userCommon: UserCommonService,
@@ -47,10 +54,26 @@ export class UserRegisterService {
         if (activationKey) {
             const u = await this.userCandiateModel.findOne({ activationKey });
             if (u) {
+                await this.userService.saveNewUser(
+                    {
+                        active: true,
+                        localeCode: u.localeCode,
+                        name: u.name,
+                        surname: u.surname,
+                        username: u.username,
+                        password: u.passwordEncyripted,
+                        primaryEmail: u.primaryEmail,
+                        roles: [],
+                    },
+                    false,
+                );
+                await u.deleteOne();
                 //todo: userCandiate to user
                 // u.active = true;
                 // u.activationKey = '';
                 // u.save();
+            } else {
+                throw new NotFoundException();
             }
         }
     }
@@ -67,19 +90,8 @@ export class UserRegisterService {
         return await UserMapper.toCandiateDto(a);
     }
 
-    async registerUser(user: UserRegisterDTO, origin?: string) {
-        const u = new this.userModel();
-        await UserMapper.registerFrom(u, user);
-    }
-
-    async register(uregister: UserRegisterDTO) {
+    async register(uregister: UserRegisterDTO, origin: string) {
         await this.assertUserInfoValid(uregister);
-        if (!uregister.password) {
-            throw new ErrorInformations(
-                UBSUsersErrorConsts.EMPTY_DATA,
-                'password-is-missing.',
-            );
-        }
 
         let a = await this.userCandiateModel.findById(uregister.registerId);
         if (a) {
@@ -108,9 +120,22 @@ export class UserRegisterService {
     }
 
     async assertUserInfoValid(uregister: UserRegisterDTO) {
+        if (uregister.registerId == null) {
+            throw new BadRequestException(
+                'user-candiate',
+                'registration id is required',
+            );
+        }
+        if (!uregister.password) {
+            throw new ErrorInformations(
+                'user-candiate',
+                'password-is-missing.',
+            );
+        }
+
         await this.userCommon.assertUserInfoValid(uregister);
 
-        const us = await this.userModel.find({
+        const us = await this.userCandiateModel.find({
             $or: [
                 { username: uregister.username },
                 { primaryEmail: uregister.primaryEmail },
@@ -118,10 +143,17 @@ export class UserRegisterService {
             _id: { $ne: uregister.registerId },
         });
         if (us.length) {
-            throw new ErrorInformations(
-                UBSUsersErrorConsts.EXIST_PRIMARY_MAIL_OR_USERNAME,
-                'User with that primary mail or login is exist.',
-            );
+            if (us[0].username == uregister.username) {
+                throw new ErrorInformations(
+                    UBSUsersErrorConsts.EXIST_USERNAME,
+                    'User with that login is exist.',
+                );
+            } else {
+                throw new ErrorInformations(
+                    UBSUsersErrorConsts.EXIST_PRIMARY_MAIL,
+                    'User with that primary mail is exist.',
+                );
+            }
         }
     }
 }

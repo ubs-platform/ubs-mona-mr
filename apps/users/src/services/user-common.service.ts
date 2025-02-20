@@ -39,23 +39,22 @@ export class UserCommonService {
             );
         }
 
-        // const userWithUsername = await this.findByUsername(user.username);
-        // if (userWithUsername.length) {
-        //     throw new ErrorInformations(
-        //         UBSUsersErrorConsts.EXIST_USERNAME,
-        //         'User with that username is exist.',
-        //     );
-        // }
-
         const userWithPrimaryMail = await this.findByUsernameOrEmail(
             user.username,
             user.primaryEmail,
         );
         if (userWithPrimaryMail.length) {
-            throw new ErrorInformations(
-                UBSUsersErrorConsts.EXIST_PRIMARY_MAIL_OR_USERNAME,
-                'User with that primary mail or login is exist.',
-            );
+            if (userWithPrimaryMail[0].username == user.username) {
+                throw new ErrorInformations(
+                    UBSUsersErrorConsts.EXIST_USERNAME,
+                    'User with that login is exist.',
+                );
+            } else {
+                throw new ErrorInformations(
+                    UBSUsersErrorConsts.EXIST_PRIMARY_MAIL,
+                    'User with that primary mail is exist.',
+                );
+            }
         }
     }
 }

@@ -98,10 +98,13 @@ export class UserService {
         this.emailService.sendEmail(u, subject, templateName, specialVariables);
     }
 
-    async saveNewUser(user: UserCreateDTO & { id?: string }) {
+    async saveNewUser(
+        user: UserCreateDTO & { id?: string },
+        encryptPassword = true,
+    ) {
         await this.userCommonService.assertUserInfoValid(user);
         const u = new this.userModel();
-        await UserMapper.createFrom(u, user);
+        await UserMapper.createFrom(u, user, encryptPassword);
         await u.save();
 
         return UserMapper.toAuthDto(u);

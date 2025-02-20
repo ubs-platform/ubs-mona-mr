@@ -4,54 +4,43 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 export class UserCandiate {
     _id?: any;
 
-    @Prop({
-        unique: true,
-        required: true,
-    })
+    @Prop(String)
     username: string;
 
-    @Prop({
-        required: false,
-    })
+    @Prop(String)
     passwordEncyripted: string;
 
-    @Prop({
-        required: true,
-    })
+    @Prop(String)
     primaryEmail: string;
 
-    @Prop({
-        required: true,
-    })
+    @Prop(String)
     name: string;
 
-    @Prop({
-        required: true,
-    })
+    @Prop(String)
     surname: string;
 
-    @Prop()
+    @Prop(String)
     country: string;
 
-    @Prop()
+    @Prop(String)
     state: string;
 
-    @Prop()
+    @Prop(String)
     city: string;
 
-    @Prop()
+    @Prop(String)
     district: string;
 
-    @Prop()
+    @Prop(String)
     gender: string;
 
-    @Prop()
+    @Prop(String)
     pronounce: string;
 
-    @Prop()
+    @Prop([String])
     roles: string[];
 
-    @Prop()
+    @Prop([String])
     webSites: string[];
 
     @Prop({

@@ -43,12 +43,20 @@ export class UserMapper {
         } as UserRegisterDTO;
     }
 
-    static async createFrom(u: User, user: UserCreateDTO): Promise<User> {
+    static async createFrom(
+        u: User,
+        user: UserCreateDTO,
+        encryptPassword = true,
+    ): Promise<User> {
         u.active = user.active;
         u.username = this.lowerCased(user.username)!;
         u.primaryEmail = this.lowerCased(user.primaryEmail)!;
         if (user.password) {
-            u.passwordEncyripted = await CryptoOp.encrypt(user.password);
+            if (encryptPassword) {
+                u.passwordEncyripted = await CryptoOp.encrypt(user.password);
+            } else {
+                u.passwordEncyripted = user.password;
+            }
         }
 
         u.roles = user.roles;
