@@ -5,3 +5,4 @@ export * from './guards/user-intercept';
 export * from './current-user-decorator';
 export * from './service/user.service';
 export * from './service/entity-ownership.service';
+export * from './user-kafka-events';

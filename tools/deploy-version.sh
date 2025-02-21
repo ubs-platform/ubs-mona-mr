@@ -14,7 +14,7 @@ if [ "${VERSION}" != "" ]; then
     git switch -c $VERSION_BRANCH
     git push --set-upstream origin $VERSION_BRANCH
     npm run xr publish-libs
-    $(dirname ${BASH_SOURCE[0]})/release-all-apps.sh
+    # $(dirname ${BASH_SOURCE[0]})/release-all-apps.sh
 
 else
     echo "Version is needed"

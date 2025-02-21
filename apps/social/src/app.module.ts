@@ -28,6 +28,7 @@ import {
 } from './model/application-social-restriction';
 import { ApplicationSocialRestrictionController } from './controller/application-social-restrictions.controller';
 import { ApplicationSocialRestrictionService } from './service/application-social-restriction.service';
+import { CommentMicroserviceController } from './controller/comment-microservice.controller';
 
 @Module({
     imports: [
@@ -62,6 +63,7 @@ import { ApplicationSocialRestrictionService } from './service/application-socia
         CommentController,
         CommentAdminController,
         ApplicationSocialRestrictionController,
+        CommentMicroserviceController
     ],
     providers: [
         CommentService,

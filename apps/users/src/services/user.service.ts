@@ -22,12 +22,13 @@ import { EmailDto } from '../dto/email.dto';
 import { randomUUID } from 'crypto';
 import { EmailService } from './email.service';
 import { UserCommonService } from './user-common.service';
+import { UserKafkaEvents } from '@ubs-platform/users-consts';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectModel(User.name) private userModel: Model<User>,
-        // @Inject('KAFKA_CLIENT') private client: ClientKafka,
+        @Inject('KAFKA_CLIENT') private client: ClientKafka,
         private emailService: EmailService,
         private userCommonService: UserCommonService,
     ) {
@@ -302,11 +303,20 @@ export class UserService {
         if (user) {
             UserMapper.userFromGeneralInfo(user, data);
 
-            await user.save();
-            UserMapper.toAuthDto(user);
+            await this.saveUserWithEditEvent(user);
         } else {
             throw 'not.found';
         }
+    }
+
+    private async saveUserWithEditEvent(
+        user: import('mongoose').Document<unknown, {}, User> &
+            User & { _id: import('mongoose').Types.ObjectId } & { __v: number },
+    ) {
+        await user.save();
+        const uDto = UserMapper.toAuthDto(user);
+        this.client.emit(UserKafkaEvents.USER_EDITED, uDto);
+        return uDto;
     }
 
     async deleteUser(id: any) {
