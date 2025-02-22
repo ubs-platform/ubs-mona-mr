@@ -11,7 +11,7 @@
     },
     "iksir": {
         "type": "ROOT",
-        "childrenVersionTag": "docker_img_opt_test_1",
+        "childrenVersionTag": "beta",
         "childrenAccess": "public",
         "childrenPrefix": "@ubs-platform"
     },
