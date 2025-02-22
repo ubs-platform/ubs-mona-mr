@@ -1,10 +1,9 @@
-FROM node:20-alpine AS build
+# FROM node:20-alpine AS build
+FROM ubs_temp_workspace
 ARG APP_NAME
 # COPY package.json  package-lock.json ./
 WORKDIR /app
 COPY . ./
-RUN echo appname: ${APP_NAME}
-RUN npm install
 RUN npm run build ${APP_NAME}
 
 FROM node:20-alpine

@@ -13,7 +13,9 @@
 #     echo "start to push $DOCKER_FULL_TAG"
 #     docker push "$DOCKER_FULL_TAG"
 # fi
+$(dirname ${BASH_SOURCE[0]})/generate-temp-workspace.sh
 APPS=$(ls apps)
 for APP in $APPS; do
     $(dirname ${BASH_SOURCE[0]})/release-app.sh $APP
 done
+$(dirname ${BASH_SOURCE[0]})/destroy-temp-workspace.sh

@@ -1,0 +1,1 @@
+docker rmi ubs_temp_workspace
