@@ -11,10 +11,10 @@ if [ "${VERSION}" != "" ]; then
     git add .
     git commit -m "Version upgrade to $VERSION"
     git push
-    git switch -c $VERSION_BRANCH
-    git push --set-upstream origin $VERSION_BRANCH
+    # git switch -c $VERSION_BRANCH
+    # git push --set-upstream origin $VERSION_BRANCH
     npm run xr publish-libs
-    # $(dirname ${BASH_SOURCE[0]})/release-all-apps.sh
+    $(dirname ${BASH_SOURCE[0]})/release-all-apps.sh
 
 else
     echo "Version is needed"
