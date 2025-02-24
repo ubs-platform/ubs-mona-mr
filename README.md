@@ -10,5 +10,5 @@ UBS Mona is a rest API framework developed around NestJS, which aims to develop 
 
 ## Detailed documentations
 
-- English US 🇺🇸 - Soon (i hope 🫤)
+- [English US 🇺🇸](./docs/en-us/README.md)
 - [Turkish 🇹🇷](./docs/tr-tr/README.md)
