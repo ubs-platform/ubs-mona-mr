@@ -10,9 +10,10 @@ UBS Mona, az kodla backend geliştirmeyi hedefleyen NestJS çevresinde gelişen,
 
 ## İçerikler:
 
-### Ayağa kaldırma
-
-En kısa sürede eklemeye çalışacağım ancak söz veremiyorum
+### Başlatma
+- [Temel gereksinimler](./getting-started/base-requirements.md)
+- [Kodları kullanarak ayağa kaldırma](./getting-started/running-on-source-code.md)
+- [Docker imajlarıyla ve compose kullanarak ayağa kaldırma](./getting-started/running-via-docker-compose.md)
 
 ### API Arayüzleri
 

@@ -12,7 +12,11 @@ UBS Mona is a rest API framework developed around NestJS, which aims to develop 
 
 ### Getting started
 
-I will try to add it as soon as possible but I can't promise
+### Startup
+- [Base requirements](./getting-started/base-requirements.md)
+- [Run applications with using source codes](./getting-started/running-on-source-code.md)
+- [Run applications with docker](./getting-started/running-via-docker-compose.md)
+
 
 ### API Interfaces
 
