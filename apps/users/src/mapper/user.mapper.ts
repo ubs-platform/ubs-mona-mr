@@ -8,18 +8,55 @@ import {
 } from '@ubs-platform/users-common';
 import { User } from '../domain/user.model';
 import { CryptoOp } from '../util/crypto-op';
+import { UserCandiate } from '../domain/user-candiate.model';
 
 export class UserMapper {
     static lowerCased(i?: string) {
         return i?.toLowerCase().trim();
     }
 
-    static async createFrom(u: User, user: UserCreateDTO): Promise<User> {
+    static async transferToCandiateEntity(
+        u: UserCandiate,
+        user: UserRegisterDTO,
+    ) {
+        u.username = this.lowerCased(user.username)!;
+        u.primaryEmail = this.lowerCased(user.primaryEmail)!;
+        u.passwordEncyripted = await CryptoOp.encrypt(user.password);
+
+        u.name = user.name;
+        u.surname = user.surname;
+        u.localeCode = user.localeCode;
+        u._id = user.registerId;
+        return u;
+    }
+
+    static toCandiateDto(ub: UserCandiate) {
+        return {
+            username: this.lowerCased(ub.username),
+            name: ub.name,
+            surname: ub.surname,
+            primaryEmail: this.lowerCased(ub.primaryEmail),
+            id: ub._id,
+            localeCode: ub.localeCode,
+            password: '',
+            registerId: ub._id,
+        } as UserRegisterDTO;
+    }
+
+    static async createFrom(
+        u: User,
+        user: UserCreateDTO,
+        encryptPassword = true,
+    ): Promise<User> {
         u.active = user.active;
         u.username = this.lowerCased(user.username)!;
         u.primaryEmail = this.lowerCased(user.primaryEmail)!;
         if (user.password) {
-            u.passwordEncyripted = await CryptoOp.encrypt(user.password);
+            if (encryptPassword) {
+                u.passwordEncyripted = await CryptoOp.encrypt(user.password);
+            } else {
+                u.passwordEncyripted = user.password;
+            }
         }
 
         u.roles = user.roles;
@@ -41,6 +78,7 @@ export class UserMapper {
         entity.name = dto.name;
         entity.surname = dto.surname;
         entity.localeCode = dto.localeCode;
+
         console.info(entity);
         return entity;
     }

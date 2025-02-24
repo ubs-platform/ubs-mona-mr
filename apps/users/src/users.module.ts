@@ -31,6 +31,11 @@ import { EntityOwnershipMapper } from './mapper/entity-ownership.mapper';
 import { UserMicroserviceController } from './web/user-microservice.controller';
 import { BackendJwtUtilsExportModule } from '@ubs-platform/users-microservice-helper';
 import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { UserCandiate, UserCandiateSchema } from './domain/user-candiate.model';
+import { UserCommonService } from './services/user-common.service';
+import { UserRegisterService } from './services/user-register.service';
+import { UserRegisterController } from './web/user-registration.controller';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     controllers: [
@@ -40,9 +45,11 @@ import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
         ResetPasswordController,
         EntityOwnershipController,
         UserMicroserviceController,
+        UserRegisterController,
     ],
 
     imports: [
+        ScheduleModule.forRoot(),
         MongooseModule.forRoot(
             `mongodb://${process.env.NX_MONGO_USERNAME}:${
                 process.env.NX_MONGO_PASSWORD
@@ -56,6 +63,7 @@ import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
             { name: EntityOwnership.name, schema: EntityOwnershipSchema },
             { name: EmailChangeRequest.name, schema: EmailChangeRequestSchema },
             { name: PwResetRequest.name, schema: PwResetRequestSchema },
+            { name: UserCandiate.name, schema: UserCandiateSchema },
         ]),
         ...BackendJwtUtilsExportModule,
         ClientsModule.register([
@@ -67,6 +75,8 @@ import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
     ],
     providers: [
         UserService,
+        UserCommonService,
+        UserRegisterService,
         AuthService,
         EmailChangeRequestService,
         JwtAuthLocalGuard,

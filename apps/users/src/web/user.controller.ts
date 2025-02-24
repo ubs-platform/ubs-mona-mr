@@ -30,21 +30,6 @@ export class UserController {
         private emailChangeRequestService: EmailChangeRequestService,
     ) {}
 
-    @Post()
-    async registerUser(@Body() user: UserRegisterDTO, @Headers() headers: any) {
-        if (user.username.includes(' ') || user.username.includes('\n')) {
-            throw new HttpException(
-                'error.username.space',
-                HttpStatus.BAD_REQUEST,
-            );
-        }
-        try {
-            await this.userService.registerUser(user, headers?.['origin']);
-        } catch (error) {
-            throw new HttpException(error, HttpStatus.BAD_REQUEST);
-        }
-    }
-
     @Put('/current/general')
     @UseGuards(JwtAuthLocalGuard)
     async updateGeneralUserInformation(
@@ -114,10 +99,5 @@ export class UserController {
         } catch (error) {
             throw new HttpException(error, HttpStatus.BAD_REQUEST);
         }
-    }
-
-    @Post('activate/:key')
-    public async activate(@Param() { key }: { key: string }) {
-        await this.userService.enableUser(key);
     }
 }

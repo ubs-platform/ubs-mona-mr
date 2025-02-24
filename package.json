@@ -1,6 +1,6 @@
 {
     "name": "ubs-mona-mr",
-    "version": "5.0.5",
+    "version": "5.0.7",
     "description": "",
     "author": "",
     "private": true,
@@ -45,7 +45,6 @@
         "@nestjs/platform-express": "11.0.7",
         "@nestjs/schedule": "^5.0.1",
         "@nestjs/serve-static": "^5.0.1",
-        "@ubs-platform/mona-experiment-one": "^0.0.5",
         "axios": "^1.7.9",
         "comment-json": "^4.2.5",
         "crypto-promise": "^2.1.0",

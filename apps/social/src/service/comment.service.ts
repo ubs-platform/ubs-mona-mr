@@ -33,6 +33,25 @@ export class CommentService {
         private commentAbilityCheckService: CommentAbilityCheckService,
     ) {}
 
+    async renameCommenterUserFullname(u: UserAuthBackendDTO) {
+        //todo: bunu tekrar gözden geçir sanırım çalışmıyor?...
+
+        await this.commentModel
+            .aggregate([
+                {
+                    $match: {
+                        byUserId: u.id,
+                    },
+                },
+                {
+                    $set: {
+                        byFullname: u.name + ' ' + u.surname,
+                    },
+                },
+            ])
+            .exec();
+    }
+
     private fillChildrenWithParentIfEmpty(
         comment: CommentSearchDTO | CommentDTO,
     ) {

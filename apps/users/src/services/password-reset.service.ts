@@ -10,6 +10,7 @@ import { lastValueFrom } from 'rxjs';
 import { exec } from 'child_process';
 import { UserDTO } from '@ubs-platform/users-common';
 import { EmailService } from './email.service';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class PasswordResetService {
@@ -31,6 +32,13 @@ export class PasswordResetService {
                 },
             })) > 0
         );
+    }
+
+    @Cron('* */5 * * * *')
+    async handleCron() {
+        await this.passwordResetModel.deleteMany({
+            expireAfter: { $lt: new Date().toISOString() },
+        });
     }
 
     public async insertNewRequest(username: string, origin?: string) {

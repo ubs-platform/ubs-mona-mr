@@ -21,26 +21,18 @@ import { ClientKafka } from '@nestjs/microservices';
 import { EmailDto } from '../dto/email.dto';
 import { randomUUID } from 'crypto';
 import { EmailService } from './email.service';
+import { UserCommonService } from './user-common.service';
+import { UserKafkaEvents } from '@ubs-platform/users-consts';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectModel(User.name) private userModel: Model<User>,
-        // @Inject('KAFKA_CLIENT') private client: ClientKafka,
+        @Inject('KAFKA_CLIENT') private client: ClientKafka,
         private emailService: EmailService,
+        private userCommonService: UserCommonService,
     ) {
         this.initOperation();
-    }
-
-    async enableUser(activationKey: string) {
-        if (activationKey) {
-            const u = await this.userModel.findOne({ activationKey });
-            if (u) {
-                u.active = true;
-                u.activationKey = '';
-                u.save();
-            }
-        }
     }
 
     async fetchAllUsers() {
@@ -98,18 +90,6 @@ export class UserService {
         this.sendEmail(u, 'ubs-pwreset-changed-short', 'ubs-pwreset-changed');
     }
 
-    async sendRegisteredEmail(u: User, key: string, origin = '') {
-        const link =
-            origin +
-            process.env['U_USERS_REGISTERED_USER_VALIDATING_URL']?.replace(
-                ':key',
-                key,
-            );
-        this.sendEmail(u, 'ubs-user-registered-short', 'ubs-user-registered', {
-            link,
-        });
-    }
-
     async sendEmail(
         u: User,
         subject: string,
@@ -119,10 +99,13 @@ export class UserService {
         this.emailService.sendEmail(u, subject, templateName, specialVariables);
     }
 
-    async saveNewUser(user: UserCreateDTO & { id?: string }) {
-        await this.assertUserInfoValid(user);
+    async saveNewUser(
+        user: UserCreateDTO & { id?: string },
+        encryptPassword = true,
+    ) {
+        await this.userCommonService.assertUserInfoValid(user);
         const u = new this.userModel();
-        await UserMapper.createFrom(u, user);
+        await UserMapper.createFrom(u, user, encryptPassword);
         await u.save();
 
         return UserMapper.toAuthDto(u);
@@ -137,61 +120,22 @@ export class UserService {
         }
     }
 
-    async registerUser(user: UserRegisterDTO, origin?: string) {
-        await this.assertUserInfoValid(user);
-        if (!user.password) {
-            throw new ErrorInformations(
-                UBSUsersErrorConsts.EMPTY_DATA,
-                'password-is-missing.',
-            );
-        }
-        const u = new this.userModel();
-        await UserMapper.registerFrom(u, user);
-        u.activationKey = randomUUID();
-        const date = new Date();
-        date.setDate(date.getDate() + 7);
-        u.activationExpireDate = date;
-        await u.save();
-        await this.sendRegisteredEmail(u, u.activationKey, origin);
-    }
-
-    private async assertUserInfoValid(
-        user: UserDTO | UserCreateDTO | UserRegisterDTO,
-    ) {
-        if (!user || !user.username || !user.primaryEmail) {
-            throw new ErrorInformations(
-                UBSUsersErrorConsts.EMPTY_DATA,
-                'One or More Required informations are empty.',
-            );
-        }
-
-        const userWithUsername = await this.findByUsername(user.username);
-        if (userWithUsername.length) {
-            throw new ErrorInformations(
-                UBSUsersErrorConsts.EXIST_USERNAME,
-                'User with that username is exist.',
-            );
-        }
-
-        const userWithPrimaryMail = await this.findByEmail(user.primaryEmail);
-        if (userWithPrimaryMail.length) {
-            throw new ErrorInformations(
-                UBSUsersErrorConsts.EXIST_PRIMARY_MAIL,
-                'User with that primary mail is exist.',
-            );
-        }
-    }
-
     async findUserByLogin(userLogin: UserAuth): Promise<UserDTO | null> {
         let realUser: UserDTO | null = null;
-        const userUname = await this.findByUsername(userLogin.login);
-        if (userUname.length) {
-            realUser = userUname[0];
-        } else {
-            const userEmail = await this.findByEmail(userLogin.login);
-            if (userEmail.length) {
-                realUser = userEmail[0];
-            }
+        // const userUname = await this.userCommonService.findByUsername(
+        //     userLogin.login,
+        // );
+        // if (userUname.length) {
+        //     realUser = userUname[0];
+        // } else {
+
+        // }
+        const userEmail = await this.userCommonService.findByUsernameOrEmail(
+            userLogin.login,
+            userLogin.login,
+        );
+        if (userEmail.length) {
+            realUser = userEmail[0];
         }
         return realUser;
     }
@@ -218,12 +162,6 @@ export class UserService {
         return realUser;
     }
 
-    async findByEmail(primaryEmail: string): Promise<UserDTO[]> {
-        return await this.userModel.find({
-            primaryEmail: primaryEmail,
-        });
-    }
-
     async findByEmailExcludeUserId(
         primaryEmail: string,
         userIdExclude: any,
@@ -234,13 +172,6 @@ export class UserService {
                 $ne: userIdExclude,
             },
         });
-    }
-
-    async findByUsername(username: string): Promise<UserDTO[]> {
-        const us = await this.userModel.find({
-            username: username,
-        });
-        return UserMapper.toDtoList(us);
     }
 
     private async findByEmailPwHash(
@@ -258,8 +189,12 @@ export class UserService {
         pwHash: string,
     ): Promise<UserDTO[]> {
         const us = await this.userModel.find({
-            username: username,
-            passwordEncyripted: pwHash,
+            $and: [
+                {
+                    $or: [{ username: username }, { primaryEmail: username }],
+                },
+                { passwordEncyripted: pwHash },
+            ],
         });
         return UserMapper.toDtoList(us);
     }
@@ -320,8 +255,12 @@ export class UserService {
 
     async addUserFullInformation(data: UserFullDto) {
         if (
-            (await this.findByEmail(data.primaryEmail)).length ||
-            (await this.findByUsername(data.username)).length
+            (
+                await this.userCommonService.findByUsernameOrEmail(
+                    data.username,
+                    data.primaryEmail,
+                )
+            ).length
         ) {
             throw 'email-is-using-already';
         }
@@ -364,11 +303,20 @@ export class UserService {
         if (user) {
             UserMapper.userFromGeneralInfo(user, data);
 
-            await user.save();
-            UserMapper.toAuthDto(user);
+            await this.saveUserWithEditEvent(user);
         } else {
             throw 'not.found';
         }
+    }
+
+    private async saveUserWithEditEvent(
+        user: import('mongoose').Document<unknown, {}, User> &
+            User & { _id: import('mongoose').Types.ObjectId } & { __v: number },
+    ) {
+        await user.save();
+        const uDto = UserMapper.toAuthDto(user);
+        this.client.emit(UserKafkaEvents.USER_EDITED, uDto);
+        return uDto;
     }
 
     async deleteUser(id: any) {
@@ -401,14 +349,15 @@ export class UserService {
             if (user.name == 'Kyle' && user.surname == 'Broflovski') {
                 console.warn(
                     'We suppose that you are Kip Drordy, you are so alone and have social anxiety. So admin user "Kyle Broflovski" has been added for emotional support. Please see the following output\n',
-                    "Don't forget to change these informations before production.",
                 );
             } else {
                 console.warn(
                     'Initial user has been added. Please see the following output',
-                    "Don't forget to change these informations before production.",
                 );
             }
+            console.warn(
+                "Don't forget to change these informations before production.",
+            );
             console.info(user);
             // }
         }

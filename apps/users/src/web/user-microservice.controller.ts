@@ -22,7 +22,10 @@ import { UserService } from '../services/user.service';
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import { CurrentUser } from '../local-current-user-decorator';
 import { EmailChangeRequestService } from '../services/email-change-request.service';
-import { UserAuthBackendDTO, UserRegisterDTO } from '@ubs-platform/users-common';
+import {
+    UserAuthBackendDTO,
+    UserRegisterDTO,
+} from '@ubs-platform/users-common';
 
 @Controller()
 export class UserMicroserviceController {
@@ -35,15 +38,6 @@ export class UserMicroserviceController {
             serviceTcpHost: process.env['U_USERS_MONA_INTERNAL_COM_HOST'],
             serviceTcpPort: process.env['U_USERS_MONA_INTERNAL_COM_PORT'],
         });
-    }
-
-    @Post()
-    async registerUser(@Body() user: UserRegisterDTO, @Headers() headers: any) {
-        try {
-            await this.userService.registerUser(user, headers?.['origin']);
-        } catch (error) {
-            throw new HttpException(error, HttpStatus.BAD_REQUEST);
-        }
     }
 
     @MessagePattern('file-upload-PROFILE_PHOTO')
