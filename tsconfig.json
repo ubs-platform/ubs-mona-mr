@@ -66,6 +66,12 @@
       "@ubs-platform/social-consts/*": [
         "libs/social-consts/src/*"
       ],
+      "@ubs-platform/superlama-common": [
+        "libs/superlama-common/src"
+      ],
+      "@ubs-platform/superlama-common/*": [
+        "libs/superlama-common/src/*"
+      ],
       "@ubs-platform/users-common": [
         "libs/users-common/src"
       ],

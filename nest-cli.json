@@ -118,6 +118,24 @@
         "tsConfigPath": "libs/social-consts/tsconfig.lib.json"
       }
     },
+    "superlama": {
+      "type": "application",
+      "root": "apps/superlama",
+      "entryFile": "main",
+      "sourceRoot": "apps/superlama/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/superlama/tsconfig.app.json"
+      }
+    },
+    "superlama-common": {
+      "type": "library",
+      "root": "libs/superlama-common",
+      "entryFile": "index",
+      "sourceRoot": "libs/superlama-common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/superlama-common/tsconfig.lib.json"
+      }
+    },
     "users": {
       "type": "application",
       "root": "apps/users",
