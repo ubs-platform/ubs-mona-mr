@@ -1,2 +1,1 @@
-export * from './superlama-common.module';
-export * from './superlama-common.service';
+export * from './text-sender-type.dto';
