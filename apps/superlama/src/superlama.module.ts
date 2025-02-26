@@ -24,13 +24,9 @@ import { ChatMessage, ChatMessageSchema } from './model/chat-message-model';
             { name: ChatMessage.name, schema: ChatMessageSchema },
             { name: ChatSession.name, schema: ChatSessionSchema },
         ]),
-    ],
-    controllers: [RealtimeChatController],
-    providers: [
-        RealtimeChatService,
-        ChatMessageMapper,
-        LlmOperationService,
         BackendJwtUtilsModule,
     ],
+    controllers: [RealtimeChatController],
+    providers: [RealtimeChatService, ChatMessageMapper, LlmOperationService],
 })
 export class SuperlamaModule {}

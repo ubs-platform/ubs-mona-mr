@@ -37,6 +37,8 @@ export class RealtimeChatService {
         const message = new this.chatMessageModel({
             sessionId: sessionId,
             moderationNoteWarning: '',
+            createdAt: new Date(),
+            updatedAt: new Date(),
             senderType: 'USER',
             senderId: user.id,
             systemTextContent: '',

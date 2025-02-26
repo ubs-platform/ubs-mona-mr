@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { RealtimeChatService } from '../service/realtime-chat.service';
 import {
     CurrentUser,
@@ -20,15 +20,20 @@ export class RealtimeChatController {
         @Body() message: UserSendingMessageDto,
         @CurrentUser() user: UserDTO,
     ) {
-        // Call the service method and handle potential errors
         return await this.realtimeChatService.insertUserMessage(message, user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Get()
-    async findMessagesBySessionIdPaged(sessionId: string) {
+    async findMessagesBySessionIdPaged(
+        @Param('sessionId') sessionId: string,
+        @Param('beforeDate') beforeDate?: string,
+        @Param('lastChatMessageId') lastChatMessageId?: string,
+    ) {
         return await this.realtimeChatService.findMessagesBySessionIdPaged(
             sessionId,
+            beforeDate,
+            lastChatMessageId,
         );
     }
 
