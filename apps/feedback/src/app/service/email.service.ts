@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientKafka } from '@nestjs/microservices';
 import { EmailDto } from '@ubs-platform/notify-common';
-import { UserMessageModel } from '../model/user-message.model';
+import { UserMessage } from '../model/user-message.model';
 import { IUserMessageDto } from '@ubs-platform/feedback-common';
 
 @Injectable()

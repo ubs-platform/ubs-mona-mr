@@ -50,9 +50,11 @@
         "crypto-promise": "^2.1.0",
         "kafkajs": "^2.2.4",
         "mongoose": "^8.10.2",
+        "ollama": "^0.5.14",
         "passport": "^0.7.0",
         "passport-jwt": "^4.0.1",
         "passport-local": "^1.0.0",
+        "reflect-metadata": "^0.2.2",
         "rxjs": "^7.8.1",
         "sharp": "^0.33.5"
     },

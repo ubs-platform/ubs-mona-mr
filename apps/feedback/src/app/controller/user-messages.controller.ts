@@ -1,5 +1,5 @@
 import { Body, Controller, Inject, Param, Post } from '@nestjs/common';
-import { UserMessageModel } from '../model/user-message.model';
+import { UserMessage } from '../model/user-message.model';
 import { UserMessageService } from '../service/user-message.service';
 import { ClientKafka, MessagePattern } from '@nestjs/microservices';
 import {
@@ -20,7 +20,7 @@ const config: ControllerConfiguration = {
 
 @Controller('user-message')
 export class UserMessageController extends BaseCrudControllerGenerator<
-    UserMessageModel,
+    UserMessage,
     IUserMessageDto,
     IUserMessageDto,
     IUserMessageSearch

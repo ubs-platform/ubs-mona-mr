@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { UserMessageModel } from '../model/user-message.model';
+import { UserMessage } from '../model/user-message.model';
 
 import { FilterQuery, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -12,13 +12,13 @@ import {
 
 @Injectable()
 export class UserMessageService extends BaseCrudService<
-    UserMessageModel,
+    UserMessage,
     IUserMessageDto,
     IUserMessageDto,
     IUserMessageSearch
 > {
     constructor(
-        @InjectModel(UserMessageModel.name) private _m: Model<UserMessageModel>,
+        @InjectModel(UserMessage.name) private _m: Model<UserMessage>,
         private emailService: EmailService,
     ) {
         super(_m);
@@ -39,7 +39,7 @@ export class UserMessageService extends BaseCrudService<
         return out;
     }
 
-    toOutput(m: UserMessageModel): IUserMessageDto | Promise<IUserMessageDto> {
+    toOutput(m: UserMessage): IUserMessageDto | Promise<IUserMessageDto> {
         return {
             message: m.message,
             email: m.email,
@@ -64,9 +64,9 @@ export class UserMessageService extends BaseCrudService<
         } as IUserMessageDto;
     }
     moveIntoModel(
-        model: UserMessageModel,
+        model: UserMessage,
         i: IUserMessageDto,
-    ): UserMessageModel | Promise<UserMessageModel> {
+    ): UserMessage | Promise<UserMessage> {
         model.email = i.email;
         model.firstName = i.firstName;
         model.lastName = i.lastName;
@@ -93,8 +93,8 @@ export class UserMessageService extends BaseCrudService<
         }
         return model;
     }
-    searchParams(s: IUserMessageSearch): FilterQuery<UserMessageModel> {
-        const c = {} as FilterQuery<UserMessageModel>;
+    searchParams(s: IUserMessageSearch): FilterQuery<UserMessage> {
+        const c = {} as FilterQuery<UserMessage>;
         if (s._id) {
             c._id = s._id;
         }

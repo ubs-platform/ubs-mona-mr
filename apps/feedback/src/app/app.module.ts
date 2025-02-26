@@ -4,10 +4,7 @@ import { BackendJwtUtilsModule } from '@ubs-platform/users-microservice-helper';
 import { Mongoose } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import {
-    UserMessageModel,
-    UserMessageSchema,
-} from './model/user-message.model';
+import { UserMessage, UserMessageSchema } from './model/user-message.model';
 import { UserMessageService } from './service/user-message.service';
 import { UserMessageController } from './controller/user-messages.controller';
 import { EmailService } from './service/email.service';
@@ -32,7 +29,7 @@ import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
             },
         ),
         MongooseModule.forFeature([
-            { name: UserMessageModel.name, schema: UserMessageSchema },
+            { name: UserMessage.name, schema: UserMessageSchema },
         ]),
     ],
     controllers: [UserMessageController],
