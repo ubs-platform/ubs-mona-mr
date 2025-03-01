@@ -31,7 +31,7 @@ Kyle'ın müzik, video oyunları ve basketbola karşı özel bir ilgisi ve yeten
                     .split(' ')
                     .filter((a) => a);
             for (let index = 0; index < testo.length; index++) {
-                const element = testo[index];
+                const element = testo[index] + ' ';
                 setTimeout(() => {
                     subscriber.next({
                         done: false,
@@ -43,7 +43,7 @@ Kyle'ın müzik, video oyunları ve basketbola karşı özel bir ilgisi ve yeten
                     if (testo.length - 1 == index) {
                         subscriber.complete();
                     }
-                }, index * 200);
+                }, index * 50);
             }
         });
     }
