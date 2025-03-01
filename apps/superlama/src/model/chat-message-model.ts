@@ -1,5 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { ChatMessageSenderType } from '@ubs-platform/superlama-common';
+import {
+    ChatMessageSenderType,
+    TextAssitantStage,
+} from '@ubs-platform/superlama-common';
 
 @Schema()
 export class ChatMessage {
@@ -7,6 +10,8 @@ export class ChatMessage {
     @Prop({ type: Date }) createdAt: Date;
     @Prop({ type: Date }) updatedAt: Date;
     @Prop({ type: String }) textContent: string;
+    @Prop({ type: String }) thoughtTextContent: string;
+    @Prop({ type: String }) textAssistantStage: TextAssitantStage;
     @Prop({ type: String }) systemTextContent: string;
     @Prop({ type: String }) senderType: ChatMessageSenderType;
     @Prop({ type: String }) senderId: string;

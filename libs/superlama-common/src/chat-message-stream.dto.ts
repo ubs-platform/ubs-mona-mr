@@ -1,7 +1,7 @@
 import { TextAssitantStage } from './text-assistant-stage';
 import { ChatMessageSenderType } from './text-sender-type.dto';
 
-export interface ChatMessageDTO {
+export interface ChatMessageStreamDTO {
     _id: string;
     createdAt: string;
     updatedAt: string;
@@ -13,4 +13,6 @@ export interface ChatMessageDTO {
     senderId: string;
     sessionId: string;
     moderationNoteWarning: string;
+    streamMode: 'APPEND';
+    complete: boolean;
 }

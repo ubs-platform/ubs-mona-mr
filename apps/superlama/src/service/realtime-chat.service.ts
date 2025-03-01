@@ -5,19 +5,25 @@ import { Model } from 'mongoose';
 import { ChatSession, ChatSessionDoc } from '../model/chat-session.model';
 import {
     ChatMessageDTO,
+    ChatMessageStreamDTO,
     UserSendingMessageDto,
 } from '@ubs-platform/superlama-common';
 import { UserDTO } from '@ubs-platform/users-common';
 import { ChatMessageMapper } from '../mapper/chat-message.mapper';
+import { Subject } from 'rxjs';
+import { LlmOperationService } from './llm-operation.service';
 
 @Injectable()
 export class RealtimeChatService {
+    public sessionListenStreams = new Subject<ChatMessageStreamDTO>();
+
     constructor(
         @InjectModel(ChatMessage.name)
         private chatMessageModel: Model<ChatMessage>,
         @InjectModel(ChatSession.name)
         private chatSessionModel: Model<ChatSession>,
         private chatMapper: ChatMessageMapper,
+        private llmOpService: LlmOperationService,
     ) {}
 
     async insertUserMessage(dto: UserSendingMessageDto, user: UserDTO) {
@@ -40,13 +46,46 @@ export class RealtimeChatService {
             createdAt: new Date(),
             updatedAt: new Date(),
             senderType: 'USER',
+            textAssistantStage: '',
+            thoughtTextContent: '',
             senderId: user.id,
             systemTextContent: '',
             textContent: dto.message,
         } as Partial<ChatMessage>);
         const msgSaved = await message.save();
+        const msgDto = await this.chatMapper.messageToDto(msgSaved);
+        await this.generateAnswer(msgDto);
         // add queue
-        return await this.chatMapper.messageToDto(msgSaved);
+        return msgDto;
+    }
+
+    async generateAnswer(msgDtoUser: ChatMessageDTO) {
+        const message = new this.chatMessageModel({
+            sessionId: msgDtoUser.sessionId,
+            moderationNoteWarning: '',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            senderType: 'ASSISTANT',
+            textAssistantStage: '',
+            thoughtTextContent: '',
+            systemTextContent: '',
+            textContent: '',
+        } as Partial<ChatMessage>);
+        const msgSaved = await message.save();
+        const msgDto = await this.chatMapper.messageToDto(msgSaved);
+
+        this.llmOpService.generateResponse([msgDtoUser]).subscribe((a) => {
+            console.info(a.message.content!);
+            message.textContent += a.message.content;
+            message.save().then((v) => {
+                this.sessionListenStreams.next({
+                    ...msgDto,
+                    textContent: a.message.content!,
+                    complete: a.done,
+                    streamMode: 'APPEND',
+                });
+            });
+        });
     }
 
     async findMessagesBySessionId(sessionId: string) {
@@ -75,7 +114,7 @@ export class RealtimeChatService {
                     : {}),
             })
             .sort({ createdAt: 'desc' })
-            .limit(4);
+            .exec();
         return msgs.map((a) => this.chatMapper.messageToDto(a));
     }
 }

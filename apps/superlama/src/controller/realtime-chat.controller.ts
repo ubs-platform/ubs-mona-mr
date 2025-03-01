@@ -1,11 +1,25 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    Sse,
+    UseGuards,
+    MessageEvent,
+    Query,
+} from '@nestjs/common';
 import { RealtimeChatService } from '../service/realtime-chat.service';
 import {
     CurrentUser,
     JwtAuthGuard,
 } from '@ubs-platform/users-microservice-helper';
 import { UserDTO } from '@ubs-platform/users-common';
-import { UserSendingMessageDto } from '@ubs-platform/superlama-common';
+import {
+    ChatMessageStreamDTO,
+    UserSendingMessageDto,
+} from '@ubs-platform/superlama-common';
+import { filter, interval, map, Observable } from 'rxjs';
 
 @Controller('realtime-chat')
 export class RealtimeChatController {
@@ -26,14 +40,24 @@ export class RealtimeChatController {
     @UseGuards(JwtAuthGuard)
     @Get()
     async findMessagesBySessionIdPaged(
-        @Param('sessionId') sessionId: string,
-        @Param('beforeDate') beforeDate?: string,
-        @Param('lastChatMessageId') lastChatMessageId?: string,
+        @Query('sessionId') sessionId: string,
+        @Query('beforeDate') beforeDate?: string,
+        @Query('lastChatMessageId') lastChatMessageId?: string,
     ) {
         return await this.realtimeChatService.findMessagesBySessionIdPaged(
             sessionId,
             beforeDate,
             lastChatMessageId,
+        );
+    }
+
+    @Sse('session/:id/listen')
+    sse(@Param('id') sessionId: string): Observable<MessageEvent> {
+        return this.realtimeChatService.sessionListenStreams.pipe(
+            filter((a) => a.sessionId == sessionId),
+            map((a) => ({
+                data: a as ChatMessageStreamDTO,
+            })),
         );
     }
 
