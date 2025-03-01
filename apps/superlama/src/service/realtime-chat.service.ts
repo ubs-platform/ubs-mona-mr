@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ChatMessage } from '../model/chat-message-model';
 import { Model } from 'mongoose';
@@ -12,10 +12,11 @@ import { UserDTO } from '@ubs-platform/users-common';
 import { ChatMessageMapper } from '../mapper/chat-message.mapper';
 import { Subject } from 'rxjs';
 import { LlmOperationService } from './llm-operation.service';
+import { ClientKafka } from '@nestjs/microservices';
 
 @Injectable()
 export class RealtimeChatService {
-    public sessionListenStreams = new Subject<ChatMessageStreamDTO>();
+    // public
 
     constructor(
         @InjectModel(ChatMessage.name)
@@ -24,6 +25,7 @@ export class RealtimeChatService {
         private chatSessionModel: Model<ChatSession>,
         private chatMapper: ChatMessageMapper,
         private llmOpService: LlmOperationService,
+        @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
     ) {}
 
     async insertUserMessage(dto: UserSendingMessageDto, user: UserDTO) {
@@ -74,16 +76,18 @@ export class RealtimeChatService {
         const msgSaved = await message.save();
         const msgDto = await this.chatMapper.messageToDto(msgSaved);
 
-        this.llmOpService.generateResponse([msgDtoUser]).subscribe((a) => {
+        this.llmOpService.generateTestoResponse([msgDtoUser]).subscribe((a) => {
             console.info(a.message.content!);
             message.textContent += a.message.content;
             message.save().then((v) => {
-                this.sessionListenStreams.next({
+                const data = {
                     ...msgDto,
                     textContent: a.message.content!,
                     complete: a.done,
                     streamMode: 'APPEND',
-                });
+                };
+                this.kafkaClient.emit('llm-result', data);
+                // this.sessionListenStreams.next(data);
             });
         });
     }
