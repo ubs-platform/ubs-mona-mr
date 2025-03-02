@@ -68,7 +68,7 @@ export class RealtimeChatService {
             createdAt: new Date(),
             updatedAt: new Date(),
             senderType: 'ASSISTANT',
-            textAssistantStage: '',
+            textAssistantStage: 'ANSWER',
             thoughtTextContent: '',
             systemTextContent: '',
             textContent: '',
@@ -76,13 +76,31 @@ export class RealtimeChatService {
         const msgSaved = await message.save();
         const msgDto = await this.chatMapper.messageToDto(msgSaved);
 
-        this.llmOpService.generateTestoResponse([msgDtoUser]).subscribe((a) => {
+        (msgDtoUser.textContent.trim().startsWith('test')
+            ? this.llmOpService.generateTestoResponse([msgDtoUser])
+            : this.llmOpService.generateResponse([msgDtoUser])
+        ).subscribe((a) => {
             console.info(a.message.content!);
-            message.textContent += a.message.content;
+            let msg = a.message.content;
+            if (msg.includes('<think>')) {
+                msgSaved.textAssistantStage = 'THINKING';
+                msg = '';
+            } else if (msg.includes('</think>')) {
+                msgSaved.textAssistantStage = 'ANSWER';
+                msg = '';
+            } else {
+                if (msgSaved.textAssistantStage == 'ANSWER') {
+                    message.textContent += msg;
+                } else if (msgSaved.textAssistantStage == 'THINKING') {
+                    message.thoughtTextContent += msg;
+                }
+            }
+            const stg = msgSaved.textAssistantStage;
             message.save().then((v) => {
                 const data = {
                     ...msgDto,
-                    textContent: a.message.content!,
+                    textContent: stg == 'ANSWER' ? msg : '',
+                    thoughtTextContent: stg == 'THINKING' ? msg : '',
                     complete: a.done,
                     streamMode: 'APPEND',
                 };

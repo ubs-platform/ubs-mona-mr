@@ -16,6 +16,8 @@ export class ChatMessageMapper {
             textContent: msgSaved.textContent,
             sessionId: msgSaved.sessionId,
             systemTextContent: msgSaved.systemTextContent,
+            thoughtTextContent: msgSaved.thoughtTextContent,
+            textAssistantStage: msgSaved.textAssistantStage,
         } as ChatMessageDTO;
     }
 }
