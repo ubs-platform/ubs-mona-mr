@@ -11,9 +11,12 @@ import { BackendJwtUtilsModule } from '@ubs-platform/users-microservice-helper';
 import { ChatMessage, ChatMessageSchema } from './model/chat-message-model';
 import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { ClientsModule } from '@nestjs/microservices';
+import { RealtimeChatFeederService } from './service/realtime-chat-feeder.service';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
     imports: [
+        ScheduleModule.forRoot(),
         MongooseModule.forRoot(
             `mongodb://${process.env.NX_MONGO_USERNAME}:${
                 process.env.NX_MONGO_PASSWORD
@@ -35,6 +38,11 @@ import { ClientsModule } from '@nestjs/microservices';
         ]),
     ],
     controllers: [RealtimeChatController],
-    providers: [RealtimeChatService, ChatMessageMapper, LlmOperationService],
+    providers: [
+        RealtimeChatService,
+        ChatMessageMapper,
+        LlmOperationService,
+        RealtimeChatFeederService,
+    ],
 })
 export class SuperlamaModule {}

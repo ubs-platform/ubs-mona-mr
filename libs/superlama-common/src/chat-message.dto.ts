@@ -13,6 +13,4 @@ export interface ChatMessageDTO {
     senderId: string;
     sessionId: string;
     moderationNoteWarning: string;
-    userMessageAnswerStatus: 'WAITING' | 'WORKING' | 'FINISHED';
-    assistantTargetMessageId: string;
 }

@@ -18,8 +18,8 @@ export class ChatMessageMapper {
             systemTextContent: msgSaved.systemTextContent,
             thoughtTextContent: msgSaved.thoughtTextContent,
             textAssistantStage: msgSaved.textAssistantStage,
-            assistantTargetMessageId: msgSaved.assistantTargetMessageId,
-            userMessageAnswerStatus: msgSaved.userMessageAnswerStatus,
+            // assistantTargetMessageId: msgSaved.assistantTargetMessageId,
+            // userMessageAnswerStatus: msgSaved.userMessageAnswerStatus,
         } as ChatMessageDTO;
     }
 }

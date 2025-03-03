@@ -13,6 +13,7 @@ import { ChatMessageMapper } from '../mapper/chat-message.mapper';
 import { Subject } from 'rxjs';
 import { LlmOperationService } from './llm-operation.service';
 import { ClientKafka } from '@nestjs/microservices';
+import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class RealtimeChatFeederService {
@@ -28,37 +29,23 @@ export class RealtimeChatFeederService {
         @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
     ) {}
 
-    async insertUserMessage(dto: UserSendingMessageDto, user: UserDTO) {
-        let sessionId;
-        if (dto.newSession) {
-            let session = new this.chatSessionModel({
-                userParticipantsIds: [user.id],
-                moderationNoteWarning: '',
-            });
-            await session.save();
-            sessionId = session._id!;
+    @Cron('*/5 * * * * *')
+    async handleCron() {
+        const parallels = await this.chatSessionModel.countDocuments({
+            llmAnswerStatus: 'CONTINUING',
+        });
+        if (parallels > 0) {
+            console.debug('Waiting for complete one');
         } else {
-            sessionId = dto.sessionId;
-            // session = this.chatSessionModel.findById(dto.sessionId!).exec();
+            const waitings = await this.chatSessionModel.find({
+                llmAnswerStatus: 'WAITING',
+            });
+            if (waitings.length > 0) {
+                this.generateAnswer(waitings[0]._id);
+            } else {
+                console.debug('No waiting requests');
+            }
         }
-
-        const message = new this.chatMessageModel({
-            sessionId: sessionId,
-            moderationNoteWarning: '',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            senderType: 'USER',
-            textAssistantStage: '',
-            thoughtTextContent: '',
-            senderId: user.id,
-            systemTextContent: '',
-            textContent: dto.message,
-        } as Partial<ChatMessage>);
-        const msgSaved = await message.save();
-        const msgDto = await this.chatMapper.messageToDto(msgSaved);
-        await this.generateAnswer(sessionId);
-        // add queue
-        return msgDto;
     }
 
     generateAnswer(sessionId: string) {
@@ -66,17 +53,16 @@ export class RealtimeChatFeederService {
             try {
                 const allMsgs_ =
                     await this.findMessagesBySessionIdPaged(sessionId);
-                const msgDtoUser = allMsgs_.find((a) => a.senderType == 'USER');
-                if (msgDtoUser) {
-                    const userMsgStatus = 'FINISHED';
-                    const userMessageFromSicak =
-                        await this.chatMessageModel.findById(msgDtoUser._id);
-                    userMessageFromSicak!.userMessageAnswerStatus =
-                        userMsgStatus;
-                    await userMessageFromSicak!.save();
+                const lastUserMessage = allMsgs_.find(
+                    (a) => a.senderType == 'USER',
+                );
+                if (lastUserMessage) {
+                    await this.setSessionStatus(sessionId, 'CONTINUING');
 
-                    const allMsgs = allMsgs_.reverse();
-                    const message = new this.chatMessageModel({
+                    const allMsgs = allMsgs_
+                        .reverse()
+                        .map((a) => this.chatMapper.messageToDto(a));
+                    let assistantMessage = new this.chatMessageModel({
                         sessionId: sessionId,
                         moderationNoteWarning: '',
                         createdAt: new Date(),
@@ -86,57 +72,77 @@ export class RealtimeChatFeederService {
                         thoughtTextContent: '',
                         systemTextContent: '',
                         textContent: '',
-                        assistantTargetMessageId: msgDtoUser._id,
+                        assistantTargetMessageId: lastUserMessage._id,
                     } as Partial<ChatMessage>);
-                    const msgSaved = await message.save();
-                    const msgDto = await this.chatMapper.messageToDto(msgSaved);
+                    assistantMessage = await assistantMessage.save();
 
-                    (msgDtoUser.textContent.trim().startsWith('test')
+                    (lastUserMessage.textContent.trim().startsWith('test')
                         ? this.llmOpService.generateTestoResponse(allMsgs)
                         : this.llmOpService.generateResponse(allMsgs)
-                    ).subscribe((a) => {
+                    ).subscribe(async (a) => {
                         let msg = a.message.content;
                         if (msg.includes('<think>')) {
-                            msgSaved.textAssistantStage = 'THINKING';
+                            assistantMessage.textAssistantStage = 'THINKING';
                             msg = '';
                         } else if (msg.includes('</think>')) {
-                            msgSaved.textAssistantStage = 'ANSWER';
+                            assistantMessage.textAssistantStage = 'ANSWER';
                             msg = '';
                         } else {
-                            if (msgSaved.textAssistantStage == 'ANSWER') {
-                                message.textContent += msg;
-                            } else if (
-                                msgSaved.textAssistantStage == 'THINKING'
+                            if (
+                                assistantMessage.textAssistantStage == 'ANSWER'
                             ) {
-                                message.thoughtTextContent += msg;
+                                assistantMessage.textContent += msg;
+                            } else if (
+                                assistantMessage.textAssistantStage ==
+                                'THINKING'
+                            ) {
+                                assistantMessage.thoughtTextContent += msg;
                             }
                         }
-                        const stg = msgSaved.textAssistantStage;
-                        message.save().then((v) => {
-                            const data = {
-                                ...msgDto,
-                                textContent: stg == 'ANSWER' ? msg : '',
-                                thoughtTextContent:
-                                    stg == 'THINKING' ? msg : '',
-                                complete: a.done,
-                                streamMode: 'APPEND',
-                            };
-                            this.kafkaClient.emit('llm-result', data);
-                            if (a.done) {
-                                this.chatMessageModel
-                                    .findById(msgDtoUser._id)
-                                    .then(async (userMessageNew) => {
-                                        if (userMessageNew) {
-                                            userMessageNew.userMessageAnswerStatus =
-                                                'FINISHED';
-                                            await userMessageNew.save();
-                                            ok();
-                                        } else {
-                                            fail(new NotFoundException());
-                                        }
-                                    });
+
+                        assistantMessage = await assistantMessage.save();
+                        const assistantStage =
+                            assistantMessage.textAssistantStage;
+                        const msgDto =
+                            await this.chatMapper.messageToDto(
+                                assistantMessage,
+                            );
+                        const data = {
+                            ...msgDto,
+                            textContent: assistantStage == 'ANSWER' ? msg : '',
+                            thoughtTextContent:
+                                assistantStage == 'THINKING' ? msg : '',
+                            complete: a.done,
+                            streamMode: 'APPEND',
+                        };
+                        this.kafkaClient.emit('llm-result', data);
+                        if (a.done) {
+                            try {
+                                assistantMessage.textAssistantStage = 'DONE';
+                                assistantMessage =
+                                    await assistantMessage.save();
+                                await this.setSessionStatus(
+                                    sessionId,
+                                    'FINISHED',
+                                );
+                                const completionData = {
+                                    ...msgDto,
+                                    textAssistantStage: 'DONE',
+                                    textContent: '',
+                                    thoughtTextContent: '',
+                                    complete: a.done,
+                                    streamMode: 'APPEND',
+                                };
+                                this.kafkaClient.emit(
+                                    'llm-result',
+                                    completionData,
+                                );
+                                ok();
+                            } catch (e) {
+                                console.error(e);
+                                fail(e);
                             }
-                        });
+                        }
                     });
                 } else {
                     ok();
@@ -146,15 +152,18 @@ export class RealtimeChatFeederService {
             }
         });
     }
-
-    async findMessagesBySessionId(sessionId: string) {
-        const msgs = await this.chatMessageModel.find({
-            sessionId,
-        });
-        return msgs;
+    async setSessionStatus(
+        sessionId: string,
+        arg1: 'WAITING' | 'CONTINUING' | 'FINISHED',
+    ) {
+        const session = (await this.chatSessionModel
+            .findById(sessionId)
+            .exec())!;
+        session.llmAnswerStatus = arg1;
+        await session.save();
     }
 
-    async findMessagesBySessionIdPaged(
+    private async findMessagesBySessionIdPaged(
         sessionId: string,
         beforeDate: String | Date = new Date(),
         lastChatMessageId?: String,
@@ -175,6 +184,6 @@ export class RealtimeChatFeederService {
             .sort({ createdAt: 'desc' })
             .limit(10)
             .exec();
-        return msgs.map((a) => this.chatMapper.messageToDto(a));
+        return msgs;
     }
 }

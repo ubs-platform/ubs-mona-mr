@@ -17,11 +17,11 @@ export class ChatMessage {
     @Prop({ type: String }) senderId: string;
     @Prop({ type: String }) sessionId: string;
     @Prop({ type: String }) moderationNoteWarning: string;
-    @Prop({ type: String }) userMessageAnswerStatus:
-        | 'WAITING'
-        | 'WORKING'
-        | 'FINISHED';
-    @Prop({ type: String }) assistantTargetMessageId: string;
+    // @Prop({ type: String }) userMessageAnswerStatus:
+    //     | 'WAITING'
+    //     | 'WORKING'
+    //     | 'FINISHED';
+    // @Prop({ type: String }) assistantTargetMessageId: string;
 }
 export type ChatMessageDoc = ChatMessage & Document;
 export const ChatMessageSchema = SchemaFactory.createForClass(ChatMessage);

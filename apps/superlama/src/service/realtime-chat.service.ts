@@ -13,6 +13,7 @@ import { ChatMessageMapper } from '../mapper/chat-message.mapper';
 import { Subject } from 'rxjs';
 import { LlmOperationService } from './llm-operation.service';
 import { ClientKafka } from '@nestjs/microservices';
+import { RealtimeChatFeederService } from './realtime-chat-feeder.service';
 
 @Injectable()
 export class RealtimeChatService {
@@ -26,24 +27,26 @@ export class RealtimeChatService {
         private chatMapper: ChatMessageMapper,
         private llmOpService: LlmOperationService,
         @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
+        private realChatFeeder: RealtimeChatFeederService,
     ) {}
 
     async insertUserMessage(dto: UserSendingMessageDto, user: UserDTO) {
-        let sessionId;
+        let session: ChatSessionDoc;
         if (dto.newSession) {
-            let session = new this.chatSessionModel({
+            session = new this.chatSessionModel({
                 userParticipantsIds: [user.id],
                 moderationNoteWarning: '',
             });
-            await session.save();
-            sessionId = session._id!;
         } else {
-            sessionId = dto.sessionId;
-            // session = this.chatSessionModel.findById(dto.sessionId!).exec();
+            session = (await this.chatSessionModel
+                .findById(dto.sessionId!)
+                .exec())!;
         }
+        session.llmAnswerStatus = 'WAITING';
+        await session.save();
 
         const message = new this.chatMessageModel({
-            sessionId: sessionId,
+            sessionId: session.id,
             moderationNoteWarning: '',
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -56,7 +59,7 @@ export class RealtimeChatService {
         } as Partial<ChatMessage>);
         const msgSaved = await message.save();
         const msgDto = await this.chatMapper.messageToDto(msgSaved);
-        await this.generateAnswer(sessionId);
+
         // add queue
         return msgDto;
     }
