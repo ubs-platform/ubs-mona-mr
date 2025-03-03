@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ChatMessage } from '../model/chat-message-model';
 import { Model } from 'mongoose';
@@ -56,58 +56,9 @@ export class RealtimeChatService {
         } as Partial<ChatMessage>);
         const msgSaved = await message.save();
         const msgDto = await this.chatMapper.messageToDto(msgSaved);
-        await this.generateAnswer(msgDto);
+        await this.generateAnswer(sessionId);
         // add queue
         return msgDto;
-    }
-
-    async generateAnswer(msgDtoUser: ChatMessageDTO) {
-        const message = new this.chatMessageModel({
-            sessionId: msgDtoUser.sessionId,
-            moderationNoteWarning: '',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            senderType: 'ASSISTANT',
-            textAssistantStage: 'ANSWER',
-            thoughtTextContent: '',
-            systemTextContent: '',
-            textContent: '',
-        } as Partial<ChatMessage>);
-        const msgSaved = await message.save();
-        const msgDto = await this.chatMapper.messageToDto(msgSaved);
-
-        (msgDtoUser.textContent.trim().startsWith('test')
-            ? this.llmOpService.generateTestoResponse([msgDtoUser])
-            : this.llmOpService.generateResponse([msgDtoUser])
-        ).subscribe((a) => {
-            console.info(a.message.content!);
-            let msg = a.message.content;
-            if (msg.includes('<think>')) {
-                msgSaved.textAssistantStage = 'THINKING';
-                msg = '';
-            } else if (msg.includes('</think>')) {
-                msgSaved.textAssistantStage = 'ANSWER';
-                msg = '';
-            } else {
-                if (msgSaved.textAssistantStage == 'ANSWER') {
-                    message.textContent += msg;
-                } else if (msgSaved.textAssistantStage == 'THINKING') {
-                    message.thoughtTextContent += msg;
-                }
-            }
-            const stg = msgSaved.textAssistantStage;
-            message.save().then((v) => {
-                const data = {
-                    ...msgDto,
-                    textContent: stg == 'ANSWER' ? msg : '',
-                    thoughtTextContent: stg == 'THINKING' ? msg : '',
-                    complete: a.done,
-                    streamMode: 'APPEND',
-                };
-                this.kafkaClient.emit('llm-result', data);
-                // this.sessionListenStreams.next(data);
-            });
-        });
     }
 
     async findMessagesBySessionId(sessionId: string) {
@@ -136,6 +87,7 @@ export class RealtimeChatService {
                     : {}),
             })
             .sort({ createdAt: 'desc' })
+            .limit(10)
             .exec();
         return msgs.map((a) => this.chatMapper.messageToDto(a));
     }
