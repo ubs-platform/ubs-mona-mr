@@ -103,12 +103,12 @@ export class RealtimeChatFeederService {
                         assistantMessage = await assistantMessage.save();
                         const assistantStage =
                             assistantMessage.textAssistantStage;
-                        const msgDto =
+                        const assistantMessageAsDto =
                             await this.chatMapper.messageToDto(
                                 assistantMessage,
                             );
                         const data = {
-                            ...msgDto,
+                            ...assistantMessageAsDto,
                             textContent: assistantStage == 'ANSWER' ? msg : '',
                             thoughtTextContent:
                                 assistantStage == 'THINKING' ? msg : '',
@@ -126,7 +126,7 @@ export class RealtimeChatFeederService {
                                     'FINISHED',
                                 );
                                 const completionData = {
-                                    ...msgDto,
+                                    ...assistantMessageAsDto,
                                     textAssistantStage: 'DONE',
                                     textContent: '',
                                     thoughtTextContent: '',
@@ -136,6 +136,25 @@ export class RealtimeChatFeederService {
                                 this.kafkaClient.emit(
                                     'llm-result',
                                     completionData,
+                                );
+
+                                let subject = '';
+                                try {
+                                    subject =
+                                        await this.llmOpService.generateTitleLast(
+                                            assistantMessageAsDto,
+                                        );
+                                } catch (ex) {
+                                    console.error(ex);
+                                    subject =
+                                        assistantMessage.textContent.substring(
+                                            0,
+                                            10,
+                                        );
+                                }
+                                await this.setSessionSubjectTitle(
+                                    sessionId,
+                                    subject,
                                 );
                                 ok();
                             } catch (e) {
@@ -160,6 +179,14 @@ export class RealtimeChatFeederService {
             .findById(sessionId)
             .exec())!;
         session.llmAnswerStatus = arg1;
+        await session.save();
+    }
+
+    async setSessionSubjectTitle(sessionId: string, str: string) {
+        const session = (await this.chatSessionModel
+            .findById(sessionId)
+            .exec())!;
+        session.subjectTitle = str;
         await session.save();
     }
 

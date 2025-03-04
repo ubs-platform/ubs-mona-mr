@@ -4,8 +4,12 @@ import { Document } from 'mongoose';
 export class ChatSession {
     _id: string;
     @Prop({ type: [String] })
-    userParticipantsIds: String[];
-    @Prop({ type: String }) moderationNoteWarning: String;
+    userParticipantsIds: string[];
+    @Prop({ type: String }) moderationNoteWarning: string;
+    @Prop({ type: String })
+    subjectTitle: string;
+    @Prop({ type: Date, default: new Date(Date.now()) })
+    creationDate: Date;
     @Prop({ type: Date, default: new Date(Date.now() + 2629746000) })
     expirationDate: Date;
     @Prop({ type: String }) llmAnswerStatus:

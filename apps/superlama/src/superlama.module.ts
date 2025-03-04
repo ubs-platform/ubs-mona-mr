@@ -13,6 +13,8 @@ import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { ClientsModule } from '@nestjs/microservices';
 import { RealtimeChatFeederService } from './service/realtime-chat-feeder.service';
 import { ScheduleModule } from '@nestjs/schedule';
+import { SessionService } from './service/session.service';
+import { SessionController } from './controller/user-sessions.controlller';
 
 @Module({
     imports: [
@@ -37,12 +39,13 @@ import { ScheduleModule } from '@nestjs/schedule';
             } as any,
         ]),
     ],
-    controllers: [RealtimeChatController],
+    controllers: [RealtimeChatController, SessionController],
     providers: [
         RealtimeChatService,
         ChatMessageMapper,
         LlmOperationService,
         RealtimeChatFeederService,
+        SessionService,
     ],
 })
 export class SuperlamaModule {}
