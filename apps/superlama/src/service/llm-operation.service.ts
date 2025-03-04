@@ -84,7 +84,7 @@ Kyle'ın müzik, video oyunları ve basketbola karşı özel bir ilgisi ve yeten
 
     async generateTitleLast(assistantResponse: ChatMessageDTO) {
         const modelName = 'aya:8b';
-        debugger;
+
         const outputx = await Ollama.chat({
             model: modelName,
             stream: false,
@@ -99,7 +99,6 @@ Kyle'ın müzik, video oyunları ve basketbola karşı özel bir ilgisi ve yeten
                 },
             ],
         });
-        debugger;
 
         return outputx.message.content;
     }
