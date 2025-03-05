@@ -46,7 +46,7 @@ export class SessionService {
                         { $skip: (size || 10) * (page || 0) },
                         // lack of convert to int
                         { $limit: parseInt(size as any as string) },
-                        { $sort: { _id: 1 } },
+                        { $sort: { creationDate: -1 } },
                     ],
                 },
             },
