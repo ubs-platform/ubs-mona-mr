@@ -51,6 +51,7 @@ import { FileVolatileTag } from '../dto/file-volatile-tag';
 import { FileVolatilityIssue } from '../dto/file-volatility-issue';
 import { EntityPropertyService } from '../service/entity-property.service';
 import { clearTimeout } from 'timers';
+import { FastifyReply } from 'fastify';
 @Controller('file')
 export class ImageFileController {
     clients: { [key: string]: ClientProxy | ClientKafka | ClientRMQ } = {};
@@ -121,7 +122,7 @@ export class ImageFileController {
     @Get('/:category/:name')
     async fetchFileContent(
         @Param() params: { category: string; name: string },
-        @Res() response: Response,
+        @Res() response: FastifyReply,
         @Query('width') width?: string | number | null,
     ) {
         const fil = await this.fservice.findByName(
@@ -130,12 +131,9 @@ export class ImageFileController {
             width,
         );
         if (fil) {
-            return response
-                .status(200)
-                .contentType(fil.mimetype)
-                .send(fil.file);
+            return response.status(200).type(fil.mimetype).send(fil.file);
         } else {
-            return response.redirect('/assets/not-found.image.png');
+            return response.redirect('/assets/not-found.image.png', 303);
         }
     }
 

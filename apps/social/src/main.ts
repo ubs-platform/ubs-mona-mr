@@ -8,9 +8,17 @@ import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
 import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import {
+    FastifyAdapter,
+    NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    // const app = await NestFactory.create(AppModule);
+    const app = await NestFactory.create<NestFastifyApplication>(
+        AppModule,
+        new FastifyAdapter(),
+    );
     const globalPrefix = 'api';
     app.connectMicroservice(
         MicroserviceSetupUtil.getMicroserviceConnection(''),

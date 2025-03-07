@@ -11,6 +11,11 @@ import { execArgv } from 'process';
 import { Transport } from '@nestjs/microservices';
 import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { UsersModule } from './users.module';
+import {
+    NestFastifyApplication,
+    FastifyAdapter,
+} from '@nestjs/platform-fastify';
+import { AppModule } from 'apps/files/src/app.module';
 
 export const INTERNAL_COMMUNICATION = {
     port: parseInt(process.env['U_USERS_MONA_INTERNAL_COM_PORT'] || '0'),
@@ -27,7 +32,11 @@ async function bootstrap() {
             `,
         );
     } else {
-        const app = await NestFactory.create(UsersModule);
+        const app = await NestFactory.create<NestFastifyApplication>(
+            UsersModule,
+            new FastifyAdapter(),
+        );
+        // const app = await NestFactory.create(UsersModule);
         console.info(
             'U_USERS_MONA_INTERNAL_COM_PORT: ' + INTERNAL_COMMUNICATION.port,
         );
