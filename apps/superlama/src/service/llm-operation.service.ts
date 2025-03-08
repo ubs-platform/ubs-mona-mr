@@ -34,16 +34,18 @@ Kyle'ın müzik, video oyunları ve basketbola karşı özel bir ilgisi ve yeten
                 .split(' ')
                 .filter((a) => a);
             for (let index = 0; index < testo.length; index++) {
-                const element = testo[index] + ' ';
                 setTimeout(() => {
+                    const last = testo.length - 1 == index;
+                    const element = testo[index] + ' ';
+                    console.info(last);
                     subscriber.next({
-                        done: false,
+                        done: last,
                         message: { content: element, role: 'assistant' },
                         created_at: new Date(),
                         model: 'Testo',
                         total_duration: 31.69,
                     } as any);
-                    if (testo.length - 1 == index) {
+                    if (last) {
                         subscriber.complete();
                     }
                 }, index * 50);
@@ -78,5 +80,28 @@ Kyle'ın müzik, video oyunları ve basketbola karşı özel bir ilgisi ve yeten
                 asyncOp();
             }
         });
+    }
+
+    async generateTitleLast(assistantResponse: ChatMessageDTO) {
+        if (assistantResponse.textContent.includes('Kyle Broflovski')) {
+            return 'Kyle Broflovski';
+        } else {
+            const modelName = 'aya:8b';
+            const outputx = await Ollama.chat({
+                model: modelName,
+                stream: false,
+                messages: [
+                    {
+                        content: assistantResponse.textContent,
+                        role: 'assistant',
+                    },
+                    {
+                        content: 'Potential title of text',
+                        role: 'system',
+                    },
+                ],
+            });
+            return outputx.message.content;
+        }
     }
 }

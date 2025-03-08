@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ChatMessage } from '../model/chat-message-model';
 import { Model } from 'mongoose';
@@ -13,6 +13,7 @@ import { ChatMessageMapper } from '../mapper/chat-message.mapper';
 import { Subject } from 'rxjs';
 import { LlmOperationService } from './llm-operation.service';
 import { ClientKafka } from '@nestjs/microservices';
+import { RealtimeChatFeederService } from './realtime-chat-feeder.service';
 
 @Injectable()
 export class RealtimeChatService {
@@ -26,24 +27,26 @@ export class RealtimeChatService {
         private chatMapper: ChatMessageMapper,
         private llmOpService: LlmOperationService,
         @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
+        private realChatFeeder: RealtimeChatFeederService,
     ) {}
 
     async insertUserMessage(dto: UserSendingMessageDto, user: UserDTO) {
-        let sessionId;
+        let session: ChatSessionDoc;
         if (dto.newSession) {
-            let session = new this.chatSessionModel({
+            session = new this.chatSessionModel({
                 userParticipantsIds: [user.id],
                 moderationNoteWarning: '',
             });
-            await session.save();
-            sessionId = session._id!;
         } else {
-            sessionId = dto.sessionId;
-            // session = this.chatSessionModel.findById(dto.sessionId!).exec();
+            session = (await this.chatSessionModel
+                .findById(dto.sessionId!)
+                .exec())!;
         }
+        session.llmAnswerStatus = 'WAITING';
+        await session.save();
 
         const message = new this.chatMessageModel({
-            sessionId: sessionId,
+            sessionId: session.id,
             moderationNoteWarning: '',
             createdAt: new Date(),
             updatedAt: new Date(),
@@ -56,58 +59,9 @@ export class RealtimeChatService {
         } as Partial<ChatMessage>);
         const msgSaved = await message.save();
         const msgDto = await this.chatMapper.messageToDto(msgSaved);
-        await this.generateAnswer(msgDto);
+
         // add queue
         return msgDto;
-    }
-
-    async generateAnswer(msgDtoUser: ChatMessageDTO) {
-        const message = new this.chatMessageModel({
-            sessionId: msgDtoUser.sessionId,
-            moderationNoteWarning: '',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            senderType: 'ASSISTANT',
-            textAssistantStage: 'ANSWER',
-            thoughtTextContent: '',
-            systemTextContent: '',
-            textContent: '',
-        } as Partial<ChatMessage>);
-        const msgSaved = await message.save();
-        const msgDto = await this.chatMapper.messageToDto(msgSaved);
-
-        (msgDtoUser.textContent.trim().startsWith('test')
-            ? this.llmOpService.generateTestoResponse([msgDtoUser])
-            : this.llmOpService.generateResponse([msgDtoUser])
-        ).subscribe((a) => {
-            console.info(a.message.content!);
-            let msg = a.message.content;
-            if (msg.includes('<think>')) {
-                msgSaved.textAssistantStage = 'THINKING';
-                msg = '';
-            } else if (msg.includes('</think>')) {
-                msgSaved.textAssistantStage = 'ANSWER';
-                msg = '';
-            } else {
-                if (msgSaved.textAssistantStage == 'ANSWER') {
-                    message.textContent += msg;
-                } else if (msgSaved.textAssistantStage == 'THINKING') {
-                    message.thoughtTextContent += msg;
-                }
-            }
-            const stg = msgSaved.textAssistantStage;
-            message.save().then((v) => {
-                const data = {
-                    ...msgDto,
-                    textContent: stg == 'ANSWER' ? msg : '',
-                    thoughtTextContent: stg == 'THINKING' ? msg : '',
-                    complete: a.done,
-                    streamMode: 'APPEND',
-                };
-                this.kafkaClient.emit('llm-result', data);
-                // this.sessionListenStreams.next(data);
-            });
-        });
     }
 
     async findMessagesBySessionId(sessionId: string) {
@@ -136,6 +90,7 @@ export class RealtimeChatService {
                     : {}),
             })
             .sort({ createdAt: 'desc' })
+            .limit(10)
             .exec();
         return msgs.map((a) => this.chatMapper.messageToDto(a));
     }

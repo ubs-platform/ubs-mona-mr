@@ -1,1 +1,1 @@
-export type TextAssitantStage = 'ANSWER' | 'THINKING' | '';
+export type TextAssitantStage = 'ANSWER' | 'THINKING' | 'DONE' | '';
