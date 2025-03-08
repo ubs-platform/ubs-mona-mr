@@ -22,8 +22,6 @@ export class AuthController {
     @Post()
     async authenticate(@Body() user: UserAuth) {
         try {
-            console.info(user);
-
             user.login = user.login?.toLowerCase();
             return await this.authService.authenticateUser(user);
         } catch (error) {
