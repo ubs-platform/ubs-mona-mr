@@ -14,5 +14,4 @@ export interface ChatMessageStreamDTO {
     sessionId: string;
     moderationNoteWarning: string;
     streamMode: 'APPEND';
-    complete: boolean;
 }

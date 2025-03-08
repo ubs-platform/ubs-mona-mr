@@ -21,6 +21,7 @@ import {
 } from '@ubs-platform/superlama-common';
 import { filter, interval, map, Observable, Subject } from 'rxjs';
 import { EventPattern } from '@nestjs/microservices';
+import { RealtimeChatFeederService } from '../service/realtime-chat-feeder.service';
 
 @Controller('realtime-chat')
 export class RealtimeChatController {
@@ -28,7 +29,10 @@ export class RealtimeChatController {
     /**
      *
      */
-    constructor(private realtimeChatService: RealtimeChatService) {}
+    constructor(
+        private realtimeChatService: RealtimeChatService,
+        private rcsFeeder: RealtimeChatFeederService,
+    ) {}
 
     @UseGuards(JwtAuthGuard)
     @Post()
@@ -54,9 +58,10 @@ export class RealtimeChatController {
     }
 
     @EventPattern('llm-result')
-    llmResulting(a: ChatMessageStreamDTO) {
+    async llmResulting(a: ChatMessageStreamDTO) {
         console.info('llm result kafka', a.textContent);
-        this.sessionListenStreams.next(a);
+        await this.rcsFeeder.saveGeneratedAnswer(a);
+        await this.sessionListenStreams.next(a);
     }
 
     @Sse('session/:id/listen')

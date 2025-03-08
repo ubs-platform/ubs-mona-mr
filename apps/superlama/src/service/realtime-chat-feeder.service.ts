@@ -6,6 +6,7 @@ import { ChatSession, ChatSessionDoc } from '../model/chat-session.model';
 import {
     ChatMessageDTO,
     ChatMessageStreamDTO,
+    TextAssitantStage,
     UserSendingMessageDto,
 } from '@ubs-platform/superlama-common';
 import { UserDTO } from '@ubs-platform/users-common';
@@ -14,6 +15,7 @@ import { Subject } from 'rxjs';
 import { LlmOperationService } from './llm-operation.service';
 import { ClientKafka } from '@nestjs/microservices';
 import { Cron } from '@nestjs/schedule';
+import { exec } from 'child_process';
 
 @Injectable()
 export class RealtimeChatFeederService {
@@ -76,91 +78,45 @@ export class RealtimeChatFeederService {
                     } as Partial<ChatMessage>);
                     assistantMessage = await assistantMessage.save();
 
+                    let assistantStage: TextAssitantStage = 'ANSWER';
+
                     (lastUserMessage.textContent.trim().startsWith('test')
                         ? this.llmOpService.generateTestoResponse(allMsgs)
                         : this.llmOpService.generateResponse(allMsgs)
                     ).subscribe(async (a) => {
-                        let msg = a.message.content;
+           
+                        let data = {
+                            _id: assistantMessage._id,
+                            sessionId,
+                            streamMode: 'APPEND',
+                            textContent: '',
+                            thoughtTextContent: '',
+                        } as ChatMessageStreamDTO;
+
+                        let msg = a.message.content || '';
                         if (msg.includes('<think>')) {
-                            assistantMessage.textAssistantStage = 'THINKING';
+                            assistantStage = 'THINKING';
                             msg = '';
                         } else if (msg.includes('</think>')) {
-                            assistantMessage.textAssistantStage = 'ANSWER';
+                            assistantStage = 'ANSWER';
                             msg = '';
                         } else {
-                            if (
-                                assistantMessage.textAssistantStage == 'ANSWER'
-                            ) {
-                                assistantMessage.textContent += msg;
-                            } else if (
-                                assistantMessage.textAssistantStage ==
-                                'THINKING'
-                            ) {
-                                assistantMessage.thoughtTextContent += msg;
+                            if (assistantStage == 'ANSWER') {
+                                data.textContent = msg || '';
+                            } else if (assistantStage == 'THINKING') {
+                                data.thoughtTextContent = msg || '';
                             }
                         }
-
-                        assistantMessage = await assistantMessage.save();
-                        const assistantStage =
-                            assistantMessage.textAssistantStage;
-                        const assistantMessageAsDto =
-                            await this.chatMapper.messageToDto(
-                                assistantMessage,
-                            );
-                        const data = {
-                            ...assistantMessageAsDto,
-                            textContent: assistantStage == 'ANSWER' ? msg : '',
-                            thoughtTextContent:
-                                assistantStage == 'THINKING' ? msg : '',
-                            complete: a.done,
-                            streamMode: 'APPEND',
-                        };
+                        data.textAssistantStage = assistantStage;
                         this.kafkaClient.emit('llm-result', data);
-                        if (a.done) {
-                            try {
-                                assistantMessage.textAssistantStage = 'DONE';
-                                assistantMessage =
-                                    await assistantMessage.save();
-                                await this.setSessionStatus(
-                                    sessionId,
-                                    'FINISHED',
-                                );
-                                const completionData = {
-                                    ...assistantMessageAsDto,
-                                    textAssistantStage: 'DONE',
-                                    textContent: '',
-                                    thoughtTextContent: '',
-                                    complete: a.done,
-                                    streamMode: 'APPEND',
-                                };
-                                this.kafkaClient.emit(
-                                    'llm-result',
-                                    completionData,
-                                );
 
-                                let subject = '';
-                                try {
-                                    subject =
-                                        await this.llmOpService.generateTitleLast(
-                                            assistantMessageAsDto,
-                                        );
-                                } catch (ex) {
-                                    console.error(ex);
-                                    subject =
-                                        assistantMessage.textContent.substring(
-                                            0,
-                                            10,
-                                        );
-                                }
-                                await this.setSessionSubjectTitle(
-                                    sessionId,
-                                    subject,
-                                );
-                                ok();
-                            } catch (e) {
-                                console.error(e);
-                                fail(e);
-                            }
+                        if (a.done) {
+                            this.kafkaClient.emit('llm-result', {
+                                _id: assistantMessage._id,
+                                sessionId,
+                                textAssistantStage: 'DONE',
+                                streamMode: 'APPEND',
+                            } as ChatMessageStreamDTO);
                         }
                     });
                 } else {
@@ -171,6 +127,30 @@ export class RealtimeChatFeederService {
             }
         });
     }
+
+    async saveGeneratedAnswer(stream: ChatMessageStreamDTO) {
+        let msg = await this.chatMessageModel.findById(stream._id);
+        if (msg) {
+       
+            if (msg.textAssistantStage != "DONE") {
+                msg.textAssistantStage = stream.textAssistantStage;
+                msg.textContent += stream.textContent || '';
+                msg.thoughtTextContent += stream.thoughtTextContent || '';
+            } else {
+                console.warn("Session already completed but why come after done i don't know")
+            }
+            await msg.save();
+
+            if (msg.textAssistantStage == 'DONE') {
+                // exec(`kdialog --msgbox "Chat statusu tamamlandı"`);
+                await this.finishSession(this.chatMapper.messageToDto(msg));
+            }
+            console.info(msg.textAssistantStage)
+        } else {
+            throw new NotFoundException('ChatMessage', stream._id);
+        }
+    }
+
     async setSessionStatus(
         sessionId: string,
         arg1: 'WAITING' | 'CONTINUING' | 'FINISHED',
@@ -182,13 +162,29 @@ export class RealtimeChatFeederService {
         await session.save();
     }
 
-    async setSessionSubjectTitle(sessionId: string, str: string) {
+    async finishSession(assistantMessage: ChatMessageDTO) {
+        let subject = '';
+        try {
+            subject =
+                await this.llmOpService.generateTitleLast(assistantMessage);
+        } catch (ex) {
+            console.error(ex);
+            subject = assistantMessage.textContent.substring(0, 10);
+        }
+
         const session = (await this.chatSessionModel
-            .findById(sessionId)
+            .findById(assistantMessage.sessionId)
             .exec())!;
-        session.subjectTitle = str;
+        session.llmAnswerStatus = 'FINISHED';
+        session.subjectTitle = subject;
         await session.save();
     }
+
+    // async setSessionSubjectTitle(sessionId: string, str: string) {
+
+    //     session.subjectTitle = str;
+    //     await session.save();
+    // }
 
     private async findMessagesBySessionIdPaged(
         sessionId: string,
