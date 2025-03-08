@@ -83,23 +83,25 @@ Kyle'ın müzik, video oyunları ve basketbola karşı özel bir ilgisi ve yeten
     }
 
     async generateTitleLast(assistantResponse: ChatMessageDTO) {
-        const modelName = 'aya:8b';
-
-        const outputx = await Ollama.chat({
-            model: modelName,
-            stream: false,
-            messages: [
-                {
-                    content: assistantResponse.textContent,
-                    role: 'assistant',
-                },
-                {
-                    content: 'Potential title of text',
-                    role: 'system',
-                },
-            ],
-        });
-
-        return outputx.message.content;
+        if (assistantResponse.textContent.includes('Kyle Broflovski')) {
+            return 'Kyle Broflovski';
+        } else {
+            const modelName = 'aya:8b';
+            const outputx = await Ollama.chat({
+                model: modelName,
+                stream: false,
+                messages: [
+                    {
+                        content: assistantResponse.textContent,
+                        role: 'assistant',
+                    },
+                    {
+                        content: 'Potential title of text',
+                        role: 'system',
+                    },
+                ],
+            });
+            return outputx.message.content;
+        }
     }
 }

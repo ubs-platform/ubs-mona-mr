@@ -43,10 +43,10 @@ export class SessionService {
                 $facet: {
                     total: [{ $count: 'total' }],
                     data: [
-                        { $skip: (size || 10) * (page || 0) },
                         // lack of convert to int
-                        { $limit: parseInt(size as any as string) },
                         { $sort: { creationDate: -1 } },
+                        { $skip: (size || 10) * (page || 0) },
+                        { $limit: parseInt(size as any as string) },
                     ],
                 },
             },
