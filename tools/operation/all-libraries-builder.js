@@ -86,7 +86,9 @@ class AllLibrariesBuilder {
                         await this.publishOnNpm(currentBuild, versionTag, versionVisibility);
                     }
                     else {
-                        const patchDirectory = path_1.default.join(this.xrRootPackage.directory, props.patchTarget, currentBuild.packageName);
+                        const patchDirectory = props.patchTarget.startsWith('/')
+                            ? path_1.default.join(this.xrRootPackage.directory, props.patchTarget, currentBuild.packageName)
+                            : path_1.default.join(props.patchTarget, currentBuild.packageName);
                         console.info((0, colors_1.strColor)(colors_1.COLORS.FgBlue, `Patching ${currentBuild.packageName} into ${patchDirectory}`));
                         FileSystem.cp(currentBuild.buildPath, patchDirectory, {
                             recursive: true,

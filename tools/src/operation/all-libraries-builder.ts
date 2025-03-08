@@ -72,11 +72,16 @@ export class AllLibrariesBuilder {
                             versionVisibility,
                         );
                     } else {
-                        const patchDirectory = path.join(
-                            this.xrRootPackage.directory,
-                            props.patchTarget,
-                            currentBuild.packageName,
-                        );
+                        const patchDirectory = props.patchTarget.startsWith('/')
+                            ? path.join(
+                                  this.xrRootPackage.directory,
+                                  props.patchTarget,
+                                  currentBuild.packageName,
+                              )
+                            : path.join(
+                                  props.patchTarget,
+                                  currentBuild.packageName,
+                              );
                         console.info(
                             strColor(
                                 COLORS.FgBlue,
