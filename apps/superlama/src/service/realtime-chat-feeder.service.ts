@@ -84,13 +84,13 @@ export class RealtimeChatFeederService {
                         ? this.llmOpService.generateTestoResponse(allMsgs)
                         : this.llmOpService.generateResponse(allMsgs)
                     ).subscribe(async (a) => {
-           
                         let data = {
                             _id: assistantMessage._id,
                             sessionId,
                             streamMode: 'APPEND',
                             textContent: '',
                             thoughtTextContent: '',
+                            senderType: 'ASSISTANT',
                         } as ChatMessageStreamDTO;
 
                         let msg = a.message.content || '';
@@ -116,6 +116,7 @@ export class RealtimeChatFeederService {
                                 sessionId,
                                 textAssistantStage: 'DONE',
                                 streamMode: 'APPEND',
+                                senderType: 'ASSISTANT',
                             } as ChatMessageStreamDTO);
                         }
                     });
@@ -131,13 +132,14 @@ export class RealtimeChatFeederService {
     async saveGeneratedAnswer(stream: ChatMessageStreamDTO) {
         let msg = await this.chatMessageModel.findById(stream._id);
         if (msg) {
-       
-            if (msg.textAssistantStage != "DONE") {
+            if (msg.textAssistantStage != 'DONE') {
                 msg.textAssistantStage = stream.textAssistantStage;
                 msg.textContent += stream.textContent || '';
                 msg.thoughtTextContent += stream.thoughtTextContent || '';
             } else {
-                console.warn("Session already completed but why come after done i don't know")
+                console.warn(
+                    "Session already completed but why come after done i don't know",
+                );
             }
             await msg.save();
 
@@ -145,7 +147,7 @@ export class RealtimeChatFeederService {
                 // exec(`kdialog --msgbox "Chat statusu tamamlandı"`);
                 await this.finishSession(this.chatMapper.messageToDto(msg));
             }
-            console.info(msg.textAssistantStage)
+            console.info(msg.textAssistantStage);
         } else {
             throw new NotFoundException('ChatMessage', stream._id);
         }
