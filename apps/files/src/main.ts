@@ -11,6 +11,7 @@ import {
     FastifyAdapter,
     NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import fastifyMultipart from '@fastify/multipart';
 
 async function bootstrap() {
     const app = await NestFactory.create<NestFastifyApplication>(
@@ -18,6 +19,7 @@ async function bootstrap() {
         new FastifyAdapter(),
     );
     const globalPrefix = 'api';
+    app.register(fastifyMultipart);
     app.connectMicroservice(
         MicroserviceSetupUtil.getMicroserviceConnection(''),
     );

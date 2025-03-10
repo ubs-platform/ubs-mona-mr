@@ -12,11 +12,9 @@ import {
     Put,
     Query,
     Res,
-    UploadedFile,
     UseGuards,
     UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { FileInformation } from '../dto/file-information';
 import { FileService } from '../service/file.service';
 import { ObjectId } from 'mongoose';
@@ -52,6 +50,12 @@ import { FileVolatilityIssue } from '../dto/file-volatility-issue';
 import { EntityPropertyService } from '../service/entity-property.service';
 import { clearTimeout } from 'timers';
 import { FastifyReply } from 'fastify';
+import {
+    FileFieldsInterceptor,
+    FileInterceptor,
+    MemoryStorageFile,
+    UploadedFile,
+} from '@blazity/nest-file-fastify';
 @Controller('file')
 export class ImageFileController {
     clients: { [key: string]: ClientProxy | ClientKafka | ClientRMQ } = {};
@@ -96,10 +100,12 @@ export class ImageFileController {
     }
 
     @Put('/:type/:objectId')
+    // @UseInterceptors(FileInterceptor('file'))
     @UseInterceptors(FileInterceptor('file'))
     @UseGuards(JwtAuthGuard)
     async uploadFile(
-        @UploadedFile() file: any,
+        @UploadedFile()
+        file,
         @Param() params: { type: string; objectId?: string },
         @CurrentUser() user: UserAuthBackendDTO,
     ) {
@@ -111,8 +117,9 @@ export class ImageFileController {
     @UseInterceptors(FileInterceptor('file'))
     @UseGuards(JwtAuthGuard)
     async uploadFileOnlyType(
-        @UploadedFile() file: any,
-        @Param() params: { type: string },
+        @UploadedFile()
+        file,
+        @Param() params: { type: string; objectId?: string },
         @CurrentUser() user: UserAuthBackendDTO,
     ) {
         this.checkMimeTypeAndExtension(file);
@@ -246,21 +253,22 @@ export class ImageFileController {
     }
 
     checkMimeTypeAndExtension(file) {
+        console.info(file);
         const mimetype = file.mimetype;
         console.info(file);
         if (this.potentialMalicousMimeTypes.includes(mimetype)) {
             throw new BadRequestException('potential-malicous-file');
         }
 
-        for (
-            let index = 0;
-            index < this.potentialMalicousExtensions.length;
-            index++
-        ) {
-            const ext = this.potentialMalicousExtensions[index];
-            if (file.originalname.endsWith('.' + ext)) {
-                throw new BadRequestException('potential-malicous-file');
-            }
-        }
+        // for (
+        //     let index = 0;
+        //     index < this.potentialMalicousExtensions.length;
+        //     index++
+        // ) {
+        //     const ext = this.potentialMalicousExtensions[index];
+        //     if (file.originalname.endsWith('.' + ext)) {
+        //         throw new BadRequestException('potential-malicous-file');
+        //     }
+        // }
     }
 }
