@@ -31,7 +31,7 @@ export class SearchUtil {
             },
         ]);
 
-        const maxItemLength = results[0].total[0].count;
+        const maxItemLength = results[0].total[0].total;
 
         const itemLengthThing = Math.ceil(maxItemLength / size);
         const maxPagesIndex = size ? itemLengthThing - 1 : 0;
