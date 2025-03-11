@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SearchResult } from '@ubs-platform/crud-base-common';
 import { FilterQuery, HydratedDocument, Model, ObjectId } from 'mongoose';
 import { BaseCrudKlass } from './base-crud-klass';
+import { SearchUtil } from './util/search.util';
 
 export abstract class BaseCrudService<
     MODEL,
@@ -18,28 +19,6 @@ export abstract class BaseCrudService<
     abstract moveIntoModel(model: MODEL, i: INPUT): Promise<MODEL> | MODEL;
     abstract searchParams(s?: Partial<SEARCH>): FilterQuery<MODEL>;
 
-    private async fetchFilteredAndPaginated(
-        s: SEARCH & { page: number; size: number },
-    ) {
-        const results = await this.m.aggregate([
-            {
-                $facet: {
-                    total: [{ $count: 'total' }],
-                    data: [
-                        { $skip: (s.size || 10) * (s.page || 1) },
-                        // lack of convert to int
-                        { $limit: parseInt(s.size as any as string) },
-                        { $sort: { _id: 1 } },
-                    ],
-                },
-            },
-        ]);
-
-        const maxItemLength = results[0].total[0].count;
-        const list = results[0].data;
-        return { list, maxItemLength };
-    }
-
     async convertAndReturnTheList(list: MODEL[]) {
         const outputList: OUTPUT[] = [];
         for (let index = 0; index < list.length; index++) {
@@ -49,37 +28,16 @@ export abstract class BaseCrudService<
         return outputList;
     }
 
-    async searchResult(
-        modelList: MODEL[],
-        page: number,
-        size: number,
-        maxItemLength: number,
-    ): Promise<SearchResult<OUTPUT>> {
-        const itemLengthThing = Math.ceil(maxItemLength / size);
-        const maxPagesIndex = size ? itemLengthThing - 1 : 0;
-        return {
-            content: await this.convertAndReturnTheList(modelList),
-            page,
-            size,
-            maxItemLength,
-            maxPagesIndex,
-            lastPage: maxPagesIndex <= page,
-            firstPage: page == 0,
-        };
-    }
-
     async searchPagination(
         s?: SEARCH & { page?: number; size?: number },
     ): Promise<SearchResult<OUTPUT>> {
         const page = s?.page || 0,
             size = s?.size || 10;
-        const { list, maxItemLength } = await this.fetchFilteredAndPaginated({
-            ...(s || ({} as SEARCH)),
-            page: page,
-            size: size,
-        });
-
-        return this.searchResult(list, page, size, maxItemLength);
+        return (
+            await SearchUtil.modelSearch(this.m, size, page, {
+                $match: { ...(s || ({} as SEARCH)) },
+            })
+        ).mapAsync((a) => this.toOutput(a));
     }
 
     async fetchAll(s?: Partial<SEARCH>): Promise<OUTPUT[]> {

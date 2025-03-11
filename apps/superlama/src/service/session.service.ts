@@ -16,6 +16,7 @@ import { LlmOperationService } from './llm-operation.service';
 import { ClientKafka } from '@nestjs/microservices';
 import { RealtimeChatFeederService } from './realtime-chat-feeder.service';
 import { SearchResult } from '@ubs-platform/crud-base-common';
+import { SearchUtil } from '@ubs-platform/crud-base';
 
 @Injectable()
 export class SessionService {
@@ -31,44 +32,20 @@ export class SessionService {
         size: number,
         page: number,
     ): Promise<SearchResult<ChatSessionDTO>> {
-        const results = await this.chatSessionModel.aggregate([
-            {
-                $match: {
-                    userParticipantsIds: {
-                        $in: [user.id],
+        return (
+            await SearchUtil.modelSearch<ChatSession>(
+                this.chatSessionModel,
+                size,
+                page,
+                {
+                    $match: {
+                        userParticipantsIds: {
+                            $in: [user.id],
+                        },
                     },
                 },
-            },
-            {
-                $facet: {
-                    total: [{ $count: 'total' }],
-                    data: [
-                        // lack of convert to int
-                        { $sort: { creationDate: -1 } },
-                        { $skip: (size || 10) * (page || 0) },
-                        { $limit: parseInt(size as any as string) },
-                    ],
-                },
-            },
-        ]);
-
-        const maxItemLength = results[0].total[0].count;
-        const content: ChatSessionDTO[] = (
-            results[0].data as ChatSession[]
-        ).map((a) => {
-            return this.sessionToDto(a);
-        });
-        const itemLengthThing = Math.ceil(maxItemLength / size);
-        const maxPagesIndex = size ? itemLengthThing - 1 : 0;
-        return {
-            content,
-            page,
-            size,
-            maxItemLength,
-            maxPagesIndex,
-            lastPage: maxPagesIndex <= page,
-            firstPage: page == 0,
-        };
+            )
+        ).map((a) => this.sessionToDto(a));
     }
 
     private sessionToDto(a: ChatSession): ChatSessionDTO {
