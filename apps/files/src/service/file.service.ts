@@ -72,54 +72,55 @@ export class FileService {
 
     private async determineBin(file: FileDoc, widthForImage_: string | number) {
         let fileBin = file.file;
-        try {
-            const widthForImageInt = parseInt(widthForImage_ as any);
-            if (this.isImage(file.mimeType) && !isNaN(widthForImageInt)) {
-                if (file.scaledImages == null) file.scaledImages = [];
-                const widthForImageRnd = Math.max(
-                    Math.floor(widthForImageInt / 50) * 50,
-                    100,
-                );
-                const a = file.scaledImages.find(
-                    (a) => a.width == widthForImageRnd,
-                );
-                if (a) {
-                    if (!a.useSame) {
-                        fileBin = Buffer.from(a.file!.buffer);
-                    }
-                } else {
-                    const imageSharp = sharp(fileBin, {});
-                    const meta = await imageSharp.metadata();
-                    if (meta.width! > widthForImageRnd) {
-                        const resized = imageSharp.resize({
-                            width: widthForImageRnd,
-                            withoutEnlargement: true,
-                            fit: 'contain',
-                        });
+        // this is taking longer than normal
+        // try {
+        //     const widthForImageInt = parseInt(widthForImage_ as any);
+        //     if (this.isImage(file.mimeType) && !isNaN(widthForImageInt)) {
+        //         if (file.scaledImages == null) file.scaledImages = [];
+        //         const widthForImageRnd = Math.max(
+        //             Math.floor(widthForImageInt / 50) * 50,
+        //             100,
+        //         );
+        //         const a = file.scaledImages.find(
+        //             (a) => a.width == widthForImageRnd,
+        //         );
+        //         if (a) {
+        //             if (!a.useSame) {
+        //                 fileBin = Buffer.from(a.file!.buffer);
+        //             }
+        //         } else {
+        //             const imageSharp = sharp(fileBin, {});
+        //             const meta = await imageSharp.metadata();
+        //             if (meta.width! > widthForImageRnd) {
+        //                 const resized = imageSharp.resize({
+        //                     width: widthForImageRnd,
+        //                     withoutEnlargement: true,
+        //                     fit: 'contain',
+        //                 });
 
-                        const buff = await resized.webp().toBuffer();
-                        fileBin = buff;
-                        file.scaledImages.push({
-                            width: widthForImageRnd,
-                            file: buff,
-                            useSame: false,
-                        });
-                    } else {
-                        file.scaledImages.push({
-                            width: widthForImageRnd,
-                            file: null,
-                            useSame: true,
-                        });
-                    }
-                    // for fast response for phones
-                    file.scaledImages = file.scaledImages.sort(
-                        (a, b) => a.width - b.width,
-                    );
-                }
-            }
-        } catch (ex) {
-            console.error(ex);
-        }
+        //                 const buff = await resized.webp().toBuffer();
+        //                 fileBin = buff;
+        //                 file.scaledImages.push({
+        //                     width: widthForImageRnd,
+        //                     file: buff,
+        //                     useSame: false,
+        //                 });
+        //             } else {
+        //                 file.scaledImages.push({
+        //                     width: widthForImageRnd,
+        //                     file: null,
+        //                     useSame: true,
+        //                 });
+        //             }
+        //             // for fast response for phones
+        //             file.scaledImages = file.scaledImages.sort(
+        //                 (a, b) => a.width - b.width,
+        //             );
+        //         }
+        //     }
+        // } catch (ex) {
+        //     console.error(ex);
+        // }
         return fileBin;
     }
 
