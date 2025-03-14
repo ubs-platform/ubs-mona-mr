@@ -44,8 +44,6 @@ export class RealtimeChatFeederService {
             });
             if (waitings.length > 0) {
                 this.generateAnswer(waitings[0]._id);
-            } else {
-                console.debug('No waiting requests');
             }
         }
     }

@@ -15,6 +15,7 @@ import { RealtimeChatFeederService } from './service/realtime-chat-feeder.servic
 import { ScheduleModule } from '@nestjs/schedule';
 import { SessionService } from './service/session.service';
 import { SessionController } from './controller/user-sessions.controlller';
+import { LlmModelsController } from './controller/llm-models.controller';
 
 @Module({
     imports: [
@@ -39,7 +40,11 @@ import { SessionController } from './controller/user-sessions.controlller';
             } as any,
         ]),
     ],
-    controllers: [RealtimeChatController, SessionController],
+    controllers: [
+        RealtimeChatController,
+        SessionController,
+        LlmModelsController,
+    ],
     providers: [
         RealtimeChatService,
         ChatMessageMapper,

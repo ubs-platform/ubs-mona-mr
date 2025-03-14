@@ -22,6 +22,7 @@ import {
 import { filter, interval, map, Observable, Subject } from 'rxjs';
 import { EventPattern } from '@nestjs/microservices';
 import { RealtimeChatFeederService } from '../service/realtime-chat-feeder.service';
+import { LlmOperationService } from '../service/llm-operation.service';
 
 @Controller('realtime-chat')
 export class RealtimeChatController {

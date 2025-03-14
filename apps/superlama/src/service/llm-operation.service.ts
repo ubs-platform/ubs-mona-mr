@@ -4,7 +4,7 @@ import { ChatMessage } from '../model/chat-message-model';
 import { Model } from 'mongoose';
 import { ChatSession } from '../model/chat-session.model';
 import Ollama, { ChatResponse } from 'ollama';
-import { ChatMessageDTO } from '@ubs-platform/superlama-common';
+import { ChatMessageDTO, LlmModelDto } from '@ubs-platform/superlama-common';
 import { Observable } from 'rxjs';
 
 @Injectable()
@@ -14,6 +14,16 @@ export class LlmOperationService {
         process.env[this.ENV_KEY_U_SUPRLAMA_OLLAMA_URL];
 
     constructor() {}
+
+    async fetchAvailableModels() {
+        // todo: veritabanına kaydetsin sonra
+        return (await Ollama.list()).models.map((a) => {
+            return {
+                name: a.name,
+                type: a.name.includes('deepseek') ? 'REASONABLE' : 'HERBOKOLOG',
+            } as LlmModelDto;
+        });
+    }
 
     generateTestoResponse(msgs: ChatMessageDTO[]) {
         return new Observable<ChatResponse>((subscriber) => {
