@@ -51,6 +51,7 @@ export class RealtimeChatService {
             createdAt: new Date(),
             updatedAt: new Date(),
             senderType: 'USER',
+            requestedLlmModel: dto.selectedLlm,
             textAssistantStage: '',
             thoughtTextContent: '',
             senderId: user.id,

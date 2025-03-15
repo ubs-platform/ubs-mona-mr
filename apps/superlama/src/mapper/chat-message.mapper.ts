@@ -11,6 +11,7 @@ export class ChatMessageMapper {
             updatedAt: msgSaved.updatedAt.toISOString(),
             moderationNoteWarning: msgSaved.moderationNoteWarning,
             // can you continue from here?
+            requestedLlmModel: msgSaved.requestedLlmModel,
             senderId: msgSaved.senderId,
             senderType: msgSaved.senderType,
             textContent: msgSaved.textContent,

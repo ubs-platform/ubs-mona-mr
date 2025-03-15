@@ -67,14 +67,19 @@ Kyle'ın müzik, video oyunları ve basketbola karşı özel bir ilgisi ve yeten
         return new Observable<ChatResponse>((subscriber) => {
             const tail = msgs[msgs.length - 1];
             if (tail.senderType == 'USER') {
-                const modelName = 'deepseek-r1:7b';
+                const modelName = tail;
                 const outputx = Ollama.chat({
-                    model: modelName,
+                    model: modelName.requestedLlmModel,
                     stream: true,
                     messages: msgs.map((a) => {
                         return {
                             content: a.textContent,
-                            role: a.senderType == 'USER' ? 'user' : 'assistant',
+                            role:
+                                a.senderType == 'USER'
+                                    ? 'user'
+                                    : a.senderType == 'ASSISTANT'
+                                      ? 'assistant'
+                                      : 'system',
                         };
                     }),
                 });

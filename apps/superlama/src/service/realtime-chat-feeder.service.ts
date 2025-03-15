@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { ChatMessage } from '../model/chat-message-model';
-import { Model } from 'mongoose';
+import { ChatMessage, ChatMessageDoc } from '../model/chat-message-model';
+import { Document, Model } from 'mongoose';
 import { ChatSession, ChatSessionDoc } from '../model/chat-session.model';
 import {
     ChatMessageDTO,
@@ -16,6 +16,7 @@ import { LlmOperationService } from './llm-operation.service';
 import { ClientKafka } from '@nestjs/microservices';
 import { Cron } from '@nestjs/schedule';
 import { exec } from 'child_process';
+import { ChatResponse } from 'ollama';
 
 @Injectable()
 export class RealtimeChatFeederService {
@@ -64,6 +65,7 @@ export class RealtimeChatFeederService {
                         .map((a) => this.chatMapper.messageToDto(a));
                     let assistantMessage = new this.chatMessageModel({
                         sessionId: sessionId,
+                        requestedLlmModel: lastUserMessage.requestedLlmModel,
                         moderationNoteWarning: '',
                         createdAt: new Date(),
                         updatedAt: new Date(),
@@ -82,41 +84,12 @@ export class RealtimeChatFeederService {
                         ? this.llmOpService.generateTestoResponse(allMsgs)
                         : this.llmOpService.generateResponse(allMsgs)
                     ).subscribe(async (a) => {
-                        let data = {
-                            _id: assistantMessage._id,
+                        assistantStage = await this.auditMessage(
+                            assistantMessage as any as ChatMessageDoc,
                             sessionId,
-                            streamMode: 'APPEND',
-                            textContent: '',
-                            thoughtTextContent: '',
-                            senderType: 'ASSISTANT',
-                        } as ChatMessageStreamDTO;
-
-                        let msg = a.message.content || '';
-                        if (msg.includes('<think>')) {
-                            assistantStage = 'THINKING';
-                            msg = '';
-                        } else if (msg.includes('</think>')) {
-                            assistantStage = 'ANSWER';
-                            msg = '';
-                        } else {
-                            if (assistantStage == 'ANSWER') {
-                                data.textContent = msg || '';
-                            } else if (assistantStage == 'THINKING') {
-                                data.thoughtTextContent = msg || '';
-                            }
-                        }
-                        data.textAssistantStage = assistantStage;
-                        this.kafkaClient.emit('llm-result', data);
-
-                        if (a.done) {
-                            this.kafkaClient.emit('llm-result', {
-                                _id: assistantMessage._id,
-                                sessionId,
-                                textAssistantStage: 'DONE',
-                                streamMode: 'APPEND',
-                                senderType: 'ASSISTANT',
-                            } as ChatMessageStreamDTO);
-                        }
+                            a,
+                            assistantStage,
+                        );
                     });
                 } else {
                     ok();
@@ -125,6 +98,50 @@ export class RealtimeChatFeederService {
                 fail(error);
             }
         });
+    }
+
+    async auditMessage(
+        assistantMessage: ChatMessageDoc,
+        sessionId: string,
+        ollamaChatResponse: ChatResponse,
+        assistantStage: TextAssitantStage,
+    ): Promise<TextAssitantStage> {
+        let data = {
+            _id: assistantMessage._id,
+            sessionId,
+            streamMode: 'APPEND',
+            textContent: '',
+            thoughtTextContent: '',
+            senderType: 'ASSISTANT',
+        } as ChatMessageStreamDTO;
+
+        let msg = ollamaChatResponse.message.content || '';
+        if (msg.includes('<think>')) {
+            assistantStage = 'THINKING';
+            msg = '';
+        } else if (msg.includes('</think>')) {
+            assistantStage = 'ANSWER';
+            msg = '';
+        } else {
+            if (assistantStage == 'ANSWER') {
+                data.textContent = msg || '';
+            } else if (assistantStage == 'THINKING') {
+                data.thoughtTextContent = msg || '';
+            }
+        }
+        data.textAssistantStage = assistantStage;
+        this.kafkaClient.emit('llm-result', data);
+
+        if (ollamaChatResponse.done) {
+            this.kafkaClient.emit('llm-result', {
+                _id: assistantMessage._id,
+                sessionId,
+                textAssistantStage: 'DONE',
+                streamMode: 'APPEND',
+                senderType: 'ASSISTANT',
+            } as ChatMessageStreamDTO);
+        }
+        return assistantStage;
     }
 
     async saveGeneratedAnswer(stream: ChatMessageStreamDTO) {

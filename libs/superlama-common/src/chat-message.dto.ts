@@ -6,6 +6,7 @@ export interface ChatMessageDTO {
     createdAt: string;
     updatedAt: string;
     textContent: string;
+    requestedLlmModel: string;
     thoughtTextContent: string;
     systemTextContent: string;
     senderType: ChatMessageSenderType;

@@ -10,6 +10,7 @@ export class ChatMessage {
     @Prop({ type: Date }) createdAt: Date;
     @Prop({ type: Date }) updatedAt: Date;
     @Prop({ type: String }) textContent: string;
+    @Prop({ type: String }) requestedLlmModel: string;
     @Prop({ type: String }) thoughtTextContent: string;
     @Prop({ type: String }) textAssistantStage: TextAssitantStage;
     @Prop({ type: String }) systemTextContent: string;

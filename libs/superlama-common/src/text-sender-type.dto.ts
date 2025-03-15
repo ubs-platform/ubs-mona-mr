@@ -1,1 +1,1 @@
-export type ChatMessageSenderType = 'USER' | 'ASSISTANT';
+export type ChatMessageSenderType = 'USER' | 'ASSISTANT' | 'SYSTEM';
