@@ -69,6 +69,7 @@ export class RealtimeChatFeederService {
                         moderationNoteWarning: '',
                         createdAt: new Date(),
                         updatedAt: new Date(),
+                        assistantStartedAt: new Date(),
                         senderType: 'ASSISTANT',
                         textAssistantStage: 'ANSWER',
                         thoughtTextContent: '',
@@ -110,6 +111,7 @@ export class RealtimeChatFeederService {
             _id: assistantMessage._id,
             sessionId,
             streamMode: 'APPEND',
+            requestedLlmModel: assistantMessage.requestedLlmModel,
             textContent: '',
             thoughtTextContent: '',
             senderType: 'ASSISTANT',
@@ -135,7 +137,9 @@ export class RealtimeChatFeederService {
         if (ollamaChatResponse.done) {
             this.kafkaClient.emit('llm-result', {
                 _id: assistantMessage._id,
+                tokensPerSecond: 0,
                 sessionId,
+                requestedLlmModel: assistantMessage.requestedLlmModel,
                 textAssistantStage: 'DONE',
                 streamMode: 'APPEND',
                 senderType: 'ASSISTANT',
@@ -148,6 +152,7 @@ export class RealtimeChatFeederService {
         let msg = await this.chatMessageModel.findById(stream._id);
         if (msg) {
             if (msg.textAssistantStage != 'DONE') {
+                msg.assistantFinishedAt = new Date();
                 msg.textAssistantStage = stream.textAssistantStage;
                 msg.textContent += stream.textContent || '';
                 msg.thoughtTextContent += stream.thoughtTextContent || '';
@@ -193,6 +198,7 @@ export class RealtimeChatFeederService {
             .findById(assistantMessage.sessionId)
             .exec())!;
         session.llmAnswerStatus = 'FINISHED';
+        
         session.subjectTitle = subject;
         await session.save();
     }

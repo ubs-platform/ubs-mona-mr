@@ -9,6 +9,9 @@ export class ChatMessage {
     _id: String;
     @Prop({ type: Date }) createdAt: Date;
     @Prop({ type: Date }) updatedAt: Date;
+    @Prop({ type: Date }) assistantStartedAt: Date;
+    @Prop({ type: Date }) assistantFinishedAt: Date;
+    @Prop({ type: Number }) tokensPerSecond: number;
     @Prop({ type: String }) textContent: string;
     @Prop({ type: String }) requestedLlmModel: string;
     @Prop({ type: String }) thoughtTextContent: string;

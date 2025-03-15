@@ -13,5 +13,9 @@ export interface ChatMessageStreamDTO {
     senderId: string;
     sessionId: string;
     moderationNoteWarning: string;
+    requestedLlmModel: string;
     streamMode: 'APPEND';
+    assistantStartedAt: string;
+    assistantFinishedAt: string;
+    tokensPerSecond: number;
 }

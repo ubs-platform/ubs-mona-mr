@@ -14,4 +14,7 @@ export interface ChatMessageDTO {
     senderId: string;
     sessionId: string;
     moderationNoteWarning: string;
+    assistantStartedAt: string;
+    assistantFinishedAt: string;
+    tokensPerSecond: number;
 }
