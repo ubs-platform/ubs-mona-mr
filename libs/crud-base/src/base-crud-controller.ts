@@ -16,6 +16,7 @@ import { JwtAuthGuard } from '@ubs-platform/users-microservice-helper';
 import { Roles, RolesGuard } from '@ubs-platform/users-roles';
 import { BaseCrudService } from '@ubs-platform/crud-base';
 import { BaseCrudKlass } from './base-crud-klass';
+import { SearchRequest } from '@ubs-platform/crud-base-common';
 
 export type RoleAuthorizationConfigKey =
     | 'EDIT'
@@ -108,7 +109,7 @@ export const BaseCrudControllerGenerator = <
         }
         @RoleConfig('GETALL')
         @Get('_search')
-        async search(@Query() s?: SEARCH & { page?: number; size?: number }) {
+        async search(@Query() s: SEARCH & SearchRequest) {
             return await service.searchPagination(s);
         }
         @Get('/:id')

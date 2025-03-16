@@ -12,10 +12,22 @@ export class SearchUtil {
      */
     static async modelSearch<OUTPUT>(
         model: Model<OUTPUT>,
-        size: number,
-        page: number,
+        size: number | string,
+        page: number | string,
+        sortByFieldName: string | null | undefined,
+        sortByType: 'desc' | 'asc' | '' | null | undefined,
         ...searchParamsQuery: any[]
     ) {
+        //@ts-ignore
+        size = parseInt(size) || 10;
+        //@ts-ignore
+        page = parseInt(page) || 0;
+
+        let sort;
+        if (sortByFieldName) {
+            sort = { $sort: {} };
+            sort['$sort'][sortByFieldName] = sortByType == 'asc' ? 1 : -1;
+        }
         const results = await model.aggregate([
             ...searchParamsQuery,
             {
@@ -23,25 +35,23 @@ export class SearchUtil {
                     total: [{ $count: 'total' }],
                     data: [
                         // lack of convert to int
-                        { $sort: { creationDate: -1 } },
+                        sort,
                         { $skip: (size || 10) * (page || 0) },
                         { $limit: parseInt(size as any as string) },
-                    ],
+                    ].filter((a) => a),
                 },
             },
         ]);
-
-        const maxItemLength = results[0].total[0].total;
-
+        const maxItemLength = results[0].total[0]?.total || 0;
         const itemLengthThing = Math.ceil(maxItemLength / size);
         const maxPagesIndex = size ? itemLengthThing - 1 : 0;
         return new RawSearchResult<OUTPUT>(
-            results[0].data,
+            results[0]?.data || [],
             page,
             size,
             maxItemLength,
             maxPagesIndex,
-            maxPagesIndex <= page,
+            maxPagesIndex == page,
             page == 0,
         );
     }

@@ -9,6 +9,7 @@ import {
     Param,
     Post,
     Put,
+    Query,
     UploadedFile,
     UseGuards,
     UseInterceptors,
@@ -17,6 +18,7 @@ import { UserService } from '../services/user.service';
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import { UserFullDto } from '@ubs-platform/users-common';
 import { Roles, RolesGuard } from '@ubs-platform/users-roles';
+import { UserAdminSearch } from 'libs/users-common/src/user-admin-search.dto';
 
 // TODO: Admin ile alakalı sorun çıkarsa tekrar ekle @Roles(['ADMIN'])
 
@@ -29,6 +31,12 @@ export class UserAdminController {
     @UseGuards(JwtAuthLocalGuard, RolesGuard)
     async listAllUsers() {
         return await this.userService.fetchAllUsers();
+    }
+
+    @Get('_search')
+    @UseGuards(JwtAuthLocalGuard, RolesGuard)
+    async searchAllUsers(@Query() uas: UserAdminSearch) {
+        return await this.userService.fetchAllUsersPaginated(uas);
     }
 
     @Get(':id')

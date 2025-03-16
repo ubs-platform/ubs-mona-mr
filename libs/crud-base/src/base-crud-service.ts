@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { SearchResult } from '@ubs-platform/crud-base-common';
+import { SearchRequest, SearchResult } from '@ubs-platform/crud-base-common';
 import { FilterQuery, HydratedDocument, Model, ObjectId } from 'mongoose';
 import { BaseCrudKlass } from './base-crud-klass';
 import { SearchUtil } from './util/search.util';
@@ -29,14 +29,22 @@ export abstract class BaseCrudService<
     }
 
     async searchPagination(
-        s?: SEARCH & { page?: number; size?: number },
+        searchAndPagination?: SEARCH & SearchRequest,
     ): Promise<SearchResult<OUTPUT>> {
-        const page = s?.page || 0,
-            size = s?.size || 10;
+        const page = searchAndPagination?.page || 0,
+            size = searchAndPagination?.size || 10;
+        let s = this.searchParams(searchAndPagination); //{ ...searchAndPagination, page: undefined, size: undefined };
         return (
-            await SearchUtil.modelSearch(this.m, size, page, {
-                $match: { ...(s || ({} as SEARCH)) },
-            })
+            await SearchUtil.modelSearch(
+                this.m,
+                size,
+                page,
+                s.sortBy,
+                s.sortRotation,
+                {
+                    $match: s,
+                },
+            )
         ).mapAsync((a) => this.toOutput(a));
     }
 

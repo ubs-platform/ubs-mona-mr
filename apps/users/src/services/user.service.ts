@@ -23,6 +23,8 @@ import { randomUUID } from 'crypto';
 import { EmailService } from './email.service';
 import { UserCommonService } from './user-common.service';
 import { UserKafkaEvents } from '@ubs-platform/users-consts';
+import { SearchUtil } from '@ubs-platform/crud-base';
+import { UserAdminSearch } from 'libs/users-common/src/user-admin-search.dto';
 
 @Injectable()
 export class UserService {
@@ -39,6 +41,18 @@ export class UserService {
         return (await this.userModel.find()).map((a) =>
             UserMapper.toAuthBackendDto(a),
         );
+    }
+
+    async fetchAllUsersPaginated(uas: UserAdminSearch) {
+        return (
+            await SearchUtil.modelSearch(
+                this.userModel,
+                uas.size,
+                uas.page,
+                '',
+                '',
+            )
+        ).mapAsync(async (a) => UserMapper.toAuthBackendDto(a));
     }
 
     async fetchUserGeneralInformation(user: UserGeneralInfoDTO) {

@@ -120,10 +120,13 @@ export class UserMessageService extends BaseCrudService<
             c.status = s.status;
         }
         if (s.creationDateGte) {
-            c.creationDate = { $gte: s.creationDateGte };
+            c.creationDate = { $gte: new Date(s.creationDateGte) };
         }
         if (s.creationDateLte) {
-            c.creationDate = { $lte: s.creationDateLte };
+            c.creationDate = {
+                ...(c.creationDate || {}),
+                $lte: new Date(s.creationDateLte),
+            };
         }
         return c;
     }
