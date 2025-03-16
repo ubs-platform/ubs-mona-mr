@@ -9,8 +9,8 @@ export interface IUserMessageSearch {
     type?: string;
     phoneNumber?: string;
     summary?: string;
-    creationDateLte?: string;
-    creationDateGte?: string;
+    creationDateLte?: string | Date;
+    creationDateGte?: string | Date;
     status?: 'WAITING' | 'RESOLVED';
     relatedUrl?: string;
 }
