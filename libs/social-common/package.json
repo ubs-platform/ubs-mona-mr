@@ -1,6 +1,9 @@
 {
     "name": "@ubs-platform/social-common",
     "version": "1.0.0",
+    "repository": {
+        "url": "https://github.com/ubs-platform/ubs-mona-mr"
+    },
     "iksir": {
         "type": "LIBRARY",
         "libraryMode": "PEER",

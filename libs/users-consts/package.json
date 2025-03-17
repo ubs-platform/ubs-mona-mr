@@ -2,6 +2,9 @@
     "name": "@ubs-platform/users-consts",
     "version": "1.0.0",
     "description": "",
+    "repository": {
+        "url": "https://github.com/ubs-platform/ubs-mona-mr"
+    },
     "iksir": {
         "type": "LIBRARY",
         "libraryMode": "EMBEDDED"

@@ -1,5 +1,5 @@
 {
-    "name": "@ubs-platform/feedback-common",
+    "name": "@ubs-platform/crud-base",
     "repository": {
         "url": "https://github.com/ubs-platform/ubs-mona-mr"
     },
