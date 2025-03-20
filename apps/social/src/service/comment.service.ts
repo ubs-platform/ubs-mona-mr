@@ -146,31 +146,19 @@ export class CommentService {
         comment: CommentSearchDTO,
     ): import('mongoose').FilterQuery<any> {
         return {
-            $and: [
-                { childEntityId: comment.childEntityId },
-                {
-                    childEntityName: comment.childEntityName,
-                },
-                {
-                    mainEntityId: comment.mainEntityId,
-                },
-                {
-                    mainEntityName: comment.mainEntityName,
-                },
-                {
-                    entityGroup: comment.entityGroup,
-                },
+            $match: {
+                childEntityId: comment.childEntityId,
+                childEntityName: comment.childEntityName,
+                mainEntityId: comment.mainEntityId,
+                mainEntityName: comment.mainEntityName,
+                entityGroup: comment.entityGroup,
                 ...(comment.childOfCommentId
-                    ? [
-                          {
-                              childOfCommentId: comment.childOfCommentId,
-                          },
-                          {
-                              isChild: true,
-                          },
-                      ]
-                    : [{ isChild: { $ne: true } }]),
-            ],
+                    ? {
+                          childOfCommentId: comment.childOfCommentId,
+                          isChild: true,
+                      }
+                    : { isChild: { $ne: true } }),
+            },
         };
     }
 
