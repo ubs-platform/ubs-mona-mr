@@ -13,7 +13,6 @@ import {
     CommentEditDTO,
     CommentSearchDTO,
     PaginationRequest,
-    PaginationResult,
 } from '@ubs-platform/social-common';
 import { EntityOwnershipService } from '@ubs-platform/users-microservice-helper';
 import { CommentMapper } from '../mapper/comment.mapper';
@@ -121,53 +120,26 @@ export class CommentService {
                 : { votesLength: sortingRotation, _id: sortingRotation };
 
         this.fillChildrenWithParentIfEmpty(...comments);
-
+        const searchQueries = {
+            $match: {
+                $or: comments.map((a) => {
+                    return this.commntFilterMatch(a);
+                }),
+            },
+        };
+        // mongodb aggregeration or conditions
         return (
             await SearchUtil.modelSearch(
                 this.commentModel,
                 pagination.size,
                 pagination.page,
                 sortingField,
-                {
-                    $or: comments.map((a) => {
-                        return this.commntFilterMatch(a);
-                    }),
-                },
+                searchQueries,
             )
-        ).mapAsync((a) => this.commentsPaginatedToDto());
-        // const ls = await this.commentModel.find({
-        //   childEntityId: comment.childEntityId,
-        //   childEntityName: comment.childEntityName,
-        //   mainEntityId: comment.mainEntityId,
-        //   mainEntityName: comment.mainEntityName,
-        //   entityGroup: comment.entityGroup,
-        // });
-        // const results = await this.commentModel.aggregate([
-        //     {
-        //         $match: this.commntFilterMatch(comment),
-        //     },
-        //     {
-        //         $facet: {
-        //             total: [{ $count: 'total' }],
-        //             //@ts-ignore
-        //             data: [
-        //                 { $sort: sortingField },
-        //                 { $skip: comment.size * comment.page },
-        //                 // lack of convert to int
-        //                 { $limit: parseInt(comment.size as any as string) },
-        //             ].filter((a) => a),
-        //         },
-        //     },
-        // ]);
-
-        // const maxItemLength = results[0]?.total[0]?.total || 0;
-        // // return { list, maxItemLength };
-        // return await this.commentsPaginatedToDto(
-        //     comment,
-        //     results,
-        //     currentUser,
-        //     maxItemLength,
-        // );
+        ).mapAsync(async (a) => {
+            const meta = await this.commentMetaService.findOrCreateNewMeta(a);
+            return await this.commentMapper.toDto(a, meta, currentUser);
+        });
     }
 
     private commntFilterMatch(
@@ -185,28 +157,28 @@ export class CommentService {
         };
     }
 
-    private async commentsPaginatedToDto(
-        comment: CommentSearchDTO & PaginationRequest,
-        results: any[],
-        currentUser: UserAuthBackendDTO,
-        maxItemLength: any,
-    ): Promise<PaginationResult> {
-        const meta = await this.commentMetaService.findOrCreateNewMeta(comment);
-        const commentDtos: Array<CommentDTO> = [];
-        for (let index = 0; index < results[0].data.length; index++) {
-            const comment = results[0].data[index];
-            commentDtos.push({
-                ...(await this.commentMapper.toDto(comment, meta, currentUser)),
-            });
-        }
+    // private async commentsPaginatedToDto(
+    //     comment: CommentSearchDTO & PaginationRequest,
+    //     results: any[],
+    //     currentUser: UserAuthBackendDTO,
+    //     maxItemLength: any,
+    // ): Promise<PaginationResult> {
+    //     const meta = await this.commentMetaService.findOrCreateNewMeta(comment);
+    //     const commentDtos: Array<CommentDTO> = [];
+    //     for (let index = 0; index < results[0].data.length; index++) {
+    //         const comment = results[0].data[index];
+    //         commentDtos.push({
+    //             ...(await this.commentMapper.toDto(comment, meta, currentUser)),
+    //         });
+    //     }
 
-        return {
-            page: comment.page,
-            size: comment.size,
-            list: commentDtos,
-            maxItemLength,
-        };
-    }
+    //     return {
+    //         page: comment.page,
+    //         size: comment.size,
+    //         list: commentDtos,
+    //         maxItemLength,
+    //     };
+    // }
 
     async deleteComment(commentId: string, currentUser: UserAuthBackendDTO) {
         const commentWillBeDeleted =

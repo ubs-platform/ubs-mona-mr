@@ -54,14 +54,18 @@ export class CommentController {
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         console.info(currentUser);
-        return await this.commentService.searchComments(comment, currentUser);
+        return await this.commentService.searchComments(
+            comment,
+            currentUser,
+            comment,
+        );
     }
 
-    @Post("/search")
+    @Post('/search')
     @UseGuards(UserIntercept)
     async searchCommentsMultiple(
         @Query() comment: PaginationRequest,
-        @Body() searchs : CommentSearchDTO[],
+        @Body() searchs: CommentSearchDTO[],
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         console.info(currentUser);
