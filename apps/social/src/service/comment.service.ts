@@ -20,6 +20,8 @@ import { CommentMapper } from '../mapper/comment.mapper';
 import { InjectModel } from '@nestjs/mongoose';
 import { CommentMetaService } from './comment-meta.service';
 import { CommentAbilityCheckService } from './comment-ability-check.service';
+import { SearchUtil } from '@ubs-platform/crud-base';
+import { SearchResult } from '@ubs-platform/crud-base-common';
 @Injectable()
 export class CommentService {
     constructor(
@@ -53,11 +55,14 @@ export class CommentService {
     }
 
     private fillChildrenWithParentIfEmpty(
-        comment: CommentSearchDTO | CommentDTO,
+        ...comments: Array<CommentSearchDTO | CommentDTO>
     ) {
-        if (!comment.childEntityId && !comment.childEntityName) {
-            comment.childEntityId = comment.mainEntityId;
-            comment.childEntityName = comment.mainEntityName;
+        for (let index = 0; index < comments.length; index++) {
+            const comment = comments[index];
+            if (!comment.childEntityId && !comment.childEntityName) {
+                comment.childEntityId = comment.mainEntityId;
+                comment.childEntityName = comment.mainEntityName;
+            }
         }
     }
 
@@ -102,19 +107,34 @@ export class CommentService {
     }
 
     async searchComments(
-        comment: CommentSearchDTO & PaginationRequest,
+        pagination: PaginationRequest,
         currentUser: UserAuthBackendDTO,
-    ): Promise<PaginationResult> {
-        const sortingRotation = comment.sortRotation == 'ASC' ? 1 : -1;
-        const sortingField =
-            comment.sortField == 'CREATIONDATE'
+        ...comments: CommentSearchDTO[]
+    ): Promise<SearchResult<CommentDTO>> {
+        const sortingRotation = pagination.sortRotation == 'ASC' ? 1 : -1;
+        const sortingField: { [key: string]: 1 | -1 } =
+            pagination.sortField == 'CREATIONDATE'
                 ? {
                       creationDate: sortingRotation,
                       _id: sortingRotation,
                   }
                 : { votesLength: sortingRotation, _id: sortingRotation };
 
-        this.fillChildrenWithParentIfEmpty(comment);
+        this.fillChildrenWithParentIfEmpty(...comments);
+
+        return (
+            await SearchUtil.modelSearch(
+                this.commentModel,
+                pagination.size,
+                pagination.page,
+                sortingField,
+                {
+                    $or: comments.map((a) => {
+                        return this.commntFilterMatch(a);
+                    }),
+                },
+            )
+        ).mapAsync((a) => this.commentsPaginatedToDto());
         // const ls = await this.commentModel.find({
         //   childEntityId: comment.childEntityId,
         //   childEntityName: comment.childEntityName,
@@ -122,32 +142,32 @@ export class CommentService {
         //   mainEntityName: comment.mainEntityName,
         //   entityGroup: comment.entityGroup,
         // });
-        const results = await this.commentModel.aggregate([
-            {
-                $match: this.commntFilterMatch(comment),
-            },
-            {
-                $facet: {
-                    total: [{ $count: 'total' }],
-                    //@ts-ignore
-                    data: [
-                        { $sort: sortingField },
-                        { $skip: comment.size * comment.page },
-                        // lack of convert to int
-                        { $limit: parseInt(comment.size as any as string) },
-                    ].filter((a) => a),
-                },
-            },
-        ]);
+        // const results = await this.commentModel.aggregate([
+        //     {
+        //         $match: this.commntFilterMatch(comment),
+        //     },
+        //     {
+        //         $facet: {
+        //             total: [{ $count: 'total' }],
+        //             //@ts-ignore
+        //             data: [
+        //                 { $sort: sortingField },
+        //                 { $skip: comment.size * comment.page },
+        //                 // lack of convert to int
+        //                 { $limit: parseInt(comment.size as any as string) },
+        //             ].filter((a) => a),
+        //         },
+        //     },
+        // ]);
 
-        const maxItemLength = results[0]?.total[0]?.total || 0;
-        // return { list, maxItemLength };
-        return await this.commentsPaginatedToDto(
-            comment,
-            results,
-            currentUser,
-            maxItemLength,
-        );
+        // const maxItemLength = results[0]?.total[0]?.total || 0;
+        // // return { list, maxItemLength };
+        // return await this.commentsPaginatedToDto(
+        //     comment,
+        //     results,
+        //     currentUser,
+        //     maxItemLength,
+        // );
     }
 
     private commntFilterMatch(

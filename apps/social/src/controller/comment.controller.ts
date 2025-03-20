@@ -57,6 +57,17 @@ export class CommentController {
         return await this.commentService.searchComments(comment, currentUser);
     }
 
+    @Post("/search")
+    @UseGuards(UserIntercept)
+    async searchCommentsMultiple(
+        @Query() comment: PaginationRequest,
+        @Body() searchs : CommentSearchDTO[],
+        @CurrentUser() currentUser: UserAuthBackendDTO,
+    ) {
+        console.info(currentUser);
+        return await this.commentService.searchComments(comment, currentUser);
+    }
+
     @Get('count')
     @UseGuards(UserIntercept)
     async commentCount(@Query() comment: CommentSearchDTO) {

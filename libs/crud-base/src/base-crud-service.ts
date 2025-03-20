@@ -33,18 +33,17 @@ export abstract class BaseCrudService<
     ): Promise<SearchResult<OUTPUT>> {
         const page = searchAndPagination?.page || 0,
             size = searchAndPagination?.size || 10;
+
         let s = this.searchParams(searchAndPagination); //{ ...searchAndPagination, page: undefined, size: undefined };
+        let sort;
+        if (searchAndPagination?.sortBy && searchAndPagination.sortRotation) {
+            sort = {};
+            sort[searchAndPagination.sortBy] = searchAndPagination.sortRotation;
+        }
         return (
-            await SearchUtil.modelSearch(
-                this.m,
-                size,
-                page,
-                s.sortBy,
-                s.sortRotation,
-                {
-                    $match: s,
-                },
-            )
+            await SearchUtil.modelSearch(this.m, size, page, sort, {
+                $match: s,
+            })
         ).mapAsync((a) => this.toOutput(a));
     }
 

@@ -99,12 +99,12 @@ export interface PaginationRequest {
     sortRotation: SORT_ROTATION;
 }
 
-export interface PaginationResult {
-    page: number;
-    size: number;
-    maxItemLength: number;
-    list: CommentDTO[];
-}
+// export interface PaginationResult {
+//     page: number;
+//     size: number;
+//     maxItemLength: number;
+//     list: CommentDTO[];
+// }
 
 export type CommentStatus = 'ALLOW' | 'DISABLE' | 'ARCHIVE';
 
