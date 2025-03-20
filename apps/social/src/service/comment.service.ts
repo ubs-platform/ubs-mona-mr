@@ -146,39 +146,33 @@ export class CommentService {
         comment: CommentSearchDTO,
     ): import('mongoose').FilterQuery<any> {
         return {
-            childEntityId: comment.childEntityId,
-            childEntityName: comment.childEntityName,
-            mainEntityId: comment.mainEntityId,
-            mainEntityName: comment.mainEntityName,
-            entityGroup: comment.entityGroup,
-            ...(comment.childOfCommentId
-                ? { childOfCommentId: comment.childOfCommentId, isChild: true }
-                : { isChild: { $ne: true } }),
+            $and: [
+                { childEntityId: comment.childEntityId },
+                {
+                    childEntityName: comment.childEntityName,
+                },
+                {
+                    mainEntityId: comment.mainEntityId,
+                },
+                {
+                    mainEntityName: comment.mainEntityName,
+                },
+                {
+                    entityGroup: comment.entityGroup,
+                },
+                ...(comment.childOfCommentId
+                    ? [
+                          {
+                              childOfCommentId: comment.childOfCommentId,
+                          },
+                          {
+                              isChild: true,
+                          },
+                      ]
+                    : [{ isChild: { $ne: true } }]),
+            ],
         };
     }
-
-    // private async commentsPaginatedToDto(
-    //     comment: CommentSearchDTO & PaginationRequest,
-    //     results: any[],
-    //     currentUser: UserAuthBackendDTO,
-    //     maxItemLength: any,
-    // ): Promise<PaginationResult> {
-    //     const meta = await this.commentMetaService.findOrCreateNewMeta(comment);
-    //     const commentDtos: Array<CommentDTO> = [];
-    //     for (let index = 0; index < results[0].data.length; index++) {
-    //         const comment = results[0].data[index];
-    //         commentDtos.push({
-    //             ...(await this.commentMapper.toDto(comment, meta, currentUser)),
-    //         });
-    //     }
-
-    //     return {
-    //         page: comment.page,
-    //         size: comment.size,
-    //         list: commentDtos,
-    //         maxItemLength,
-    //     };
-    // }
 
     async deleteComment(commentId: string, currentUser: UserAuthBackendDTO) {
         const commentWillBeDeleted =

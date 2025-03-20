@@ -29,7 +29,7 @@ export class SearchUtil {
         //     sort = { $sort: {} };
         //     sort['$sort'][sortByFieldName] = sortByType == 'asc' ? 1 : -1;
         // }
-        const results = await model.aggregate([
+        const mongoPipe = [
             ...searchParamsQuery,
             {
                 $facet: {
@@ -42,7 +42,9 @@ export class SearchUtil {
                     ].filter((a) => a),
                 },
             },
-        ]);
+        ];
+        console.info(JSON.stringify(mongoPipe, null, '\t'));
+        const results = await model.aggregate(mongoPipe);
         const maxItemLength = results[0].total[0]?.total || 0;
         const itemLengthThing = Math.ceil(maxItemLength / size);
         const maxPagesIndex = size ? itemLengthThing - 1 : 0;
