@@ -69,7 +69,11 @@ export class CommentController {
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         console.info(currentUser);
-        return await this.commentService.searchComments(comment, currentUser);
+        return await this.commentService.searchComments(
+            comment,
+            currentUser,
+            ...searchs,
+        );
     }
 
     @Get('count')

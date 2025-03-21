@@ -36,7 +36,7 @@ export class SearchUtil {
                     total: [{ $count: 'total' }],
                     data: [
                         // lack of convert to int
-                        sort,
+                        sort ? { $sort: sort } : null,
                         { $skip: (size || 10) * (page || 0) },
                         { $limit: parseInt(size as any as string) },
                     ].filter((a) => a),

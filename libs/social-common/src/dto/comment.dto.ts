@@ -3,8 +3,8 @@ export interface CommentAddDTO {
     entityGroup: String;
     mainEntityName: String;
     mainEntityId: String;
-    childEntityName: String;
-    childEntityId: String;
+    childEntityName?: String;
+    childEntityId?: String;
     textContent: String;
     childOfCommentId?: string;
 }
@@ -26,8 +26,8 @@ export interface CommentSearchDTO {
     entityGroup: String;
     mainEntityName: String;
     mainEntityId: String;
-    childEntityName: String;
-    childEntityId: String;
+    childEntityName?: String;
+    childEntityId?: String;
     childOfCommentId?: string;
 }
 
