@@ -3,7 +3,7 @@ import {
     NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { SocialComment } from '../model/comment';
 
 import { UserAuthBackendDTO } from '@ubs-platform/users-common';
@@ -21,6 +21,7 @@ import { CommentMetaService } from './comment-meta.service';
 import { CommentAbilityCheckService } from './comment-ability-check.service';
 import { SearchUtil } from '@ubs-platform/crud-base';
 import { SearchResult } from '@ubs-platform/crud-base-common';
+import { filter, lastValueFrom } from 'rxjs';
 @Injectable()
 export class CommentService {
     constructor(
@@ -108,7 +109,7 @@ export class CommentService {
     async searchComments(
         pagination: PaginationRequest,
         currentUser: UserAuthBackendDTO,
-        ...comments: CommentSearchDTO[]
+        ...commentsSearchs: CommentSearchDTO[]
     ): Promise<SearchResult<CommentDTO>> {
         const sortingRotation = pagination.sortRotation == 'ASC' ? 1 : -1;
         const sortingField: { [key: string]: 1 | -1 } =
@@ -119,45 +120,86 @@ export class CommentService {
                   }
                 : { votesLength: sortingRotation, _id: sortingRotation };
 
-        this.fillChildrenWithParentIfEmpty(...comments);
+        // this.fillChildrenWithParentIfEmpty(...comments);
         const searchQueries = {
             $match: {
-                $or: comments.map((a) => {
-                    return this.commntFilterMatch(a);
-                }),
+                $or: await this.commentFilterMatch(
+                    commentsSearchs,
+                    currentUser.id,
+                ),
             },
         };
+        if (searchQueries.$match.$or.length) {
+            return (
+                await SearchUtil.modelSearch(
+                    this.commentModel,
+                    pagination.size,
+                    pagination.page,
+                    sortingField,
+                    searchQueries,
+                )
+            ).mapAsync(async (a) => {
+                const meta =
+                    await this.commentMetaService.findOrCreateNewMeta(a);
+                return await this.commentMapper.toDto(a, meta, currentUser);
+            });
+        } else {
+            return {
+                content: [],
+                firstPage: true,
+                lastPage: true,
+                maxItemLength: 0,
+                maxPagesIndex: 0,
+                page: 0,
+                size: 0,
+            };
+        }
         // mongodb aggregeration or conditions
-        return (
-            await SearchUtil.modelSearch(
-                this.commentModel,
-                pagination.size,
-                pagination.page,
-                sortingField,
-                searchQueries,
-            )
-        ).mapAsync(async (a) => {
-            const meta = await this.commentMetaService.findOrCreateNewMeta(a);
-            return await this.commentMapper.toDto(a, meta, currentUser);
-        });
     }
 
-    private commntFilterMatch(
-        comment: CommentSearchDTO,
-    ): import('mongoose').FilterQuery<any> {
-        return {
-            childEntityId: comment.childEntityId,
-            childEntityName: comment.childEntityName,
-            mainEntityId: comment.mainEntityId,
-            mainEntityName: comment.mainEntityName,
-            entityGroup: comment.entityGroup,
-            ...(comment.childOfCommentId
-                ? {
-                      childOfCommentId: comment.childOfCommentId,
-                      isChild: true,
-                  }
-                : { isChild: { $ne: true } }),
-        };
+    private async commentFilterMatch(
+        commentsSearch: CommentSearchDTO[],
+        userId?: string,
+    ): Promise<FilterQuery<any>[]> {
+        const filters: FilterQuery<any>[] = [];
+
+        for (let index = 0; index < commentsSearch.length; index++) {
+            const commentSearch = commentsSearch[index];
+            const currentCommentSearch = {
+                mainEntityName: commentSearch.mainEntityName,
+                entityGroup: commentSearch.entityGroup,
+                childEntityId: commentSearch.childEntityId,
+                childEntityName: commentSearch.childEntityName,
+                ...(commentSearch.childOfCommentId
+                    ? {
+                          childOfCommentId: commentSearch.childOfCommentId,
+                          isChild: true,
+                      }
+                    : { isChild: { $ne: true } }),
+            };
+            if (userId && commentSearch.mainEntityIdByOwner) {
+                const entities = await lastValueFrom(
+                    this.eoService.searchOwnershipUser({
+                        entityGroup: commentSearch.entityGroup,
+                        entityName: commentSearch.mainEntityName!,
+                        userId,
+                        capability: 'OWNER',
+                    }),
+                );
+                entities.forEach((a) => {
+                    filters.push({
+                        ...currentCommentSearch,
+                        mainEntityId: a.entityId,
+                    });
+                });
+            } else {
+                filters.push({
+                    ...currentCommentSearch,
+                    mainEntityId: commentSearch.mainEntityId,
+                });
+            }
+        }
+        return filters;
     }
 
     async deleteComment(commentId: string, currentUser: UserAuthBackendDTO) {
@@ -246,9 +288,10 @@ export class CommentService {
     async commentCount(comment: CommentSearchDTO) {
         // const meta = await this.findOrCreateNewMeta(comment);
         // return meta.length
+
         const commentCount = await this.commentModel.aggregate([
             {
-                $match: this.commntFilterMatch(comment),
+                $match: this.commentFilterMatch([comment]),
             },
             {
                 $count: 'total',

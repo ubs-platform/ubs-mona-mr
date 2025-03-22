@@ -175,10 +175,9 @@ export class EntityOwnershipService {
             entityGroup: eo.entityGroup,
             entityName: eo.entityName,
             'userCapabilities.userId': eo.userId,
-            ...(eo.capability ? { capability: eo.capability } : {}),
+            // ...(eo.capability ? { capability: eo.capability } : {}),
         });
-
-        entityOwnerships.map((a) => this.mapper.toDto(a));
+        return entityOwnerships.map((a) => this.mapper.toDto(a));
     }
 
     private async findExisting(

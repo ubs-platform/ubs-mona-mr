@@ -24,8 +24,10 @@ export interface CommentMetaSearchDTO {
 
 export interface CommentSearchDTO {
     entityGroup: String;
-    mainEntityName: String;
-    mainEntityId: String;
+    mainEntityName?: String;
+    mainEntityId?: String;
+    mainEntityIdByOwner?: boolean;
+    // mainEntityCurrentUserCapacities?: String[];
     childEntityName?: String;
     childEntityId?: String;
     childOfCommentId?: string;

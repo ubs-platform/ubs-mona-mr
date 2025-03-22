@@ -66,8 +66,8 @@ export class CommentMetaService {
                 u.subItemLengths[willBeIncreased].length + 1;
         } else {
             u.subItemLengths.push({
-                childEntityId: commentDto.childEntityId,
-                childEntityName: commentDto.childEntityName,
+                childEntityId: commentDto.childEntityId!,
+                childEntityName: commentDto.childEntityName!,
                 length: 1,
             });
         }

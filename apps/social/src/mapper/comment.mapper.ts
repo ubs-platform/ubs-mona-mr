@@ -76,8 +76,10 @@ export class CommentMapper {
         commentModel.textContent = commentDto.textContent;
         commentModel.mainEntityName = commentDto.mainEntityName;
         commentModel.mainEntityId = commentDto.mainEntityId;
-        commentModel.childEntityName = commentDto.childEntityName;
-        commentModel.childEntityId = commentDto.childEntityId;
+        commentModel.childEntityName =
+            commentDto.childEntityName || commentDto.mainEntityName;
+        commentModel.childEntityId =
+            commentDto.childEntityId || commentDto.mainEntityId;
         commentModel.entityGroup = commentDto.entityGroup;
         commentModel.childOfCommentId = commentDto.childOfCommentId || '';
         commentModel.isChild = commentDto.childOfCommentId?.trim()
