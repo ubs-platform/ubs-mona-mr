@@ -54,17 +54,17 @@ export class CommentService {
             .exec();
     }
 
-    private fillChildrenWithParentIfEmpty(
-        ...comments: Array<CommentSearchDTO | CommentDTO>
-    ) {
-        for (let index = 0; index < comments.length; index++) {
-            const comment = comments[index];
-            if (!comment.childEntityId && !comment.childEntityName) {
-                comment.childEntityId = comment.mainEntityId;
-                comment.childEntityName = comment.mainEntityName;
-            }
-        }
-    }
+    // private fillChildrenWithParentIfEmpty(
+    //     ...comments: Array<CommentSearchDTO | CommentDTO>
+    // ) {
+    //     for (let index = 0; index < comments.length; index++) {
+    //         const comment = comments[index];
+    //         if (!comment.childEntityId && !comment.childEntityName) {
+    //             comment.childEntityId = comment.mainEntityId;
+    //             comment.childEntityName = comment.mainEntityName;
+    //         }
+    //     }
+    // }
 
     public async insertComment(
         commentDto: CommentAddDTO,
@@ -83,7 +83,11 @@ export class CommentService {
         }
         let commentMeta =
             await this.commentMetaService.findOrCreateNewMeta(commentDto);
-        this.fillChildrenWithParentIfEmpty(commentDto);
+        // this.fillChildrenWithParentIfEmpty();
+        commentDto.childEntityId =
+            commentDto.childEntityId || commentDto.mainEntityId;
+        commentDto.childEntityName =
+            commentDto.childEntityName || commentDto.mainEntityName;
         const commentModel = new this.commentModel();
         this.commentMapper.moveToEntity(commentModel, commentDto);
         commentModel.byUserId = currentUser.id;
@@ -129,7 +133,8 @@ export class CommentService {
                 ),
             },
         };
-        if (searchQueries.$match.$or.length) {
+
+        if (searchQueries.$match.$or.length > 0) {
             return (
                 await SearchUtil.modelSearch(
                     this.commentModel,
@@ -168,8 +173,12 @@ export class CommentService {
             const currentCommentSearch = {
                 mainEntityName: commentSearch.mainEntityName,
                 entityGroup: commentSearch.entityGroup,
-                childEntityId: commentSearch.childEntityId,
-                childEntityName: commentSearch.childEntityName,
+                ...(commentSearch.childEntityId
+                    ? { childEntityId: commentSearch.childEntityId }
+                    : {}),
+                ...(commentSearch.childEntityName
+                    ? { childEntityName: commentSearch.childEntityName }
+                    : {}),
                 ...(commentSearch.childOfCommentId
                     ? {
                           childOfCommentId: commentSearch.childOfCommentId,
