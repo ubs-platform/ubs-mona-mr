@@ -1,11 +1,11 @@
 export interface CommentAddDTO {
-    _id?: String;
-    entityGroup: String;
-    mainEntityName: String;
-    mainEntityId: String;
-    childEntityName?: String;
-    childEntityId?: String;
-    textContent: String;
+    _id?: string;
+    entityGroup: string;
+    mainEntityName: string;
+    mainEntityId: string;
+    childEntityName?: string;
+    childEntityId?: string;
+    textContent: string;
     childOfCommentId?: string;
 }
 
@@ -17,40 +17,40 @@ export interface BanUserDTO {
 }
 
 export interface CommentMetaSearchDTO {
-    entityGroup: String;
-    mainEntityName: String;
-    mainEntityId: String;
+    entityGroup: string;
+    mainEntityName?: string;
+    mainEntityId?: string;
 }
 
 export interface CommentSearchDTO {
-    entityGroup: String;
-    mainEntityName?: String;
-    mainEntityId?: String;
+    entityGroup: string;
+    mainEntityName?: string;
+    mainEntityId?: string;
     mainEntityIdByOwner?: boolean;
-    // mainEntityCurrentUserCapacities?: String[];
-    childEntityName?: String;
-    childEntityId?: String;
+    // mainEntityCurrentUserCapacities?: string[];
+    childEntityName?: string;
+    childEntityId?: string;
     childOfCommentId?: string;
 }
 
 export interface CommentDTO {
-    _id: String;
+    _id: string;
 
-    entityGroup: String;
+    entityGroup: string;
 
-    mainEntityName: String;
+    mainEntityName: string;
 
-    mainEntityId: String;
+    mainEntityId: string;
 
-    childEntityName: String;
+    childEntityName: string;
 
-    childEntityId: String;
+    childEntityId: string;
 
-    textContent: String;
+    textContent: string;
 
-    byUserId: String;
+    byUserId: string;
 
-    byFullName: String;
+    byFullName: string;
 
     creationDate: Date;
 
@@ -83,7 +83,7 @@ export interface CommentAbilityDTO {
 }
 
 export interface CommentEditDTO {
-    textContent: String;
+    textContent: string;
 }
 
 export interface CanManuplateComment {
