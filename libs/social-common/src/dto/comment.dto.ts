@@ -31,6 +31,7 @@ export interface CommentSearchDTO {
     childEntityName?: string;
     childEntityId?: string;
     childOfCommentId?: string;
+    contentTextIn?: string;
 }
 
 export interface CommentDTO {
@@ -91,15 +92,15 @@ export interface CanManuplateComment {
     allow: boolean;
 }
 
-export type SORT_FIELD = 'VOTE' | 'CREATIONDATE';
-export type SORT_ROTATION = 'ASC' | 'DESC';
+export type SORT_FIELD = 'vote' | 'creationDate';
+export type SORT_ROTATION = 'asc' | 'desc';
 
-export interface PaginationRequest {
-    page: number;
-    size: number;
-    sortField: SORT_FIELD;
-    sortRotation: SORT_ROTATION;
-}
+// export interface PaginationRequest {
+//     page: number;
+//     size: number;
+//     sortField: SORT_FIELD;
+//     sortRotation: SORT_ROTATION;
+// }
 
 // export interface PaginationResult {
 //     page: number;

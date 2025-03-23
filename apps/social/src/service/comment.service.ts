@@ -12,7 +12,6 @@ import {
     CommentDTO,
     CommentEditDTO,
     CommentSearchDTO,
-    PaginationRequest,
 } from '@ubs-platform/social-common';
 import { EntityOwnershipService } from '@ubs-platform/users-microservice-helper';
 import { CommentMapper } from '../mapper/comment.mapper';
@@ -20,7 +19,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { CommentMetaService } from './comment-meta.service';
 import { CommentAbilityCheckService } from './comment-ability-check.service';
 import { SearchUtil } from '@ubs-platform/crud-base';
-import { SearchResult } from '@ubs-platform/crud-base-common';
+import { SearchRequest, SearchResult } from '@ubs-platform/crud-base-common';
 import { filter, lastValueFrom } from 'rxjs';
 @Injectable()
 export class CommentService {
@@ -111,13 +110,14 @@ export class CommentService {
     }
 
     async searchComments(
-        pagination: PaginationRequest,
+        pagination: SearchRequest,
         currentUser: UserAuthBackendDTO,
         ...commentsSearchs: CommentSearchDTO[]
     ): Promise<SearchResult<CommentDTO>> {
-        const sortingRotation = pagination.sortRotation == 'ASC' ? 1 : -1;
+        const sortingRotation = pagination.sortRotation == 'asc' ? 1 : -1;
+
         const sortingField: { [key: string]: 1 | -1 } =
-            pagination.sortField == 'CREATIONDATE'
+            pagination.sortBy == 'creationDate'
                 ? {
                       creationDate: sortingRotation,
                       _id: sortingRotation,
@@ -162,6 +162,10 @@ export class CommentService {
         // mongodb aggregeration or conditions
     }
 
+    private regexSearch(str: string): any {
+        return { $regex: '.*' + str + '.*' };
+    }
+
     private async commentFilterMatch(
         commentsSearch: CommentSearchDTO[],
         userId?: string,
@@ -173,6 +177,13 @@ export class CommentService {
             const currentCommentSearch = {
                 mainEntityName: commentSearch.mainEntityName,
                 entityGroup: commentSearch.entityGroup,
+                ...(commentSearch.contentTextIn
+                    ? {
+                          textContent: this.regexSearch(
+                              commentSearch.contentTextIn,
+                          ),
+                      }
+                    : {}),
                 ...(commentSearch.childEntityId
                     ? { childEntityId: commentSearch.childEntityId }
                     : {}),
