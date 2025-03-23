@@ -37,8 +37,7 @@ export class SessionService {
                 this.chatSessionModel,
                 size,
                 page,
-                'creationDate',
-                'desc',
+                { creationDate: 'desc' },
                 {
                     $match: {
                         userParticipantsIds: {

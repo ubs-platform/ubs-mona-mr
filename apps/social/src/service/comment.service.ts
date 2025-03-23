@@ -3,7 +3,7 @@ import {
     NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { SocialComment } from '../model/comment';
 
 import { UserAuthBackendDTO } from '@ubs-platform/users-common';
@@ -12,14 +12,15 @@ import {
     CommentDTO,
     CommentEditDTO,
     CommentSearchDTO,
-    PaginationRequest,
-    PaginationResult,
 } from '@ubs-platform/social-common';
 import { EntityOwnershipService } from '@ubs-platform/users-microservice-helper';
 import { CommentMapper } from '../mapper/comment.mapper';
 import { InjectModel } from '@nestjs/mongoose';
 import { CommentMetaService } from './comment-meta.service';
 import { CommentAbilityCheckService } from './comment-ability-check.service';
+import { SearchUtil } from '@ubs-platform/crud-base';
+import { SearchRequest, SearchResult } from '@ubs-platform/crud-base-common';
+import { filter, lastValueFrom } from 'rxjs';
 @Injectable()
 export class CommentService {
     constructor(
@@ -52,14 +53,17 @@ export class CommentService {
             .exec();
     }
 
-    private fillChildrenWithParentIfEmpty(
-        comment: CommentSearchDTO | CommentDTO,
-    ) {
-        if (!comment.childEntityId && !comment.childEntityName) {
-            comment.childEntityId = comment.mainEntityId;
-            comment.childEntityName = comment.mainEntityName;
-        }
-    }
+    // private fillChildrenWithParentIfEmpty(
+    //     ...comments: Array<CommentSearchDTO | CommentDTO>
+    // ) {
+    //     for (let index = 0; index < comments.length; index++) {
+    //         const comment = comments[index];
+    //         if (!comment.childEntityId && !comment.childEntityName) {
+    //             comment.childEntityId = comment.mainEntityId;
+    //             comment.childEntityName = comment.mainEntityName;
+    //         }
+    //     }
+    // }
 
     public async insertComment(
         commentDto: CommentAddDTO,
@@ -78,7 +82,11 @@ export class CommentService {
         }
         let commentMeta =
             await this.commentMetaService.findOrCreateNewMeta(commentDto);
-        this.fillChildrenWithParentIfEmpty(commentDto);
+        // this.fillChildrenWithParentIfEmpty();
+        commentDto.childEntityId =
+            commentDto.childEntityId || commentDto.mainEntityId;
+        commentDto.childEntityName =
+            commentDto.childEntityName || commentDto.mainEntityName;
         const commentModel = new this.commentModel();
         this.commentMapper.moveToEntity(commentModel, commentDto);
         commentModel.byUserId = currentUser.id;
@@ -102,90 +110,116 @@ export class CommentService {
     }
 
     async searchComments(
-        comment: CommentSearchDTO & PaginationRequest,
+        pagination: SearchRequest,
         currentUser: UserAuthBackendDTO,
-    ): Promise<PaginationResult> {
-        const sortingRotation = comment.sortRotation == 'ASC' ? 1 : -1;
-        const sortingField =
-            comment.sortField == 'CREATIONDATE'
+        ...commentsSearchs: CommentSearchDTO[]
+    ): Promise<SearchResult<CommentDTO>> {
+        const sortingRotation = pagination.sortRotation == 'asc' ? 1 : -1;
+
+        const sortingField: { [key: string]: 1 | -1 } =
+            pagination.sortBy == 'creationDate'
                 ? {
                       creationDate: sortingRotation,
                       _id: sortingRotation,
                   }
                 : { votesLength: sortingRotation, _id: sortingRotation };
 
-        this.fillChildrenWithParentIfEmpty(comment);
-        // const ls = await this.commentModel.find({
-        //   childEntityId: comment.childEntityId,
-        //   childEntityName: comment.childEntityName,
-        //   mainEntityId: comment.mainEntityId,
-        //   mainEntityName: comment.mainEntityName,
-        //   entityGroup: comment.entityGroup,
-        // });
-        const results = await this.commentModel.aggregate([
-            {
-                $match: this.commntFilterMatch(comment),
+        // this.fillChildrenWithParentIfEmpty(...comments);
+        const searchQueries = {
+            $match: {
+                $or: await this.commentFilterMatch(
+                    commentsSearchs,
+                    currentUser.id,
+                ),
             },
-            {
-                $facet: {
-                    total: [{ $count: 'total' }],
-                    //@ts-ignore
-                    data: [
-                        { $sort: sortingField },
-                        { $skip: comment.size * comment.page },
-                        // lack of convert to int
-                        { $limit: parseInt(comment.size as any as string) },
-                    ].filter((a) => a),
-                },
-            },
-        ]);
-
-        const maxItemLength = results[0]?.total[0]?.total || 0;
-        // return { list, maxItemLength };
-        return await this.commentsPaginatedToDto(
-            comment,
-            results,
-            currentUser,
-            maxItemLength,
-        );
-    }
-
-    private commntFilterMatch(
-        comment: CommentSearchDTO,
-    ): import('mongoose').FilterQuery<any> {
-        return {
-            childEntityId: comment.childEntityId,
-            childEntityName: comment.childEntityName,
-            mainEntityId: comment.mainEntityId,
-            mainEntityName: comment.mainEntityName,
-            entityGroup: comment.entityGroup,
-            ...(comment.childOfCommentId
-                ? { childOfCommentId: comment.childOfCommentId, isChild: true }
-                : { isChild: { $ne: true } }),
         };
-    }
 
-    private async commentsPaginatedToDto(
-        comment: CommentSearchDTO & PaginationRequest,
-        results: any[],
-        currentUser: UserAuthBackendDTO,
-        maxItemLength: any,
-    ): Promise<PaginationResult> {
-        const meta = await this.commentMetaService.findOrCreateNewMeta(comment);
-        const commentDtos: Array<CommentDTO> = [];
-        for (let index = 0; index < results[0].data.length; index++) {
-            const comment = results[0].data[index];
-            commentDtos.push({
-                ...(await this.commentMapper.toDto(comment, meta, currentUser)),
+        if (searchQueries.$match.$or.length > 0) {
+            return (
+                await SearchUtil.modelSearch(
+                    this.commentModel,
+                    pagination.size,
+                    pagination.page,
+                    sortingField,
+                    searchQueries,
+                )
+            ).mapAsync(async (a) => {
+                const meta =
+                    await this.commentMetaService.findOrCreateNewMeta(a);
+                return await this.commentMapper.toDto(a, meta, currentUser);
             });
+        } else {
+            return {
+                content: [],
+                firstPage: true,
+                lastPage: true,
+                maxItemLength: 0,
+                maxPagesIndex: 0,
+                page: 0,
+                size: 0,
+            };
         }
+        // mongodb aggregeration or conditions
+    }
 
-        return {
-            page: comment.page,
-            size: comment.size,
-            list: commentDtos,
-            maxItemLength,
-        };
+    private regexSearch(str: string): any {
+        return { $regex: '.*' + str + '.*' };
+    }
+
+    private async commentFilterMatch(
+        commentsSearch: CommentSearchDTO[],
+        userId?: string,
+    ): Promise<FilterQuery<any>[]> {
+        const filters: FilterQuery<any>[] = [];
+
+        for (let index = 0; index < commentsSearch.length; index++) {
+            const commentSearch = commentsSearch[index];
+            const currentCommentSearch = {
+                mainEntityName: commentSearch.mainEntityName,
+                entityGroup: commentSearch.entityGroup,
+                ...(commentSearch.contentTextIn
+                    ? {
+                          textContent: this.regexSearch(
+                              commentSearch.contentTextIn,
+                          ),
+                      }
+                    : {}),
+                ...(commentSearch.childEntityId
+                    ? { childEntityId: commentSearch.childEntityId }
+                    : {}),
+                ...(commentSearch.childEntityName
+                    ? { childEntityName: commentSearch.childEntityName }
+                    : {}),
+                ...(commentSearch.childOfCommentId
+                    ? {
+                          childOfCommentId: commentSearch.childOfCommentId,
+                          isChild: true,
+                      }
+                    : { isChild: { $ne: true } }),
+            };
+            if (userId && commentSearch.mainEntityIdByOwner) {
+                const entities = await lastValueFrom(
+                    this.eoService.searchOwnershipUser({
+                        entityGroup: commentSearch.entityGroup,
+                        entityName: commentSearch.mainEntityName!,
+                        userId,
+                        capability: 'OWNER',
+                    }),
+                );
+                entities.forEach((a) => {
+                    filters.push({
+                        ...currentCommentSearch,
+                        mainEntityId: a.entityId,
+                    });
+                });
+            } else {
+                filters.push({
+                    ...currentCommentSearch,
+                    mainEntityId: commentSearch.mainEntityId,
+                });
+            }
+        }
+        return filters;
     }
 
     async deleteComment(commentId: string, currentUser: UserAuthBackendDTO) {
@@ -274,9 +308,10 @@ export class CommentService {
     async commentCount(comment: CommentSearchDTO) {
         // const meta = await this.findOrCreateNewMeta(comment);
         // return meta.length
+
         const commentCount = await this.commentModel.aggregate([
             {
-                $match: this.commntFilterMatch(comment),
+                $match: this.commentFilterMatch([comment]),
             },
             {
                 $count: 'total',

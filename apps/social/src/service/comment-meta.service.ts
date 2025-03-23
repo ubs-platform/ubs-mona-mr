@@ -7,7 +7,10 @@ import {
     CommentSearchDTO,
 } from '@ubs-platform/social-common';
 import { InjectModel } from '@nestjs/mongoose';
-import { SocialCommentMeta } from '../model/comment-meta';
+import {
+    SocialCommentMeta,
+    SocialCommentMetaDocument,
+} from '../model/comment-meta';
 import { UserService } from '@ubs-platform/users-microservice-helper';
 import { UserDTO } from '@ubs-platform/users-common';
 @Injectable()
@@ -46,15 +49,7 @@ export class CommentMetaService {
 
     public async increaseExisting(
         commentDto: CommentSearchDTO,
-        u: SocialCommentMeta &
-            Document &
-            Omit<
-                SocialCommentMeta &
-                    Required<{
-                        _id: String;
-                    }>,
-                never
-            >,
+        u: SocialCommentMetaDocument,
     ) {
         const willBeIncreased = u.subItemLengths.findIndex(
             (a) =>
@@ -66,8 +61,8 @@ export class CommentMetaService {
                 u.subItemLengths[willBeIncreased].length + 1;
         } else {
             u.subItemLengths.push({
-                childEntityId: commentDto.childEntityId,
-                childEntityName: commentDto.childEntityName,
+                childEntityId: commentDto.childEntityId!,
+                childEntityName: commentDto.childEntityName!,
                 length: 1,
             });
         }

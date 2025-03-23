@@ -20,7 +20,6 @@ import {
     CommentSearchDTO,
     CanManuplateComment,
     CommentDTO,
-    PaginationRequest,
     BanUserDTO,
     CommentMetaSearchDTO,
     NewCommentingStatus,

@@ -1,11 +1,11 @@
 export interface CommentAddDTO {
-    _id?: String;
-    entityGroup: String;
-    mainEntityName: String;
-    mainEntityId: String;
-    childEntityName: String;
-    childEntityId: String;
-    textContent: String;
+    _id?: string;
+    entityGroup: string;
+    mainEntityName: string;
+    mainEntityId: string;
+    childEntityName?: string;
+    childEntityId?: string;
+    textContent: string;
     childOfCommentId?: string;
 }
 
@@ -17,38 +17,41 @@ export interface BanUserDTO {
 }
 
 export interface CommentMetaSearchDTO {
-    entityGroup: String;
-    mainEntityName: String;
-    mainEntityId: String;
+    entityGroup: string;
+    mainEntityName?: string;
+    mainEntityId?: string;
 }
 
 export interface CommentSearchDTO {
-    entityGroup: String;
-    mainEntityName: String;
-    mainEntityId: String;
-    childEntityName: String;
-    childEntityId: String;
+    entityGroup: string;
+    mainEntityName?: string;
+    mainEntityId?: string;
+    mainEntityIdByOwner?: boolean;
+    // mainEntityCurrentUserCapacities?: string[];
+    childEntityName?: string;
+    childEntityId?: string;
     childOfCommentId?: string;
+    contentTextIn?: string;
 }
 
 export interface CommentDTO {
-    _id: String;
+    _id: string;
 
-    entityGroup: String;
+    entityGroup: string;
 
-    mainEntityName: String;
+    mainEntityName: string;
 
-    mainEntityId: String;
+    mainEntityId: string;
 
-    childEntityName: String;
+    childEntityName: string;
 
-    childEntityId: String;
+    childEntityId: string;
 
-    textContent: String;
+    textContent: string;
 
-    byUserId: String;
+    byUserId: string;
 
-    byFullName: String;
+    byFullName: string;
 
     creationDate: Date;
 
@@ -81,7 +84,7 @@ export interface CommentAbilityDTO {
 }
 
 export interface CommentEditDTO {
-    textContent: String;
+    textContent: string;
 }
 
 export interface CanManuplateComment {
@@ -89,22 +92,22 @@ export interface CanManuplateComment {
     allow: boolean;
 }
 
-export type SORT_FIELD = 'VOTE' | 'CREATIONDATE';
-export type SORT_ROTATION = 'ASC' | 'DESC';
+export type SORT_FIELD = 'vote' | 'creationDate';
+export type SORT_ROTATION = 'asc' | 'desc';
 
-export interface PaginationRequest {
-    page: number;
-    size: number;
-    sortField: SORT_FIELD;
-    sortRotation: SORT_ROTATION;
-}
+// export interface PaginationRequest {
+//     page: number;
+//     size: number;
+//     sortField: SORT_FIELD;
+//     sortRotation: SORT_ROTATION;
+// }
 
-export interface PaginationResult {
-    page: number;
-    size: number;
-    maxItemLength: number;
-    list: CommentDTO[];
-}
+// export interface PaginationResult {
+//     page: number;
+//     size: number;
+//     maxItemLength: number;
+//     list: CommentDTO[];
+// }
 
 export type CommentStatus = 'ALLOW' | 'DISABLE' | 'ARCHIVE';
 

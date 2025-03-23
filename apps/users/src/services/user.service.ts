@@ -49,8 +49,7 @@ export class UserService {
                 this.userModel,
                 uas.size,
                 uas.page,
-                '',
-                '',
+                {}
             )
         ).mapAsync(async (a) => UserMapper.toAuthBackendDto(a));
     }

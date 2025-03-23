@@ -20,7 +20,6 @@ import {
     CommentSearchDTO,
     CanManuplateComment,
     CommentDTO,
-    PaginationRequest,
     BanUserDTO,
     CommentMetaSearchDTO,
     NewCommentingStatus,
@@ -30,6 +29,7 @@ import { UserAuthBackendDTO } from '@ubs-platform/users-common';
 import { UserIntercept } from '../guard/UserIntercept';
 import { CommentAbilityCheckService } from '../service/comment-ability-check.service';
 import { CommentMetaService } from '../service/comment-meta.service';
+import { SearchRequest } from '@ubs-platform/crud-base-common';
 
 @Controller('comment')
 export class CommentController {
@@ -50,11 +50,30 @@ export class CommentController {
     @Get()
     @UseGuards(UserIntercept)
     async fetchComments(
-        @Query() comment: CommentSearchDTO & PaginationRequest,
+        @Query() comment: CommentSearchDTO & SearchRequest,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         console.info(currentUser);
-        return await this.commentService.searchComments(comment, currentUser);
+        return await this.commentService.searchComments(
+            comment,
+            currentUser,
+            comment,
+        );
+    }
+
+    @Post('/search')
+    @UseGuards(UserIntercept)
+    async searchCommentsMultiple(
+        @Query() comment: SearchRequest,
+        @Body() searchs: CommentSearchDTO[],
+        @CurrentUser() currentUser: UserAuthBackendDTO,
+    ) {
+        console.info(currentUser);
+        return await this.commentService.searchComments(
+            comment,
+            currentUser,
+            ...searchs,
+        );
     }
 
     @Get('count')
