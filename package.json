@@ -8,6 +8,7 @@
     "repository": {
         "url": "https://github.com/ubs-platform/ubs-mona-mr"
     },
+    "homepage": "https://github.com/ubs-platform/ubs-mona-mr",
     "docker": {
         "organisation": "hcangunduz",
         "imageNamePrefix": "ubs-mona-"
