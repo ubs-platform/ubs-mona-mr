@@ -32,7 +32,7 @@ export class AuthService {
     }
 
     async authenticateUser(userLogin: UserAuth) {
-        let realUser = await this.userService.findUserByLoginAndPw(userLogin);
+        let realUser = await this.userService.findUserWithPassword(userLogin);
         // const correspond = realUser.passwordEncyripted == passwdHashed;
         if (realUser) {
             const payload = {

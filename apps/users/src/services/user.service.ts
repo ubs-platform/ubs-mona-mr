@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+    BadRequestException,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
 import { User } from '../domain/user.model';
@@ -25,6 +30,7 @@ import { UserCommonService } from './user-common.service';
 import { UserKafkaEvents } from '@ubs-platform/users-consts';
 import { SearchUtil } from '@ubs-platform/crud-base';
 import { UserAdminSearch } from 'libs/users-common/src/user-admin-search.dto';
+import { exec } from 'child_process';
 
 @Injectable()
 export class UserService {
@@ -45,12 +51,7 @@ export class UserService {
 
     async fetchAllUsersPaginated(uas: UserAdminSearch) {
         return (
-            await SearchUtil.modelSearch(
-                this.userModel,
-                uas.size,
-                uas.page,
-                {}
-            )
+            await SearchUtil.modelSearch(this.userModel, uas.size, uas.page, {})
         ).mapAsync(async (a) => UserMapper.toAuthBackendDto(a));
     }
 
@@ -69,12 +70,14 @@ export class UserService {
 
         if (u) {
             if (
-                u.passwordEncyripted !=
-                (await CryptoOp.encrypt(pwChange.currentPassword))
+                !(await CryptoOp.checkPassword(
+                    pwChange.currentPassword,
+                    u.passwordEncyripted,
+                ))
             ) {
                 throw 'password-does-not-match';
             } else {
-                u.passwordEncyripted = await CryptoOp.encrypt(
+                u.passwordEncyripted = await CryptoOp.encryptPassword(
                     pwChange.newPassword,
                 );
                 await u.save();
@@ -90,7 +93,7 @@ export class UserService {
         const u = await this.userModel.findById(id);
 
         if (u) {
-            u.passwordEncyripted = await CryptoOp.encrypt(newPassword);
+            u.passwordEncyripted = await CryptoOp.encryptPassword(newPassword);
             await u.save();
             await this.sendPasswordChangedMail(u);
             return UserMapper.toAuthDto(u);
@@ -153,28 +156,6 @@ export class UserService {
         return realUser;
     }
 
-    async findUserByLoginAndPw(userLogin: UserAuth): Promise<UserDTO | null> {
-        let realUser: UserDTO | null = null;
-        const pwHash = await CryptoOp.encrypt(userLogin.password);
-
-        const userUname = await this.findByUsernamePwHash(
-            userLogin.login,
-            pwHash,
-        );
-        if (userUname.length) {
-            realUser = userUname[0];
-        } else {
-            const userEmail = await this.findByEmailPwHash(
-                userLogin.login,
-                pwHash,
-            );
-            if (userEmail.length) {
-                realUser = userEmail[0];
-            }
-        }
-        return realUser;
-    }
-
     async findByEmailExcludeUserId(
         primaryEmail: string,
         userIdExclude: any,
@@ -197,19 +178,32 @@ export class UserService {
         });
     }
 
-    private async findByUsernamePwHash(
-        username: string,
-        pwHash: string,
-    ): Promise<UserDTO[]> {
-        const us = await this.userModel.find({
+    public async findUserWithPassword(username: UserAuth): Promise<UserDTO> {
+        const us = await this.userModel.findOne({
             $and: [
                 {
-                    $or: [{ username: username }, { primaryEmail: username }],
+                    $or: [
+                        { username: username.login },
+                        { primaryEmail: username.login },
+                    ],
                 },
-                { passwordEncyripted: pwHash },
             ],
         });
-        return UserMapper.toDtoList(us);
+
+        if (us) {
+            if (
+                await CryptoOp.checkPassword(
+                    username.password,
+                    us.passwordEncyripted,
+                )
+            ) {
+                return UserMapper.toAuthDto(us);
+            } else {
+                throw new NotFoundException();
+            }
+        } else {
+            throw new NotFoundException();
+        }
     }
 
     async removeRole(userId: string, role: string): Promise<void> {

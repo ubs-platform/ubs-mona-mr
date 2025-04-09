@@ -21,7 +21,7 @@ export class UserMapper {
     ) {
         u.username = this.lowerCased(user.username)!;
         u.primaryEmail = this.lowerCased(user.primaryEmail)!;
-        u.passwordEncyripted = await CryptoOp.encrypt(user.password);
+        u.passwordEncyripted = await CryptoOp.encryptPassword(user.password);
 
         u.name = user.name;
         u.surname = user.surname;
@@ -53,7 +53,9 @@ export class UserMapper {
         u.primaryEmail = this.lowerCased(user.primaryEmail)!;
         if (user.password) {
             if (encryptPassword) {
-                u.passwordEncyripted = await CryptoOp.encrypt(user.password);
+                u.passwordEncyripted = await CryptoOp.encryptPassword(
+                    user.password,
+                );
             } else {
                 u.passwordEncyripted = user.password;
             }
@@ -74,7 +76,9 @@ export class UserMapper {
 
         entity.username = this.lowerCased(dto.username)!;
         entity.primaryEmail = this.lowerCased(dto.primaryEmail)!;
-        entity.passwordEncyripted = await CryptoOp.encrypt(dto.password);
+        entity.passwordEncyripted = await CryptoOp.encryptPassword(
+            dto.password,
+        );
         entity.name = dto.name;
         entity.surname = dto.surname;
         entity.localeCode = dto.localeCode;
@@ -105,7 +109,9 @@ export class UserMapper {
         data: UserFullDto,
     ): Promise<User> {
         if (data.password) {
-            user.passwordEncyripted = await CryptoOp.encrypt(data.password);
+            user.passwordEncyripted = await CryptoOp.encryptPassword(
+                data.password,
+            );
         }
         user.name = data.name;
         user.surname = data.surname;

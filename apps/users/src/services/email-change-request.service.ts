@@ -45,7 +45,7 @@ export class EmailChangeRequestService {
         ech.newEmail = newEmail;
         ech.userId = userId;
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        ech.code = await CryptoOp.encrypt(code); // TODO: Randomize and send email
+        ech.code = await CryptoOp.encryptPassword(code); // TODO: Randomize and send email
 
         ech.expireAfter = exp;
         ech = await ech.save();
@@ -78,15 +78,15 @@ export class EmailChangeRequestService {
         if (exist) {
             if (new Date() > exist.expireAfter) {
                 throw 'request-expired';
-            } else if (exist.code != (await CryptoOp.encrypt(code))) {
+            } else if (!(await CryptoOp.checkPassword(code, exist.code))) {
                 throw 'code-does-not-match';
             }
-            let user = await this.userService.findUserAuth(exist.userId);
+            let user = (await this.userService.findUserAuth(exist.userId))!;
             user.primaryEmail = exist.userId;
-            user = await this.userService.changeEmail(
+            user = (await this.userService.changeEmail(
                 exist.userId,
                 exist.newEmail,
-            );
+            ))!;
         } else {
             throw 'not-found';
         }
