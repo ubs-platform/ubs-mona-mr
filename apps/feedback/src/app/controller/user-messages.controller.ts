@@ -31,11 +31,11 @@ export class UserMessageController extends BaseCrudControllerGenerator<
     ) {
         super(userMsgService);
 
-        this.kafkaClient.emit('register-category', {
-            category: 'USER_MESSAGE',
-            serviceTcpHost: process.env['U_FEEDBACK_MONA_INTERNAL_COM_HOST'],
-            serviceTcpPort: process.env['U_FEEDBACK_MONA_INTERNAL_COM_PORT'],
-        });
+        // this.kafkaClient.emit('register-category', {
+        //     category: 'USER_MESSAGE',
+        //     serviceTcpHost: process.env['U_FEEDBACK_MONA_INTERNAL_COM_HOST'],
+        //     serviceTcpPort: process.env['U_FEEDBACK_MONA_INTERNAL_COM_PORT'],
+        // });
     }
 
     @Post(':id/resolve')

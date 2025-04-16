@@ -21,6 +21,27 @@ export class EntityOwnershipService implements OnModuleInit {
     ) {}
 
     onModuleInit() {
+        // Object.entries(EOChannelConsts).forEach(([key, val]) => {
+        //     if (val instanceof String) {
+        //         console.info(`Registering reply of ${val}`);
+        //     }
+        // });
+        (this.kafkaClient as ClientKafka).subscribeToResponseOf?.(
+            EOChannelConsts.checkOwnership,
+        );
+        (this.kafkaClient as ClientKafka).subscribeToResponseOf?.(
+            EOChannelConsts.insertUserCapability,
+        );
+        (this.kafkaClient as ClientKafka).subscribeToResponseOf?.(
+            EOChannelConsts.insertOwnership,
+        );
+        (this.kafkaClient as ClientKafka).subscribeToResponseOf?.(
+            EOChannelConsts.searchOwnership,
+        );
+        (this.kafkaClient as ClientKafka).subscribeToResponseOf?.(
+            EOChannelConsts.searchOwnershipUser,
+        );
+
         // (this.userClient as ClientKafka).subscribeToResponseOf?.('user-by-id');
     }
 
@@ -33,19 +54,19 @@ export class EntityOwnershipService implements OnModuleInit {
     }
 
     hasOwnership(eo: EntityOwnershipUserCheck): Observable<UserCapabilityDTO> {
-        return this.userClient.send(EOChannelConsts.checkOwnership, eo);
+        return this.kafkaClient.send(EOChannelConsts.checkOwnership, eo);
     }
 
     searchOwnership(
         eo: EntityOwnershipSearch,
     ): Observable<EntityOwnershipDTO[]> {
-        return this.userClient.send(EOChannelConsts.searchOwnership, eo);
+        return this.kafkaClient.send(EOChannelConsts.searchOwnership, eo);
     }
 
     searchOwnershipUser(
         eo: EntityOwnershipUserSearch,
     ): Observable<EntityOwnershipDTO[]> {
-        return this.userClient.send(EOChannelConsts.searchOwnershipUser, eo);
+        return this.kafkaClient.send(EOChannelConsts.searchOwnershipUser, eo);
     }
 
     async deleteOwnership(oe: EntityOwnershipSearch) {

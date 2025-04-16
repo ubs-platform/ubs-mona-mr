@@ -56,6 +56,7 @@ import {
     MemoryStorageFile,
     UploadedFile,
 } from '@blazity/nest-file-fastify';
+import { randomUUID } from 'crypto';
 @Controller('file')
 export class ImageFileController {
     clients: { [key: string]: ClientProxy | ClientKafka | ClientRMQ } = {};
@@ -81,10 +82,7 @@ export class ImageFileController {
         'rpm',
     ];
     cacheClearTimeoutPtr: NodeJS.Timeout | null;
-    constructor(
-        private fservice: FileService,
-        private entityPropertyService: EntityPropertyService,
-    ) {}
+    constructor(private fservice: FileService) {}
 
     @Put('/volatility')
     @UseGuards(JwtAuthGuard)
@@ -202,7 +200,7 @@ export class ImageFileController {
     ) {
         console.info(type, v);
         const topic = `file-upload-${type}`;
-        const cl = await this.createClient(type);
+        const cl = await this.createClient(topic);
         return await lastValueFrom(cl.send(topic, v));
     }
 
@@ -212,7 +210,7 @@ export class ImageFileController {
     ) {
         const topic = `file-volatility-${volatileTag.category}`;
 
-        const client = await this.createClient(volatileTag.category);
+        const client = await this.createClient(topic);
         const issue = (await lastValueFrom(
             client.send(topic, {
                 ...volatileTag,
@@ -225,25 +223,29 @@ export class ImageFileController {
         }
     }
 
-    private async createClient(categoryName: string) {
+    private async createClient(topicName: string) {
         if (this.cacheClearTimeoutPtr) {
             clearTimeout(this.cacheClearTimeoutPtr);
             this.cacheClearTimeoutPtr = null;
         }
-        if (this.clients[categoryName] != null) {
-            return this.clients[categoryName];
+        if (this.clients[topicName] != null) {
+            return this.clients[topicName];
         }
-        const ep = await this.entityPropertyService.findOne({
-            category: categoryName,
-        });
+
         const cl = ClientProxyFactory.create({
-            transport: Transport.TCP,
+            transport: Transport.KAFKA,
             options: {
-                host: `${ep!.serviceTcpHost}`,
-                port: `${ep!.serviceTcpPort}`,
+                client: {
+                    clientId: 'clientId',
+                    brokers: ['kafka:9092'],
+                },
+                consumer: {
+                    groupId: 'file_upload_checker_' + topicName + randomUUID(),
+                },
             },
-        } as any) as any as ClientProxy;
-        this.clients[categoryName] = cl;
+        }) as any as ClientKafka;
+        cl.subscribeToResponseOf(topicName);
+        this.clients[topicName] = cl;
         this.cacheClearTimeoutPtr = setTimeout(() => {
             this.clients = {};
             console.info('Cache temizlendi');
