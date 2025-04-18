@@ -12,24 +12,35 @@ import {
     NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import fastifyMultipart from '@fastify/multipart';
+import { detect } from 'detect-port';
+import { ChildProcessWithoutNullStreams, fork, spawn } from 'child_process';
 
+import { LoadbalancedProxy } from '@ubs-platform/loadbalanced-proxy';
 async function bootstrap() {
-    const app = await NestFactory.create<NestFastifyApplication>(
-        AppModule,
-        new FastifyAdapter(),
-    );
-    const globalPrefix = 'api';
-    app.register(fastifyMultipart);
-    app.connectMicroservice(
-        MicroserviceSetupUtil.getMicroserviceConnection(''),
-    );
-    app.setGlobalPrefix(globalPrefix);
-    const port = process.env.PORT || 3000;
-    app.startAllMicroservices();
-    await app.listen(port, '0.0.0.0');
-    Logger.log(
-        `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
-    );
+    const port = parseInt(process.env.PORT!) || 3000;
+
+    if (LoadbalancedProxy.isProxyProcess()) {
+        await LoadbalancedProxy.beginParentStage();
+    } else {
+        const app = await NestFactory.create<NestFastifyApplication>(
+            AppModule,
+            new FastifyAdapter(),
+        );
+        const globalPrefix = 'api';
+        app.register(fastifyMultipart);
+        app.connectMicroservice({
+            ...MicroserviceSetupUtil.getMicroserviceConnection(''),
+            consumer: {
+                groupId: 'fileservice-tetakent',
+            },
+        });
+        app.setGlobalPrefix(globalPrefix);
+        app.startAllMicroservices();
+        await app.listen(port, '0.0.0.0');
+        Logger.log(
+            `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
+        );
+    }
 }
 
 bootstrap();
