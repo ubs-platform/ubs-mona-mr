@@ -50,6 +50,7 @@ export class UserMicroserviceController {
 
     @MessagePattern('user-by-id')
     async findUserAuthFromId(id: any): Promise<UserAuthBackendDTO | null> {
+        debugger;
         return await this.userService.findUserAuthBackend(id);
     }
 

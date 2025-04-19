@@ -21,7 +21,7 @@ export const INTERNAL_COMMUNICATION = {
 
 async function bootstrap() {
     if (LoadbalancedProxy.isProxyProcess()) {
-        await LoadbalancedProxy.beginParentStage();
+        await new LoadbalancedProxy().beginParentStage();
     } else {
         const app = await NestFactory.create<NestFastifyApplication>(
             UsersModule,
@@ -52,6 +52,7 @@ async function bootstrap() {
         Logger.log(
             `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
         );
+        process.send?.('app-ready');
     }
 
     // }

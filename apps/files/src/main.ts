@@ -20,7 +20,7 @@ async function bootstrap() {
     const port = parseInt(process.env.PORT!) || 3000;
 
     if (LoadbalancedProxy.isProxyProcess()) {
-        await LoadbalancedProxy.beginParentStage();
+        await new LoadbalancedProxy().beginParentStage();
     } else {
         const app = await NestFactory.create<NestFastifyApplication>(
             AppModule,
@@ -28,15 +28,15 @@ async function bootstrap() {
         );
         const globalPrefix = 'api';
         app.register(fastifyMultipart);
-        app.connectMicroservice({
-            ...MicroserviceSetupUtil.getMicroserviceConnection(''),
-            consumer: {
-                groupId: 'fileservice-tetakent',
-            },
-        });
+        app.connectMicroservice(
+            MicroserviceSetupUtil.getMicroserviceConnection(
+                'fileservice-tetakent',
+            ),
+        );
         app.setGlobalPrefix(globalPrefix);
         app.startAllMicroservices();
         await app.listen(port, '0.0.0.0');
+        process.send?.('app-ready');
         Logger.log(
             `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
         );
