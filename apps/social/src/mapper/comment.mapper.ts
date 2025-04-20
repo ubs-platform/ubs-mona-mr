@@ -39,6 +39,7 @@ export class CommentMapper {
             childCommentsCount: comment.childCommentsCount,
             _id: comment._id,
             votesLength: comment.votesLength,
+            //TODO: 
             canEdit: (
                 await this.commentAbilityService.checkCanEdit(
                     comment,

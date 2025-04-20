@@ -31,7 +31,7 @@ export class CommentAbilityCheckService {
         private commentMetaService: CommentMetaService,
         private appSocialRestrictionService: ApplicationSocialRestrictionService,
     ) {}
-
+    // todo: support for multiple 
     public async checkCanEdit(
         socialComment: SocialComment,
         currentUser: any,
@@ -83,8 +83,12 @@ export class CommentAbilityCheckService {
     public async isUserOwnerOfRealEntity(
         saved: SocialComment,
         user: UserAuthBackendDTO,
+        alreadyExist?: EntityOwnershipDTO
     ) {
         if (user) {
+            if (alreadyExist) {
+                return alreadyExist.userCapabilities.find(a => a.userId == user.id)
+            }
             return await lastValueFrom(
                 this.eoService.hasOwnership({
                     entityGroup: saved.entityGroup,
