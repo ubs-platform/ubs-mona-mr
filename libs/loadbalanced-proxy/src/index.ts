@@ -24,6 +24,8 @@ export class LoadbalancedProxy {
     >;
     port: number;
 
+    private static readonly APP_READY_EVENT = 'app-ready';
+
     static isProxyProcess() {
         const [node, file, ...parameters] = process.argv;
         return (
@@ -32,13 +34,22 @@ export class LoadbalancedProxy {
         );
     }
 
+    static async runServer(cb: () => PromiseLike<void>) {
+        if (LoadbalancedProxy.isProxyProcess()) {
+            await new LoadbalancedProxy().beginParentStage();
+        } else {
+            await cb();
+            process.send?.(LoadbalancedProxy.APP_READY_EVENT);
+        }
+    }
+
     async beginParentStage() {
         this.port = parseInt(process.env.PORT!) || 3000;
         const [node, file, ...parameters] = process.argv;
 
         let processCount =
             parseInt(process.env.UBS_MAIN_PROCESS_COUNT!) ||
-            Os.cpus().length / 2;
+            2;
 
         process.on('beforeExit', () => {
             this.closingStage = true;
@@ -68,7 +79,10 @@ export class LoadbalancedProxy {
                     proxyServer.web(req, res, {
                         target:
                             'http://127.0.0.1:' +
-                            this.childProcesses[this.processGear].port,
+                            (
+                                this.childProcesses[this.processGear] ||
+                                this.childProcesses[0]
+                            ).port,
                         /**Math.floor(Math.random() * processCount) */
                     });
                 } catch (error) {
@@ -117,25 +131,14 @@ export class LoadbalancedProxy {
         });
         const pid = processx.pid;
         processx.on('message', (a) => {
-            if (a == 'app-ready') {
+            if (a == LoadbalancedProxy.APP_READY_EVENT) {
+                this.childProcesses.push({
+                    port: workerPort,
+                    process: processx,
+                });
                 this.startProxyServer();
             }
         });
-        // processx.stdout.on('data', (data) => {
-        //     console.info(`Process#${pid}: ${data}`);
-        // });
-
-        // processx.stdout.on('error', (data) => {
-        //     console.error(`Process#${pid}: ${data}`);
-        // });
-
-        // processx.stderr.on('data', (data) => {
-        //     console.error(`Process#${pid}: ${data}`);
-        // });
-
-        // processx.stderr.on('error', (data) => {
-        //     console.error(`Process#${pid}: ${data}`);
-        // });
 
         processx.on('close', (code) => {
             console.info(`Process#${pid} is about to be shut down`);
@@ -148,11 +151,6 @@ export class LoadbalancedProxy {
             if (!this.closingStage) {
                 this.spawnProcess(node, file, parameters, workerPort);
             }
-        });
-
-        this.childProcesses.push({
-            port: workerPort,
-            process: processx,
         });
     }
 }

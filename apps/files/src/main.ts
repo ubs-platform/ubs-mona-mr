@@ -17,11 +17,8 @@ import { ChildProcessWithoutNullStreams, fork, spawn } from 'child_process';
 
 import { LoadbalancedProxy } from '@ubs-platform/loadbalanced-proxy';
 async function bootstrap() {
-    const port = parseInt(process.env.PORT!) || 3000;
-
-    if (LoadbalancedProxy.isProxyProcess()) {
-        await new LoadbalancedProxy().beginParentStage();
-    } else {
+    await LoadbalancedProxy.runServer(async () => {
+        const port = parseInt(process.env.PORT!) || 3000;
         const app = await NestFactory.create<NestFastifyApplication>(
             AppModule,
             new FastifyAdapter(),
@@ -36,11 +33,10 @@ async function bootstrap() {
         app.setGlobalPrefix(globalPrefix);
         app.startAllMicroservices();
         await app.listen(port, '0.0.0.0');
-        process.send?.('app-ready');
         Logger.log(
             `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`,
         );
-    }
+    });
 }
 
 bootstrap();
