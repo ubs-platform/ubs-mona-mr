@@ -33,11 +33,11 @@ export class UserMicroserviceController {
         private userService: UserService,
         @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
     ) {
-        this.kafkaClient.emit('register-category', {
-            category: 'PROFILE_PHOTO',
-            serviceTcpHost: process.env['U_USERS_MONA_INTERNAL_COM_HOST'],
-            serviceTcpPort: process.env['U_USERS_MONA_INTERNAL_COM_PORT'],
-        });
+        // this.kafkaClient.emit('register-category', {
+        //     category: 'PROFILE_PHOTO',
+        //     serviceTcpHost: process.env['U_USERS_MONA_INTERNAL_COM_HOST'],
+        //     serviceTcpPort: process.env['U_USERS_MONA_INTERNAL_COM_PORT'],
+        // });
     }
 
     @MessagePattern('file-upload-PROFILE_PHOTO')

@@ -45,6 +45,9 @@
       "@ubs-platform/file-helper/*": [
         "libs/file-helper/src/*"
       ],
+      "@ubs-platform/loadbalanced-proxy/*": [
+        "libs/loadbalanced-proxy/src/*"
+      ],
       "@ubs-platform/microservice-setup-util": [
         "libs/microservice-setup-util/src"
       ],

@@ -64,6 +64,15 @@
         "tsConfigPath": "apps/files/tsconfig.app.json"
       }
     },
+    "loadbalanced-proxy": {
+      "type": "library",
+      "root": "libs/loadbalanced-proxy",
+      "entryFile": "index",
+      "sourceRoot": "libs/loadbalanced-proxy/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/loadbalanced-proxy/tsconfig.lib.json"
+      }
+    },
     "microservice-setup-util": {
       "type": "library",
       "root": "libs/microservice-setup-util",

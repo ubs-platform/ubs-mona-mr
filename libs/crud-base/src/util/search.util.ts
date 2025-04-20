@@ -45,7 +45,6 @@ export class SearchUtil {
                 },
             },
         ];
-        console.info(JSON.stringify(mongoPipe, null, '\t'));
         const results = await model.aggregate(mongoPipe);
         const maxItemLength = results[0].total[0]?.total || 0;
         const itemLengthThing = Math.ceil(maxItemLength / size);

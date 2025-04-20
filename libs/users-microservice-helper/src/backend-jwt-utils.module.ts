@@ -23,14 +23,14 @@ export const INTERNAL_COMMUNICATION = {
                 name: 'KAFKA_CLIENT',
                 ...MicroserviceSetupUtil.getMicroserviceConnection(''),
             } as any,
-            {
-                name: 'USER_MICROSERVICE',
-                transport: Transport.TCP,
-                options: {
-                    port: INTERNAL_COMMUNICATION.port,
-                    host: INTERNAL_COMMUNICATION.host,
-                },
-            },
+            // {
+            //     name: 'USER_MICROSERVICE',
+            //     transport: Transport.TCP,
+            //     options: {
+            //         port: INTERNAL_COMMUNICATION.port,
+            //         host: INTERNAL_COMMUNICATION.host,
+            //     },
+            // },
         ]),
     ],
 })

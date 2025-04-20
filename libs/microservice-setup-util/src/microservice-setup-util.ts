@@ -1,9 +1,11 @@
 import { Transport } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
 export class MicroserviceSetupUtil {
-    static getMicroserviceConnection(groupName) {
+    static getMicroserviceConnection(instanceName) {
         const type = process.env['NX_MICROSERVICE_TYPE'] as 'KAFKA' | 'TCP';
-
+        if (!instanceName) {
+            instanceName = 'tk' + randomUUID();
+        }
         let microservice: Object | null = null;
         if (type == 'KAFKA') {
             microservice = {
@@ -14,7 +16,7 @@ export class MicroserviceSetupUtil {
                         brokers: [`${process.env['NX_KAFKA_URL']}`],
                     },
                     consumer: {
-                        groupId: 'tk' + randomUUID(),
+                        groupId: instanceName,
                     },
                 },
             };
