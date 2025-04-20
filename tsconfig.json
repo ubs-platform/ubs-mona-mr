@@ -45,9 +45,6 @@
       "@ubs-platform/file-helper/*": [
         "libs/file-helper/src/*"
       ],
-      "@ubs-platform/loadbalanced-proxy": [
-        "libs/loadbalanced-proxy/src"
-      ],
       "@ubs-platform/loadbalanced-proxy/*": [
         "libs/loadbalanced-proxy/src/*"
       ],
