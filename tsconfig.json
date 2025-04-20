@@ -1,92 +1,54 @@
 {
-  "exclude": [
-    "./tools"
-  ],
-  "compilerOptions": {
-    "module": "commonjs",
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
-    "sourceMap": true,
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "incremental": true,
-    "skipLibCheck": true,
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
-    "paths": {
-      "@ubs-platform/crud-base": [
-        "libs/crud-base/src"
-      ],
-      "@ubs-platform/crud-base-common": [
-        "libs/crud-base-common/src"
-      ],
-      "@ubs-platform/crud-base-common/*": [
-        "libs/crud-base-common/src/*"
-      ],
-      "@ubs-platform/crud-base/*": [
-        "libs/crud-base/src/*"
-      ],
-      "@ubs-platform/feedback-common": [
-        "libs/feedback-common/src"
-      ],
-      "@ubs-platform/feedback-common/*": [
-        "libs/feedback-common/src/*"
-      ],
-      "@ubs-platform/file-helper": [
-        "libs/file-helper/src"
-      ],
-      "@ubs-platform/file-helper/*": [
-        "libs/file-helper/src/*"
-      ],
-      "@ubs-platform/loadbalanced-proxy/*": [
-        "libs/loadbalanced-proxy/src/*"
-      ],
-      "@ubs-platform/microservice-setup-util": [
-        "libs/microservice-setup-util/src"
-      ],
-      "@ubs-platform/notify-common": [
-        "libs/notify-common/src"
-      ],
-      "@ubs-platform/notify-common/*": [
-        "libs/notify-common/src/*"
-      ],
-      "@ubs-platform/social-common": [
-        "libs/social-common/src"
-      ],
-      "@ubs-platform/social-common/*": [
-        "libs/social-common/src/*"
-      ],
-      "@ubs-platform/social-consts": [
-        "libs/social-consts/src"
-      ],
-      "@ubs-platform/social-consts/*": [
-        "libs/social-consts/src/*"
-      ],
-      "@ubs-platform/superlama-common": [
-        "libs/superlama-common/src"
-      ],
-      "@ubs-platform/superlama-common/*": [
-        "libs/superlama-common/src/*"
-      ],
-      "@ubs-platform/users-common": [
-        "libs/users-common/src"
-      ],
-      "@ubs-platform/users-consts": [
-        "libs/users-consts/src"
-      ],
-      "@ubs-platform/users-microservice-helper": [
-        "libs/users-microservice-helper/src"
-      ],
-      "@ubs-platform/users-roles": [
-        "libs/users-roles/src"
-      ]
+    "exclude": ["./tools"],
+    "compilerOptions": {
+        "module": "commonjs",
+        "declaration": true,
+        "removeComments": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "target": "ES2021",
+        "sourceMap": true,
+        "outDir": "./dist",
+        "baseUrl": "./",
+        "incremental": true,
+        "skipLibCheck": true,
+        "strictNullChecks": true,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitAny": false,
+        "strictBindCallApply": false,
+        "noFallthroughCasesInSwitch": false,
+        "paths": {
+            "@ubs-platform/crud-base": ["libs/crud-base/src"],
+            "@ubs-platform/crud-base-common": ["libs/crud-base-common/src"],
+            "@ubs-platform/crud-base-common/*": ["libs/crud-base-common/src/*"],
+            "@ubs-platform/crud-base/*": ["libs/crud-base/src/*"],
+            "@ubs-platform/feedback-common": ["libs/feedback-common/src"],
+            "@ubs-platform/feedback-common/*": ["libs/feedback-common/src/*"],
+            "@ubs-platform/file-helper": ["libs/file-helper/src"],
+            "@ubs-platform/file-helper/*": ["libs/file-helper/src/*"],
+            "@ubs-platform/loadbalanced-proxy": ["libs/loadbalanced-proxy/src"],
+            "@ubs-platform/loadbalanced-proxy/*": [
+                "libs/loadbalanced-proxy/src/*"
+            ],
+
+            "@ubs-platform/microservice-setup-util": [
+                "libs/microservice-setup-util/src"
+            ],
+            "@ubs-platform/notify-common": ["libs/notify-common/src"],
+            "@ubs-platform/notify-common/*": ["libs/notify-common/src/*"],
+            "@ubs-platform/social-common": ["libs/social-common/src"],
+            "@ubs-platform/social-common/*": ["libs/social-common/src/*"],
+            "@ubs-platform/social-consts": ["libs/social-consts/src"],
+            "@ubs-platform/social-consts/*": ["libs/social-consts/src/*"],
+            "@ubs-platform/superlama-common": ["libs/superlama-common/src"],
+            "@ubs-platform/superlama-common/*": ["libs/superlama-common/src/*"],
+            "@ubs-platform/users-common": ["libs/users-common/src"],
+            "@ubs-platform/users-consts": ["libs/users-consts/src"],
+            "@ubs-platform/users-microservice-helper": [
+                "libs/users-microservice-helper/src"
+            ],
+            "@ubs-platform/users-roles": ["libs/users-roles/src"]
+        }
     }
-  }
 }
