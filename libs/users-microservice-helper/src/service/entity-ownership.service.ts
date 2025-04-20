@@ -14,8 +14,6 @@ import { Observable } from 'rxjs';
 @Injectable()
 export class EntityOwnershipService implements OnModuleInit {
     constructor(
-        @Inject('USER_MICROSERVICE')
-        private userClient: ClientProxy | ClientKafka | ClientRMQ,
         @Inject('KAFKA_CLIENT')
         private kafkaClient: ClientProxy | ClientKafka | ClientRMQ,
     ) {}
