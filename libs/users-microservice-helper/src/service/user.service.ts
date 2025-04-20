@@ -6,8 +6,6 @@ import { firstValueFrom } from 'rxjs';
 @Injectable()
 export class UserService implements OnModuleInit {
     constructor(
-        @Inject('USER_MICROSERVICE')
-        private userClient: ClientProxy | ClientKafka | ClientRMQ | any,
         @Inject('KAFKA_CLIENT')
         private kafkaClient: ClientProxy | ClientKafka | ClientRMQ,
     ) {}
