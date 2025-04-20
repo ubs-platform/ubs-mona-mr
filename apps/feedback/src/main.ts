@@ -22,13 +22,13 @@ async function bootstrap() {
         app.connectMicroservice(
             MicroserviceSetupUtil.getMicroserviceConnection(''),
         );
-        app.connectMicroservice({
-            transport: Transport.TCP,
-            options: {
-                port: INTERNAL_COMMUNICATION.port,
-                host: '0.0.0.0',
-            },
-        });
+        // app.connectMicroservice({
+        //     transport: Transport.TCP,
+        //     options: {
+        //         port: INTERNAL_COMMUNICATION.port,
+        //         host: '0.0.0.0',
+        //     },
+        // });
         app.setGlobalPrefix(globalPrefix);
         const port = process.env.PORT || 3169;
         await app.startAllMicroservices();
