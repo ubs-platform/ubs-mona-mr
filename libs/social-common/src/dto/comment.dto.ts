@@ -71,9 +71,7 @@ export interface CommentDTO {
 
     childCommentsCount: number;
 
-    canRemove: boolean;
-    canEdit: boolean;
-    userCommentAdmin: boolean;
+
     userBanned: boolean;
 }
 
@@ -81,6 +79,12 @@ export interface CommentAbilityDTO {
     userCanComment: boolean;
     userCommentBlockReason: string;
     extraNote?: string;
+}
+
+export interface ExistCommentAbilityDTO {
+    canRemove: boolean;
+    canEdit: boolean;
+    userCommentAdmin: boolean;
 }
 
 export interface CommentEditDTO {

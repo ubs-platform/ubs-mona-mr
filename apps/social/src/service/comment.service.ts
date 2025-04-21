@@ -12,6 +12,7 @@ import {
     CommentDTO,
     CommentEditDTO,
     CommentSearchDTO,
+    ExistCommentAbilityDTO,
 } from '@ubs-platform/social-common';
 import { EntityOwnershipService } from '@ubs-platform/users-microservice-helper';
 import { CommentMapper } from '../mapper/comment.mapper';
@@ -322,5 +323,35 @@ export class CommentService {
 
     async clearUserCommentsAll(byUserId: string) {
         await this.commentModel.deleteMany({ byUserId });
+    }
+
+    async checkExistCommentAbilities(
+        commentId: string,
+        currentUser: any,
+    ): Promise<ExistCommentAbilityDTO> {
+        const comment = await this.commentModel.findById(commentId);
+        if (comment) {
+            return {
+                canEdit: (
+                    await this.commentAbilityCheckService.checkCanEdit(
+                        comment,
+                        currentUser,
+                    )
+                ).allow,
+                canRemove: (
+                    await this.commentAbilityCheckService.checkCanDelete(
+                        comment,
+                        currentUser,
+                    )
+                ).allow,
+                userCommentAdmin:
+                    (await this.commentAbilityCheckService.isUserOwnerOfRealEntity(
+                        comment,
+                        currentUser!,
+                    )) != null,
+            } as ExistCommentAbilityDTO;
+        } else {
+            throw new NotFoundException();
+        }
     }
 }

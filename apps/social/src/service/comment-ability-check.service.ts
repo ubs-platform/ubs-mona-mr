@@ -16,6 +16,7 @@ import {
     CanManuplateComment,
     CommentAbilityDTO as CommentingAbilityDTO,
     CommentSearchDTO,
+    ExistCommentAbilityDTO,
 } from '@ubs-platform/social-common';
 import { EntityOwnershipService } from '@ubs-platform/users-microservice-helper';
 import { CommentMapper } from '../mapper/comment.mapper';
@@ -26,6 +27,7 @@ import { CommentMetaService } from './comment-meta.service';
 import { ApplicationSocialRestrictionService } from './application-social-restriction.service';
 @Injectable()
 export class CommentAbilityCheckService {
+
     constructor(
         private eoService: EntityOwnershipService,
         private commentMetaService: CommentMetaService,
@@ -36,6 +38,7 @@ export class CommentAbilityCheckService {
         socialComment: SocialComment,
         currentUser: any,
     ): Promise<CanManuplateComment> {
+        
         if (currentUser != null) {
             let allow = this.isCommentPoster(socialComment, currentUser.id);
 
@@ -44,6 +47,8 @@ export class CommentAbilityCheckService {
             return { allow: false };
         }
     }
+
+
 
     public async checkCanDelete(
         socialComment: SocialComment,

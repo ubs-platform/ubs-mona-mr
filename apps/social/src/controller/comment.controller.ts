@@ -23,6 +23,8 @@ import {
     BanUserDTO,
     CommentMetaSearchDTO,
     NewCommentingStatus,
+    CommentAbilityDTO,
+    ExistCommentAbilityDTO,
 } from '@ubs-platform/social-common';
 import { CommentService } from '../service/comment.service';
 import { UserAuthBackendDTO } from '@ubs-platform/users-common';
@@ -93,6 +95,19 @@ export class CommentController {
             currentUser,
         );
     }
+
+    @Get('ability/:id')
+    @UseGuards(UserIntercept)
+    async fetch(
+        @Param("id") commentId: string,
+        @CurrentUser() currentUser,
+    ): Promise<ExistCommentAbilityDTO> {
+        return await this.commentService.checkExistCommentAbilities(
+            commentId,
+            currentUser,
+        );
+    }
+
 
     @Get('status')
     async commentingStatus(

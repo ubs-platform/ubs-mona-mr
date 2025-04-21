@@ -40,23 +40,7 @@ export class CommentMapper {
             _id: comment._id,
             votesLength: comment.votesLength,
             //TODO: 
-            canEdit: (
-                await this.commentAbilityService.checkCanEdit(
-                    comment,
-                    currentUser,
-                )
-            ).allow,
-            canRemove: (
-                await this.commentAbilityService.checkCanDelete(
-                    comment,
-                    currentUser!,
-                )
-            ).allow,
-            userCommentAdmin:
-                (await this.commentAbilityService.isUserOwnerOfRealEntity(
-                    comment,
-                    currentUser!,
-                )) != null,
+
             userDownVoted:
                 currentUser != null &&
                 comment.downvoteUserIds?.includes(currentUser.id),
