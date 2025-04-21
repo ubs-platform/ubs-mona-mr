@@ -7,8 +7,12 @@ import { FileRequest } from '../dto/file-request';
 import * as sharp from 'sharp';
 import { FileVolatileTag } from '../dto/file-volatile-tag';
 import { Cron } from '@nestjs/schedule';
+import { DynamicQueue } from '@ubs-platform/dynamic-queue';
 @Injectable()
 export class FileService {
+
+    private dynamicQueue = new DynamicQueue();
+
     constructor(
         @InjectModel(FileModel.name) private fileModel: Model<FileDoc>,
     ) {}
@@ -50,14 +54,18 @@ export class FileService {
     ): Promise<FileMeta | null> {
         const file = await this.findByNamePure(category, name);
         if (file != null) {
-            file.lastFetch = new Date();
+
             let fileBin = await this.determineBin(file, widthForImage_!);
-            // file.
-            try {
-                await file.save();
-            } catch (error) {
-                console.error(error);
-            }
+
+            this.dynamicQueue.push(async () => {
+                file.lastFetch = new Date();
+                try {
+                    await file.save();
+                } catch (error) {
+                    console.error(error);
+                }
+            }).output.subscribe(() => console.info("Last fetch date have been saved for", category, name))
+
 
             return {
                 id: file._id,

@@ -28,6 +28,15 @@
         "tsConfigPath": "libs/crud-base-common/tsconfig.lib.json"
       }
     },
+    "dynamic-queue": {
+      "type": "library",
+      "root": "libs/dynamic-queue",
+      "entryFile": "index",
+      "sourceRoot": "libs/dynamic-queue/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/dynamic-queue/tsconfig.lib.json"
+      }
+    },
     "feedback": {
       "type": "application",
       "root": "apps/feedback",

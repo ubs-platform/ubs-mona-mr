@@ -1,0 +1,9 @@
+{
+    "name": "@ubs-platform/dynamic-queue",
+    "version": "1.0.0",
+    "iksir": {
+        "type": "LIBRARY",
+        "libraryMode": "PEER",
+        "buildSubFolder": ""
+    }
+}
