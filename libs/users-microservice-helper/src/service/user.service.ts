@@ -14,6 +14,7 @@ export class UserService implements OnModuleInit {
     }
 
     async findUserAuth(userId: any): Promise<UserDTO> {
+        
         console.debug('Fetching user');
         const user = (await firstValueFrom(
             this.kafkaClient.send('user-by-id', userId),

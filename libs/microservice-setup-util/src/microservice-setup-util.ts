@@ -1,12 +1,17 @@
-import { Transport } from '@nestjs/microservices';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { randomUUID } from 'crypto';
+import { Engine5Connection } from './engine5/connection';
+import { NestMicroserviceOptions } from '@nestjs/common/interfaces/microservices/nest-microservice-options.interface';
+import { E5NestServer } from './engine5/server';
+import { E5TransportBase } from './engine5/transportbase';
+
 export class MicroserviceSetupUtil {
     static getMicroserviceConnection(instanceName) {
-        const type = process.env['NX_MICROSERVICE_TYPE'] as 'KAFKA' | 'TCP';
+        const type = process.env['NX_MICROSERVICE_TYPE'] as 'KAFKA' | 'TCP' | "ENGINE5";
         if (!instanceName) {
             instanceName = 'tk' + randomUUID();
         }
-        let microservice: Object | null = null;
+        let microservice: MicroserviceOptions | null = null;
         if (type == 'KAFKA') {
             microservice = {
                 transport: Transport.KAFKA,
@@ -20,12 +25,20 @@ export class MicroserviceSetupUtil {
                     },
                 },
             };
+        } if (type == 'ENGINE5') {
+
+            let e5base = new E5TransportBase(new Engine5Connection("localhost", "8080", instanceName))
+            microservice = {
+                strategy: e5base.asServer(),
+                customClass: e5base.asClientClass(),
+                options: e5base.connection
+            } as any;
         } else {
             microservice = {
                 transport: Transport.TCP,
                 options: {
                     host: process.env['NX_TCP_HOST'],
-                    port: process.env['NX_TCP_PORT'],
+                    port: parseInt(process.env['NX_TCP_PORT'] ?? "0"),
                 },
             };
         }

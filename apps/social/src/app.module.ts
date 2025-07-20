@@ -55,7 +55,7 @@ import { CommentMicroserviceController } from './controller/comment-microservice
         ClientsModule.register([
             {
                 name: 'KafkaClient',
-                ...MicroserviceSetupUtil.getMicroserviceConnection(''),
+                ...MicroserviceSetupUtil.getMicroserviceConnection('') as any,
             },
         ]),
     ],
