@@ -20,13 +20,14 @@ import {
 } from '@nestjs/microservices';
 import { CustomTransportStrategy, Server } from '@nestjs/microservices';
 import { Engine5Connection } from './connection';
-import { from, Observable } from 'rxjs';
+import { from, Observable, ReplaySubject } from 'rxjs';
 import { randomUUID } from 'crypto';
 import { Connection } from 'mongoose';
 
 export class E5NestServer extends Server implements CustomTransportStrategy {
     readonly id = randomUUID();
     connection: Engine5Connection;
+    connectionIsReady = new ReplaySubject(1);
     /**
      *
      */
@@ -37,7 +38,7 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
     ) {
         super();
         if (!instanceId) instanceId = 'tk' + randomUUID();
-        debugger;
+
         this.connection = new Engine5Connection(host, port, instanceId);
     }
     /**
@@ -45,9 +46,9 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
      */
     listen(callback: () => void) {
         //
-        debugger;
+
         this.connection.init().then(() => {
-            debugger;
+            this.connectionIsReady.next(true)
             callback();
         });
     }
@@ -56,7 +57,6 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
         EventKey extends string = string,
         EventCallback extends Function = Function,
     >(event: EventKey, callback: EventCallback) {
-        debugger;
         this.connection.listen(event, callback as any);
     }
 
@@ -73,7 +73,7 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
     //  * will not need this.
     //  */
     // async on(event: string, callback: Function) {
-    //     debugger
+    //     
     //     await this.connection.listen(event, (a) => callback(a));
     // }
 
@@ -82,8 +82,8 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
      * to be able to retrieve the underlying native server. Most custom implementations
      * will not need this.
      */
-    unwrap() {
-        return this.connection as any;
+    unwrap<T>() {
+        return this.connection as T;
     }
 
     protected dispatchEvent(packet: ReadPacket<any>): Promise<any> {
@@ -101,6 +101,16 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
         this.connection
             .sendRequest(packet.pattern, packet.data)
             .then((response) => callback({ response }));
-        return () => {};
+        return () => { };
+    }
+
+    addHandler(pattern: any, callback: MessageHandler, isEventHandler?: boolean, extras?: Record<string, any>): void {
+        // console.info("addHandler: pattern,callback, isEventHandler, extras");
+        // console.info(pattern,callback, isEventHandler, extras);
+        let a = this.connectionIsReady.subscribe((isConnected) => {
+            this.connection.listen(pattern, callback as any);
+            a?.unsubscribe();
+        })
+
     }
 }

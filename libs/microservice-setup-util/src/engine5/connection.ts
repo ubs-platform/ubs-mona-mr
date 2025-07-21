@@ -90,7 +90,7 @@ export class Engine5Connection {
     // }
 
     async init() {
-        debugger;
+        
 
         if (this.connected) {
             return this;

@@ -57,9 +57,10 @@ import {
     UploadedFile,
 } from '@blazity/nest-file-fastify';
 import { randomUUID } from 'crypto';
+import { E5NestClient } from '@ubs-platform/microservice-setup-util';
 @Controller('file')
 export class ImageFileController {
-    clients: { [key: string]: ClientProxy | ClientKafka | ClientRMQ } = {};
+    // clients: { [key: string]: ClientProxy | ClientKafka | ClientRMQ } = {};
     potentialMalicousMimeTypes = [
         'application/x-msdownload',
         // 'application/octet-stream',
@@ -82,7 +83,10 @@ export class ImageFileController {
         'rpm',
     ];
     cacheClearTimeoutPtr: NodeJS.Timeout | null;
-    constructor(private fservice: FileService) {}
+    constructor(
+        private fservice: FileService,
+        @Inject("KafkaClient") private e5: E5NestClient
+    ) { }
 
     @Put('/volatility')
     @UseGuards(JwtAuthGuard)
@@ -200,7 +204,7 @@ export class ImageFileController {
     ) {
         console.info(type, v);
         const topic = `file-upload-${type}`;
-        const cl = await this.createClient(topic);
+        const cl = this.e5;
         return await lastValueFrom(cl.send(topic, v));
     }
 
@@ -210,7 +214,7 @@ export class ImageFileController {
     ) {
         const topic = `file-volatility-${volatileTag.category}`;
 
-        const client = await this.createClient(topic);
+        const client = this.e5;
         const issue = (await lastValueFrom(
             client.send(topic, {
                 ...volatileTag,
@@ -224,28 +228,29 @@ export class ImageFileController {
     }
 
     private async createClient(topicName: string) {
-        if (this.cacheClearTimeoutPtr) {
-            clearTimeout(this.cacheClearTimeoutPtr);
-            this.cacheClearTimeoutPtr = null;
-        }
-        if (this.clients[topicName] != null) {
-            return this.clients[topicName];
-        }
+        // if (this.cacheClearTimeoutPtr) {
+        //     clearTimeout(this.cacheClearTimeoutPtr);
+        //     this.cacheClearTimeoutPtr = null;
+        // }
+        // if (this.clients[topicName] != null) {
+        //     return this.clients[topicName];
+        // }
 
-        const cl = ClientProxyFactory.create({
-            transport: Transport.KAFKA,
-            options: {
-                client: {
-                    clientId: 'clientId',
-                    brokers: ['kafka:9092'],
-                },
-                consumer: {
-                    groupId: 'file_upload_checker_' + topicName + randomUUID(),
-                },
-            },
-        }) as any as ClientKafka;
-        cl.subscribeToResponseOf(topicName);
-        this.clients[topicName] = cl;
+        // const cl = ClientProxyFactory.create({
+        //     transport: Transport.KAFKA,
+        //     options: {
+        //         client: {
+        //             clientId: 'clientId',
+        //             brokers: ['kafka:9092'],
+        //         },
+        //         consumer: {
+        //             groupId: 'file_upload_checker_' + topicName + randomUUID(),
+        //         },
+        //     },
+        // }) as any as ClientKafka;
+        const cl = this.e5;
+        // cl.subscribeToResponseOf(topicName);
+        // this.clients[topicName] = cl;
         // this.cacheClearTimeoutPtr = setTimeout(() => {
         //     this.clients = {};
         //     console.info('Cache temizlendi');
