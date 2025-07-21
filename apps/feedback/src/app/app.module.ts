@@ -9,7 +9,7 @@ import { UserMessageService } from './service/user-message.service';
 import { UserMessageController } from './controller/user-messages.controller';
 import { EmailService } from './service/email.service';
 import { ClientsModule } from '@nestjs/microservices';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { E5NestClient, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 
 @Module({
     imports: [
@@ -17,7 +17,7 @@ import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
         ClientsModule.register([
             {
                 name: 'KAFKA_CLIENT',
-                ...MicroserviceSetupUtil.getMicroserviceConnection(''),
+                customClass: E5NestClient,
             } as any,
         ]),
         MongooseModule.forRoot(

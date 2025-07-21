@@ -11,62 +11,96 @@
 // })
 // export class AppModule {}
 
-import { ClientOptions, Transport } from '@nestjs/microservices';
+import {
+    ClientOptions,
+    MessageHandler,
+    ReadPacket,
+    Transport,
+    WritePacket,
+} from '@nestjs/microservices';
 import { CustomTransportStrategy, Server } from '@nestjs/microservices';
 import { Engine5Connection } from './connection';
 import { from, Observable } from 'rxjs';
 import { randomUUID } from 'crypto';
+import { Connection } from 'mongoose';
 
 export class E5NestServer extends Server implements CustomTransportStrategy {
-  readonly id = randomUUID()
-  connection: Engine5Connection;
-  /**
-   *
-   */
-  constructor(connection: Engine5Connection) {
-    super();
-    if (connection == null) {
-      // 
-    } else {
-      this.connection = connection
+    readonly id = randomUUID();
+    connection: Engine5Connection;
+    /**
+     *
+     */
+    constructor(
+        private host: string,
+        private port: string | number,
+        private instanceId?: string,
+    ) {
+        super();
+        if (!instanceId) instanceId = 'tk' + randomUUID();
+        debugger;
+        this.connection = new Engine5Connection(host, port, instanceId);
     }
-  }
-  /**
-   * Triggered when you run "app.listen()".
-   */
-  listen(callback: () => void) {
-    // 
-    this.connection.init().then(() => { callback() })
+    /**
+     * Triggered when you run "app.listen()".
+     */
+    listen(callback: () => void) {
+        //
+        debugger;
+        this.connection.init().then(() => {
+            debugger;
+            callback();
+        });
+    }
 
-  }
+    on<
+        EventKey extends string = string,
+        EventCallback extends Function = Function,
+    >(event: EventKey, callback: EventCallback) {
+        debugger;
+        this.connection.listen(event, callback as any);
+    }
 
-  /**
-   * Triggered on application shutdown.
-   */
-  close() {
-    // this.connection.close();
-  }
+    /**
+     * Triggered on application shutdown.
+     */
+    close() {
+        // this.connection.close();
+    }
 
-  /**
-   * You can ignore this method if you don't want transporter users
-   * to be able to register event listeners. Most custom implementations
-   * will not need this.
-   */
-  async on(event: string, callback: Function) {
-    // 
-    await this.connection.listen(event, () => callback())
-  }
+    // /**
+    //  * You can ignore this method if you don't want transporter users
+    //  * to be able to register event listeners. Most custom implementations
+    //  * will not need this.
+    //  */
+    // async on(event: string, callback: Function) {
+    //     debugger
+    //     await this.connection.listen(event, (a) => callback(a));
+    // }
 
-  /**
-   * You can ignore this method if you don't want transporter users
-   * to be able to retrieve the underlying native server. Most custom implementations
-   * will not need this.
-   */
-  unwrap() {
-    return this.connection as any;
-  }
+    /**
+     * You can ignore this method if you don't want transporter users
+     * to be able to retrieve the underlying native server. Most custom implementations
+     * will not need this.
+     */
+    unwrap() {
+        return this.connection as any;
+    }
 
-  emit(event: string, data: any) {
-    this.connection.sendEvent(event, data)
-  }
+    protected dispatchEvent(packet: ReadPacket<any>): Promise<any> {
+        return this.connection.sendEvent(packet.pattern, packet.data);
+    }
+
+    protected publish(
+        packet: ReadPacket<any>,
+        callback: (packet: WritePacket<any>) => void,
+    ): () => void {
+        // this.logger.log(`Publish event: ${JSON.stringify(packet)}`);
+        // // Simulate an immediate response for testing purposes
+        // callback({ response: 'response' });
+        // return () => {};
+        this.connection
+            .sendRequest(packet.pattern, packet.data)
+            .then((response) => callback({ response }));
+        return () => {};
+    }
 }

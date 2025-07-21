@@ -3,7 +3,6 @@ import { randomUUID } from 'crypto';
 import { Engine5Connection } from './engine5/connection';
 import { NestMicroserviceOptions } from '@nestjs/common/interfaces/microservices/nest-microservice-options.interface';
 import { E5NestServer } from './engine5/server';
-import { E5TransportBase } from './engine5/transportbase';
 
 export class MicroserviceSetupUtil {
     static getMicroserviceConnection(instanceName) {
@@ -25,14 +24,6 @@ export class MicroserviceSetupUtil {
                     },
                 },
             };
-        } if (type == 'ENGINE5') {
-
-            let e5base = new E5TransportBase(new Engine5Connection("localhost", "8080", instanceName))
-            microservice = {
-                strategy: e5base.asServer(),
-                customClass: e5base.asClientClass(),
-                options: e5base.connection
-            } as any;
         } else {
             microservice = {
                 transport: Transport.TCP,

@@ -6,7 +6,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { E5NestServer, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import {
     FastifyAdapter,
     NestFastifyApplication,
@@ -25,11 +25,9 @@ async function bootstrap() {
         );
         const globalPrefix = 'api';
         app.register(fastifyMultipart);
-        app.connectMicroservice(
-            MicroserviceSetupUtil.getMicroserviceConnection(
-                'fileservice-tetakent',
-            ),
-        );
+        app.connectMicroservice({
+            strategy: new E5NestServer('localhost', '8080', 'tetakent-fileservice'),
+        });
         app.setGlobalPrefix(globalPrefix);
         app.startAllMicroservices();
         await app.listen(port, '0.0.0.0');

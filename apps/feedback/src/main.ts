@@ -7,7 +7,7 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app/app.module';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { E5NestServer, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { Transport } from '@nestjs/microservices';
 import { LoadbalancedProxy } from '@ubs-platform/loadbalanced-proxy';
 export const INTERNAL_COMMUNICATION = {
@@ -20,7 +20,11 @@ async function bootstrap() {
         const app = await NestFactory.create(AppModule);
         const globalPrefix = 'api';
         app.connectMicroservice(
-            MicroserviceSetupUtil.getMicroserviceConnection(''),
+            // MicroserviceSetupUtil.getMicroserviceConnection(''), 
+
+            {
+                strategy: new E5NestServer("localhost", "8080","")
+            }
         );
         // app.connectMicroservice({
         //     transport: Transport.TCP,

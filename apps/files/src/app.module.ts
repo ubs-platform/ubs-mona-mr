@@ -2,7 +2,11 @@ import { Module } from '@nestjs/common';
 import { ClientsModule } from '@nestjs/microservices';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import {
+    E5NestClient,
+    Engine5Connection,
+    MicroserviceSetupUtil,
+} from '@ubs-platform/microservice-setup-util';
 import { BackendJwtUtilsModule } from '@ubs-platform/users-microservice-helper';
 import { join } from 'path';
 import { FileModel, FileSchema } from './model/file.schema';
@@ -15,6 +19,8 @@ import {
 import { EntityPropertyService } from './service/entity-property.service';
 import { EntityPropertyController } from './controller/entity-property.controller';
 import { ScheduleModule } from '@nestjs/schedule';
+import { Connection } from 'mongoose';
+import { randomUUID } from 'crypto';
 
 @Module({
     imports: [
@@ -37,7 +43,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         ClientsModule.register([
             {
                 name: 'KafkaClient',
-                ...MicroserviceSetupUtil.getMicroserviceConnection(''),
+                customClass: E5NestClient,
             } as any,
         ]),
         BackendJwtUtilsModule,

@@ -7,16 +7,19 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app/app.module';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import {
+    E5NestServer,
+    MicroserviceSetupUtil,
+} from '@ubs-platform/microservice-setup-util';
 import { LoadbalancedProxy } from '@ubs-platform/loadbalanced-proxy';
 
 async function bootstrap() {
     await LoadbalancedProxy.runServer(async () => {
         const app = await NestFactory.create(AppModule);
         const globalPrefix = 'api';
-        app.connectMicroservice(
-            MicroserviceSetupUtil.getMicroserviceConnection(''),
-        );
+        app.connectMicroservice({
+            strategy: new E5NestServer('localhost', '8080', ''),
+        });
 
         app.setGlobalPrefix(globalPrefix);
         const port = process.env.PORT || 3169;

@@ -9,7 +9,7 @@ import { ChatSession, ChatSessionSchema } from './model/chat-session.model';
 import { LlmOperationService } from './service/llm-operation.service';
 import { BackendJwtUtilsModule } from '@ubs-platform/users-microservice-helper';
 import { ChatMessage, ChatMessageSchema } from './model/chat-message-model';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { E5NestClient, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { ClientsModule } from '@nestjs/microservices';
 import { RealtimeChatFeederService } from './service/realtime-chat-feeder.service';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -36,7 +36,7 @@ import { LlmModelsController } from './controller/llm-models.controller';
         ClientsModule.register([
             {
                 name: 'KAFKA_CLIENT',
-                ...MicroserviceSetupUtil.getMicroserviceConnection(''),
+                customClass: E5NestClient,
             } as any,
         ]),
     ],

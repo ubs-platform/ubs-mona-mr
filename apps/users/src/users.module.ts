@@ -30,7 +30,7 @@ import { EntityOwnershipService } from './services/entity-ownership.service';
 import { EntityOwnershipMapper } from './mapper/entity-ownership.mapper';
 import { UserMicroserviceController } from './web/user-microservice.controller';
 import { BackendJwtUtilsExportModule } from '@ubs-platform/users-microservice-helper';
-import { E5NestServer, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { E5NestClient, E5NestServer, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { UserCandiate, UserCandiateSchema } from './domain/user-candiate.model';
 import { UserCommonService } from './services/user-common.service';
 import { UserRegisterService } from './services/user-register.service';
@@ -68,8 +68,7 @@ import { ScheduleModule } from '@nestjs/schedule';
         ClientsModule.register([
             {
                 name: 'KAFKA_CLIENT',
-                customClass: E5NestServer,
-                ...MicroserviceSetupUtil.getMicroserviceConnection(''),
+                customClass: E5NestClient,
             } as any,
         ]),
     ],
