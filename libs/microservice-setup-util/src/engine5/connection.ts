@@ -67,8 +67,12 @@ export class Engine5Connection {
         });
         return new Promise((ok, fail) => {
             this.ongoingRequestsToComplete[messageId] = (response: Payload) => {
-                const jsonObj = JSON.parse(response.Content!) as any;
-                ok(jsonObj);
+                if (response.Content) {
+                    const jsonObj = JSON.parse(response.Content!) as any;
+                    ok(jsonObj);
+                } else {
+                    ok(undefined);
+                }
             };
         });
     }
@@ -90,8 +94,6 @@ export class Engine5Connection {
     // }
 
     async init() {
-        
-
         if (this.connected) {
             return this;
         }
