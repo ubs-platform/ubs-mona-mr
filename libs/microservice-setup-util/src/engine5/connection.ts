@@ -4,27 +4,58 @@ import { Payload } from './payload';
 import { encode, decode } from '@msgpack/msgpack';
 import { DynamicQueue } from '@ubs-platform/dynamic-queue';
 import { json } from 'stream/consumers';
+import { ReplaySubject } from 'rxjs';
 
 export class Engine5Connection {
     tcpClient = new net.Socket();
     connected = false;
+    connectionReady: ReplaySubject<"CONNECTING" | "CLOSED" | "CONNECTED"> = new ReplaySubject(1);
     listeningSubjectCallbacks: { [key: string]: ((a: any) => any)[] } = {};
     ongoingRequestsToComplete: { [key: string]: (a: any) => void } = {};
-
+    readonly queue = new DynamicQueue();
+    reconnectOnFail = false;
     // onGoingRequests: Map<string, ((a: any) => any)[]> = new Map();
 
-    readonly queue = new DynamicQueue();
 
     constructor(
         private host: string,
         private port: string | number,
         private instanceId?: string,
-    ) {}
+    ) {
+        this.connectionReady.next("CLOSED");
+        this.queue.push(async () => {
+            await this.runAtWhenConnected(() => {
+                "This is for prevent add some events or requests before connection"
+            })
+        })
+    }
+
+    runAtWhenConnected(ac: () => any) {
+        let completed = false;
+        return new Promise((ok, fail) => {
+            let subscription = null as any
+            
+            subscription = this.connectionReady.subscribe(async (a) => {
+                if (!completed && a == "CONNECTED") {
+                    completed = true;
+                    subscription?.unsubscribe();
+                    try {
+                        const result = await ac()
+                        ok(result)
+                    } catch (e) {
+                        fail(e)
+                    }
+                } else if (completed) {
+                    subscription?.unsubscribe();
+                }
+            })
+        })
+
+    }
 
     async writePayload(p: Payload): Promise<Engine5Connection> {
         return new Promise((ok, fail) => {
-            this.queue.push(() => {
-                // const encoded = new Uint8Array();
+            this.queue.push(async () => {
                 try {
                     const buff = Buffer.from([...encode(p), 4]);
 
@@ -35,19 +66,22 @@ export class Engine5Connection {
                 } catch (error) {
                     console.error(error);
                 }
-            });
+            })
         });
     }
 
     async listen(subject: string, cb: (a: any) => any) {
-        await this.writePayload({
-            Command: 'LISTEN',
-            Subject: subject,
-            MessageId: this.messageIdGenerate(),
+        this.queue.push(async () => {
+            await this.writePayload({
+                Command: 'LISTEN',
+                Subject: subject,
+                MessageId: this.messageIdGenerate(),
+            });
+            const ls = this.listeningSubjectCallbacks[subject] || [];
+            ls.push(cb);
+            this.listeningSubjectCallbacks[subject] = ls;
         });
-        const ls = this.listeningSubjectCallbacks[subject] || [];
-        ls.push(cb);
-        this.listeningSubjectCallbacks[subject] = ls;
+
     }
 
     private messageIdGenerate(): string | undefined {
@@ -94,44 +128,75 @@ export class Engine5Connection {
     // }
 
     async init() {
-        if (this.connected) {
-            return this;
-        }
+        let completed = false;
+
         return new Promise<Engine5Connection>((ok, fail) => {
-            console.info('Connecting to server');
-            const client = this.tcpClient;
-            let currentBuff: number[] = [];
-            client.connect(parseInt(this.port as any), this.host, () => {
-                //   client.write("I am Chappie");
-                this.writePayload({
-                    Command: 'CONNECT',
-                    InstanceId: this.instanceId || '',
-                });
-            });
-            client.on('data', (data: Buffer) => {
-                // console.info("Gelen data", data);
-                this.queue.push(async () => {
-                    let newBuffData = [...currentBuff, ...data];
-                    let splitByteIndex = newBuffData.indexOf(4);
-                    while (splitByteIndex > -1) {
-                        const popped = newBuffData.slice(0, splitByteIndex);
-                        this.processIncomingData(popped, ok);
-
-                        newBuffData = newBuffData.slice(splitByteIndex + 1);
-                        splitByteIndex = newBuffData.indexOf(4);
+            let subscription = null as any
+            subscription = this.connectionReady.subscribe((status) => {
+                if (completed) {
+                    subscription?.unsubscribe();
+                } else {
+                    if (status == "CLOSED") {
+                        this._init((v) => {
+                            completed = true;
+                            subscription?.unsubscribe();
+                            ok(v);
+                        });
+                    } else {
+                        this.runAtWhenConnected(() => {
+                            completed = true;
+                            subscription?.unsubscribe();
+                            ok(this)
+                        })
                     }
-                    currentBuff = newBuffData;
-                });
-            });
+                }
+            })
+        });
+    }
 
-            client.on('error', (err) => {
-                console.error(`Error occured ${err}`);
+    private _init(ok: (value: Engine5Connection | PromiseLike<Engine5Connection>) => void) {
+        this.connectionReady.next("CONNECTING");
+        console.info('Connecting to server');
+        const client = this.tcpClient;
+        let currentBuff: number[] = [];
+        client.connect(parseInt(this.port as any), this.host, () => {
+            //   client.write("I am Chappie");
+            this.writePayload({
+                Command: 'CONNECT',
+                InstanceId: this.instanceId || '',
             });
+        });
+        client.on('data', (data: Buffer) => {
+            // console.info("Gelen data", data);
+            this.queue.push(async () => {
+                let newBuffData = [...currentBuff, ...data];
+                let splitByteIndex = newBuffData.indexOf(4);
+                while (splitByteIndex > -1) {
+                    const popped = newBuffData.slice(0, splitByteIndex);
+                    this.processIncomingData(popped, ok);
 
-            client.on('close', function () {
-                this.connected = false;
-                console.log('Connection closed');
+                    newBuffData = newBuffData.slice(splitByteIndex + 1);
+                    splitByteIndex = newBuffData.indexOf(4);
+                }
+                currentBuff = newBuffData;
             });
+        });
+
+        client.on('error', (err) => {
+            console.error(`Error occured ${err}`);
+        });
+
+        client.on('close', async () => {
+            this.connected = false;
+            console.log('Connection closed');
+            if (this.reconnectOnFail) {
+                try {
+                    await this.init();
+                    this.connectionReady.next("CLOSED");
+                } catch (ex) {
+                    console.error(ex);
+                }
+            }
         });
     }
 
@@ -144,8 +209,10 @@ export class Engine5Connection {
         const decoded: Payload = decode(data) as any as Payload;
         if (decoded.Command == 'CONNECT_SUCCESS') {
             this.connected = true;
+            this.connectionReady.next("CONNECTED");
             this.instanceId = decoded.InstanceId;
             promiseResolveFunc?.(this);
+            this.reconnectOnFail = true;
             console.info('Connected Successfully');
         } else if (decoded.Command == 'EVENT') {
             console.info('Event recieved', decoded.Subject);
@@ -186,5 +253,27 @@ export class Engine5Connection {
         }
     }
 
-    async close() {}
+    async close() {
+        this.reconnectOnFail = false;
+        await this.writePayload({ "Command": "CLOSE" })
+        // this.tcpClient.end();
+        // this.connected = false;
+    }
+
+
+    private static globalE5Connections: { [key: string]: Engine5Connection } = {};
+
+    public static create(host: string,
+        port: string | number,
+        instanceId?: string) {
+        const key = `${instanceId}@${host}:${port}`
+        if (!this.globalE5Connections[key]) {
+            const nk = new Engine5Connection(host, port, instanceId);
+            this.globalE5Connections[key] = nk;
+        }
+
+        return this.globalE5Connections[key];
+
+    }
 }
+

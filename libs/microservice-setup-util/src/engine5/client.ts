@@ -4,12 +4,13 @@ import { from, Observable } from 'rxjs';
 import { randomUUID } from 'crypto';
 
 export class E5NestClient {
+    static appGlobalE5InstanceId = 'nest_client' + randomUUID();
     connection: Engine5Connection;
     constructor() {
-        this.connection = new Engine5Connection(
+        this.connection = Engine5Connection.create(
             'localhost',
             '8080',
-            'nest_client' + randomUUID(),
+            E5NestClient.appGlobalE5InstanceId
         );
     }
 
@@ -51,6 +52,6 @@ export class E5NestClient {
     }
 
     async close() {
-        // this.connection.close();
+        await this.connection.close();
     }
 }
