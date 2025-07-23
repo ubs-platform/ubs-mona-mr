@@ -6,11 +6,11 @@ import { randomUUID } from 'crypto';
 export class E5NestClient {
     static appGlobalE5InstanceId = 'nest_client' + randomUUID();
     connection: Engine5Connection;
-    constructor() {
+    constructor({ host, port, instanceId }: { host: string, port: string | number, instanceId?: string }) {
         this.connection = Engine5Connection.create(
-            'localhost',
-            '8080',
-            E5NestClient.appGlobalE5InstanceId
+            host,
+            port,
+            instanceId || E5NestClient.appGlobalE5InstanceId
         );
     }
 

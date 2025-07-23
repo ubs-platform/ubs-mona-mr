@@ -26,8 +26,7 @@ import { randomUUID } from 'crypto';
     imports: [
         ScheduleModule.forRoot(),
         MongooseModule.forRoot(
-            `mongodb://${process.env.NX_MONGO_USERNAME}:${
-                process.env.NX_MONGO_PASSWORD
+            `mongodb://${process.env.NX_MONGO_USERNAME}:${process.env.NX_MONGO_PASSWORD
             }@${process.env.NX_MONGO_URL || 'localhost'}/?authMechanism=DEFAULT`,
             {
                 dbName: process.env.NX_MONGO_DBNAME || 'ubs_files',
@@ -40,15 +39,15 @@ import { randomUUID } from 'crypto';
             { name: FileModel.name, schema: FileSchema },
             { name: EntityProperty.name, schema: EntityPropertySchema },
         ]),
-        ClientsModule.register([
-            {
-                name: 'KafkaClient',
-                customClass: E5NestClient,
-            } as any,
-        ]),
+        ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KafkaClient")]),
+
+        // {
+        //     name: 'KafkaClient',
+        //     customClass: E5NestClient,
+        // } as any,
         BackendJwtUtilsModule,
     ],
     controllers: [ImageFileController, EntityPropertyController],
     providers: [FileService, EntityPropertyService],
 })
-export class AppModule {}
+export class AppModule { }

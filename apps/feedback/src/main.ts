@@ -19,13 +19,9 @@ async function bootstrap() {
     await LoadbalancedProxy.runServer(async () => {
         const app = await NestFactory.create(AppModule);
         const globalPrefix = 'api';
-        app.connectMicroservice(
-            // MicroserviceSetupUtil.getMicroserviceConnection(''), 
 
-            {
-                strategy: new E5NestServer("localhost", "8080","")
-            }
-        );
+        app.connectMicroservice(MicroserviceSetupUtil.setupServer(''));
+
         // app.connectMicroservice({
         //     transport: Transport.TCP,
         //     options: {

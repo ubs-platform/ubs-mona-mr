@@ -65,12 +65,8 @@ import { ScheduleModule } from '@nestjs/schedule';
             { name: UserCandiate.name, schema: UserCandiateSchema },
         ]),
         ...BackendJwtUtilsExportModule,
-        ClientsModule.register([
-            {
-                name: 'KAFKA_CLIENT',
-                customClass: E5NestClient,
-            } as any,
-        ]),
+        ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KAFKA_CLIENT")]),
+
     ],
     providers: [
         UserService,

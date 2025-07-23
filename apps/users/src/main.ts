@@ -31,9 +31,9 @@ async function bootstrap() {
         console.info(
             'U_USERS_MONA_INTERNAL_COM_PORT: ' + INTERNAL_COMMUNICATION.port,
         );
-        app.connectMicroservice({
-            strategy: new E5NestServer('localhost', '8080', 'ubs-users'),
-        });
+
+        app.connectMicroservice(MicroserviceSetupUtil.setupServer('ubs-users'));
+
         // app.connectMicroservice({
         //     transport: Transport.TCP,
         //     options: {

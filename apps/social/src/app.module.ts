@@ -52,12 +52,8 @@ import { CommentMicroserviceController } from './controller/comment-microservice
                 schema: ApplicationSocialRestrictionSchema,
             },
         ]),
-        ClientsModule.register([
-            {
-                name: 'KafkaClient',
-                customClass: E5NestClient,
-            } as any,
-        ]),
+        ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KafkaClient")])
+
     ],
     controllers: [
         CommentController,

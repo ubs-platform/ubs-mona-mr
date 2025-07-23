@@ -18,23 +18,24 @@ export const INTERNAL_COMMUNICATION = {
     imports: [
         ...BackendJwtUtilsExportModule,
 
-        ClientsModule.register([
-            {
-                name: 'KAFKA_CLIENT',
-                customClass: E5NestClient,
-            } as any,
-            // {
-            //     name: 'USER_MICROSERVICE',
-            //     transport: Transport.TCP,
-            //     options: {
-            //         port: INTERNAL_COMMUNICATION.port,
-            //         host: INTERNAL_COMMUNICATION.host,
-            //     },
-            // },
-        ]),
+        ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KAFKA_CLIENT")])
+        // ClientsModule.register([
+        //     {
+        //         name: '',
+        //         customClass: E5NestClient,
+        //     } as any,
+        //     // {
+        //     //     name: 'USER_MICROSERVICE',
+        //     //     transport: Transport.TCP,
+        //     //     options: {
+        //     //         port: INTERNAL_COMMUNICATION.port,
+        //     //         host: INTERNAL_COMMUNICATION.host,
+        //     //     },
+        //     // },
+        // ]),
     ],
 })
-export class BackendJwtUtilsModule {}
+export class BackendJwtUtilsModule { }
 /**
  * todo: acaba BackendJwtUtilsModule yerine UserMicroserviceHelperModule mi yapsam
  */

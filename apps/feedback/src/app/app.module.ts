@@ -14,15 +14,11 @@ import { E5NestClient, MicroserviceSetupUtil } from '@ubs-platform/microservice-
 @Module({
     imports: [
         BackendJwtUtilsModule,
-        ClientsModule.register([
-            {
-                name: 'KAFKA_CLIENT',
-                customClass: E5NestClient,
-            } as any,
-        ]),
+
+        ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KAFKA_CLIENT")]),
+
         MongooseModule.forRoot(
-            `mongodb://${process.env.NX_MONGO_USERNAME}:${
-                process.env.NX_MONGO_PASSWORD
+            `mongodb://${process.env.NX_MONGO_USERNAME}:${process.env.NX_MONGO_PASSWORD
             }@${process.env.NX_MONGO_URL || 'localhost'}/?authMechanism=DEFAULT`,
             {
                 dbName: process.env.NX_MONGO_DBNAME || 'ubs_users',
@@ -35,4 +31,4 @@ import { E5NestClient, MicroserviceSetupUtil } from '@ubs-platform/microservice-
     controllers: [UserMessageController],
     providers: [UserMessageService, EmailService],
 })
-export class AppModule {}
+export class AppModule { }

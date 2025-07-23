@@ -22,9 +22,9 @@ async function bootstrap() {
             new FastifyAdapter(),
         );
         const globalPrefix = 'api';
-        app.connectMicroservice({
-            strategy: new E5NestServer('localhost', '8080', ''),
-        });
+
+        app.connectMicroservice(MicroserviceSetupUtil.setupServer(''));
+
         app.setGlobalPrefix(globalPrefix);
         const port = process.env.PORT || 3117;
         await app.startAllMicroservices();

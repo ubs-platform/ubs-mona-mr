@@ -25,9 +25,7 @@ async function bootstrap() {
         );
         const globalPrefix = 'api';
         app.register(fastifyMultipart);
-        app.connectMicroservice({
-            strategy: new E5NestServer('localhost', '8080', 'tetakent-fileservice'),
-        });
+        app.connectMicroservice(MicroserviceSetupUtil.setupServer('tetakent-fileservice'));
         app.setGlobalPrefix(globalPrefix);
         app.startAllMicroservices();
         await app.listen(port, '0.0.0.0');
