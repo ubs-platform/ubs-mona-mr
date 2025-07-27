@@ -3,18 +3,26 @@ import { Engine5Connection } from './connection';
 import { from, Observable } from 'rxjs';
 import { randomUUID } from 'crypto';
 
+interface E5NestClientConnectionOptions {
+    host: string;
+    port: string | number;
+    instanceId?: string;
+    instanceGroup?: string;
+}
+
 export class E5NestClient {
     static appGlobalE5InstanceId = 'nest_client' + randomUUID();
     connection: Engine5Connection;
-    constructor({ host, port, instanceId }: { host: string, port: string | number, instanceId?: string }) {
+    constructor({ host, port, instanceId, instanceGroup }: E5NestClientConnectionOptions) {
         this.connection = Engine5Connection.create(
             host,
             port,
-            instanceId || E5NestClient.appGlobalE5InstanceId
+            instanceId || E5NestClient.appGlobalE5InstanceId,
+            instanceGroup || instanceId || E5NestClient.appGlobalE5InstanceId
         );
     }
 
-    subscribeToResponseOf(..._) {
+    subscribeToResponseOf() {
         // noop
     }
 

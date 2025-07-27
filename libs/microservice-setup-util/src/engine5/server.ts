@@ -34,12 +34,13 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
     constructor(
         private host: string,
         private port: string | number,
+        private instanceGroup?: string,
         private instanceId?: string,
     ) {
         super();
         if (!instanceId) instanceId = 'tk' + randomUUID();
 
-        this.connection = Engine5Connection.create(host, port, instanceId);
+        this.connection = Engine5Connection.create(host, port, instanceGroup, instanceId);
     }
     /**
      * Triggered when you run "app.listen()".

@@ -20,6 +20,7 @@ export class Engine5Connection {
     constructor(
         private host: string,
         private port: string | number,
+        private instanceGroup?: string,
         private instanceId?: string,
     ) {
         this.connectionReady.next("CLOSED");
@@ -34,7 +35,7 @@ export class Engine5Connection {
         let completed = false;
         return new Promise((ok, fail) => {
             let subscription = null as any
-            
+
             subscription = this.connectionReady.subscribe(async (a) => {
                 if (!completed && a == "CONNECTED") {
                     completed = true;
@@ -201,7 +202,7 @@ export class Engine5Connection {
         this.writePayload({
             Command: 'CONNECT',
             InstanceId: this.instanceId || '',
-            
+            InstanceGroup: this.instanceGroup || this.instanceId
         });
     }
 
@@ -215,7 +216,8 @@ export class Engine5Connection {
         if (decoded.Command == 'CONNECT_SUCCESS') {
             this.connected = true;
             this.connectionReady.next("CONNECTED");
-            this.instanceId = decoded.InstanceId;
+            this.instanceId = decoded.InstanceId!;
+            this.instanceGroup = decoded.InstanceGroup!
             promiseResolveFunc?.(this);
             this.reconnectOnFail = true;
             console.info('Connected Successfully');
@@ -270,10 +272,11 @@ export class Engine5Connection {
 
     public static create(host: string,
         port: string | number,
+        instanceGroup?: string,
         instanceId?: string) {
-        const key = `${instanceId}@${host}:${port}`
+        const key = `${instanceGroup}(${instanceId})@${host}:${port}`
         if (!this.globalE5Connections[key]) {
-            const nk = new Engine5Connection(host, port, instanceId);
+            const nk = new Engine5Connection(host, port, instanceGroup, instanceId);
             this.globalE5Connections[key] = nk;
         }
 
