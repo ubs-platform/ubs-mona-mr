@@ -161,10 +161,7 @@ export class Engine5Connection {
         let currentBuff: number[] = [];
         client.connect(parseInt(this.port as any), this.host, () => {
             //   client.write("I am Chappie");
-            this.writePayload({
-                Command: 'CONNECT',
-                InstanceId: this.instanceId || '',
-            });
+            this.startConnection();
         });
         client.on('data', (data: Buffer) => {
             // console.info("Gelen data", data);
@@ -197,6 +194,14 @@ export class Engine5Connection {
                     console.error(ex);
                 }
             }
+        });
+    }
+
+    private startConnection() {
+        this.writePayload({
+            Command: 'CONNECT',
+            InstanceId: this.instanceId || '',
+            
         });
     }
 

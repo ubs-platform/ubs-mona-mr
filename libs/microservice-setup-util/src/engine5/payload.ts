@@ -24,4 +24,5 @@ export interface Payload {
   InstanceId?: string;
   MessageId?: string;
   ResponseOfMessageId?: string;
+  InstanceGroup?: string
 }
