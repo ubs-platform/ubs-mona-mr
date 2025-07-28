@@ -17,8 +17,8 @@ export class E5NestClient {
         this.connection = Engine5Connection.create(
             host,
             port,
-            instanceId || E5NestClient.appGlobalE5InstanceId,
-            instanceGroup || instanceId || E5NestClient.appGlobalE5InstanceId
+            instanceGroup || instanceId || E5NestClient.appGlobalE5InstanceId,
+            E5NestClient.appGlobalE5InstanceId,
         );
     }
 
@@ -43,7 +43,7 @@ export class E5NestClient {
         data: TInput,
     ): Observable<TResult> {
         return from(
-            this.connection.sendRequest(pattern, data),
+            this.connection.sendEvent(pattern, data),
         ) as Observable<TResult>;
     }
 
