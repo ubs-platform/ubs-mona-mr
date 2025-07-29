@@ -2,6 +2,7 @@ import { ClientProxy, ReadPacket, WritePacket } from '@nestjs/microservices';
 import { Engine5Connection } from './connection';
 import { from, Observable } from 'rxjs';
 import { randomUUID } from 'crypto';
+import { exec } from 'child_process';
 
 interface E5NestClientConnectionOptions {
     host: string;
@@ -13,27 +14,25 @@ interface E5NestClientConnectionOptions {
 export class E5NestClient {
     static appGlobalE5InstanceId = 'nest_client' + randomUUID();
     connection: Engine5Connection;
-    constructor({ host, port, instanceId, instanceGroup }: E5NestClientConnectionOptions) {
+    constructor(private connectionInfo: E5NestClientConnectionOptions) {
+        const { host, port, instanceId, instanceGroup } = connectionInfo
         this.connection = Engine5Connection.create(
             host,
             port,
             instanceGroup || instanceId || E5NestClient.appGlobalE5InstanceId,
             E5NestClient.appGlobalE5InstanceId,
         );
+        this.connection
+            .init()
     }
 
     subscribeToResponseOf() {
         // noop
     }
 
-    async connect(): Promise<any> {
-        return new Promise((o, f) => {
-            this.connection
-                .init()
-                .then((x) => o(x))
-                .catch((err) => f(err));
-        });
-    }
+    // async connect(): Promise<any> {
+    //     return 
+    // }
     unwrap() {
         return this.connection as any;
     }
@@ -42,6 +41,7 @@ export class E5NestClient {
         pattern: any,
         data: TInput,
     ): Observable<TResult> {
+        console.info("Sending event: " + pattern)
         return from(
             this.connection.sendEvent(pattern, data),
         ) as Observable<TResult>;

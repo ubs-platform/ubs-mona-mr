@@ -38,7 +38,7 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
         private instanceId?: string,
     ) {
         super();
-        if (!instanceId) instanceId = 'tk' + randomUUID();
+        if (!instanceId) instanceId = 'nest_server' + randomUUID();
 
         this.connection = Engine5Connection.create(host, port, instanceGroup, instanceId);
     }
@@ -65,6 +65,7 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
      * Triggered on application shutdown.
      */
     close() {
+        debugger
         this.connection.close();
     }
 

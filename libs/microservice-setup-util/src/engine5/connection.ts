@@ -5,6 +5,7 @@ import { encode, decode } from '@msgpack/msgpack';
 import { DynamicQueue } from '@ubs-platform/dynamic-queue';
 import { json } from 'stream/consumers';
 import { ReplaySubject } from 'rxjs';
+import { exec } from 'child_process';
 
 export class Engine5Connection {
     tcpClient = new net.Socket();
@@ -56,7 +57,7 @@ export class Engine5Connection {
 
     async writePayload(p: Payload): Promise<Engine5Connection> {
         return new Promise((ok, fail) => {
-            this.queue.push(async () => {
+            this.queue.push(() => {
                 try {
                     const buff = Buffer.from([...encode(p), 4]);
 
@@ -72,17 +73,22 @@ export class Engine5Connection {
     }
 
     async listen(subject: string, cb: (a: any) => any) {
+        console.info("Listening Subject: " + subject)
         this.queue.push(async () => {
-            await this.writePayload({
-                Command: 'LISTEN',
-                Subject: subject,
-                MessageId: this.messageIdGenerate(),
-            });
+            await this.writeListenCommand(subject);
             const ls = this.listeningSubjectCallbacks[subject] || [];
             ls.push(cb);
             this.listeningSubjectCallbacks[subject] = ls;
         });
 
+    }
+
+    private async writeListenCommand(subject: string) {
+        await this.writePayload({
+            Command: 'LISTEN',
+            Subject: subject,
+            MessageId: this.messageIdGenerate(),
+        });
     }
 
     private messageIdGenerate(): string | undefined {
@@ -113,7 +119,18 @@ export class Engine5Connection {
     }
 
     async sendEvent(subject: string, data: any) {
-        console.info('SEND EVENT', subject);
+        // this.runAtWhenConnected(async () => {
+
+        // })
+        // this.queue.push(() => {
+        //     return new Promise((ok) => {
+        //         this.connectionReady.subscribe((a) => {
+        //             exec(`kdialog --msgbox "${a}"`)
+        //             ok(null)
+        //         })
+        //     })
+
+        // })
         await this.writePayload({
             Command: 'EVENT',
             Subject: subject,
@@ -160,13 +177,10 @@ export class Engine5Connection {
         console.info('Connecting to server');
         const client = this.tcpClient;
         let currentBuff: number[] = [];
-        client.connect(parseInt(this.port as any), this.host, () => {
-            //   client.write("I am Chappie");
-            this.startConnection();
-        });
+
         client.on('data', (data: Buffer) => {
             // console.info("Gelen data", data);
-            this.queue.push(async () => {
+            this.queue.push(() => {
                 let newBuffData = [...currentBuff, ...data];
                 let splitByteIndex = newBuffData.indexOf(4);
                 while (splitByteIndex > -1) {
@@ -186,15 +200,25 @@ export class Engine5Connection {
 
         client.on('close', async () => {
             this.connected = false;
+            this.connectionReady.next("CLOSED")
             console.log('Connection closed');
+
             if (this.reconnectOnFail) {
                 try {
-                    await this.init();
-                    this.connectionReady.next("CLOSED");
+                    console.log('Client will try to connect again Engine5 after 5 seconds');
+
+                    setTimeout(() => {
+                        this.init().then().catch(e => console.error(e));
+                    }, 5000)
                 } catch (ex) {
                     console.error(ex);
                 }
             }
+        });
+
+        client.connect(parseInt(this.port as any), this.host, () => {
+            //   client.write("I am Chappie");
+            this.startConnection();
         });
     }
 
@@ -204,6 +228,13 @@ export class Engine5Connection {
             InstanceId: this.instanceId || '',
             InstanceGroup: this.instanceGroup || this.instanceId
         });
+
+        const alreadyListeningSubjects = Object.keys(this.listeningSubjectCallbacks);
+
+        for (let alsIndex = 0; alsIndex < alreadyListeningSubjects.length; alsIndex++) {
+            const als = alreadyListeningSubjects[alsIndex];
+            this.writeListenCommand(als).then(() => console.info("Listening subject again: " + als)).catch(console.error)
+        }
     }
 
     private async processIncomingData(
@@ -213,13 +244,14 @@ export class Engine5Connection {
         ) => void,
     ) {
         const decoded: Payload = decode(data) as any as Payload;
+        // console.info(decoded)
         if (decoded.Command == 'CONNECT_SUCCESS') {
             this.connected = true;
             this.connectionReady.next("CONNECTED");
             this.instanceId = decoded.InstanceId!;
             this.instanceGroup = decoded.InstanceGroup!
             promiseResolveFunc?.(this);
-            this.reconnectOnFail = true;
+            // this.reconnectOnFail = true;
             console.info('Connected Successfully');
         } else if (decoded.Command == 'EVENT') {
             console.info('Event recieved', decoded.Subject);
@@ -256,11 +288,13 @@ export class Engine5Connection {
             callbackIndex++
         ) {
             const callback = cbs[callbackIndex];
-            callback(decoded.Content);
+            callback(JSON.parse(decoded.Content as string));
         }
     }
 
     async close() {
+        debugger
+        console.info("E5JSCL - Connection is about to be closed")
         this.reconnectOnFail = false;
         await this.writePayload({ "Command": "CLOSE" })
         // this.tcpClient.end();
