@@ -60,7 +60,7 @@ import { randomUUID } from 'crypto';
 import { E5NestClient } from '@ubs-platform/microservice-setup-util';
 @Controller('file')
 export class ImageFileController {
-    // clients: { [key: string]: ClientProxy | ClientKafka | ClientRMQ } = {};
+    clients: { [key: string]: ClientProxy | ClientKafka | ClientRMQ } = {};
     potentialMalicousMimeTypes = [
         'application/x-msdownload',
         // 'application/octet-stream',
@@ -82,11 +82,14 @@ export class ImageFileController {
         'yum',
         'rpm',
     ];
+    readonly mqServiceType: 'ENGINE5' | 'KAFKA' = process.env[
+        'NX_MICROSERVICE_TYPE'
+    ] as any;
     cacheClearTimeoutPtr: NodeJS.Timeout | null;
     constructor(
         private fservice: FileService,
-        @Inject("KafkaClient") private e5: E5NestClient
-    ) { }
+        @Inject('KafkaClient') private e5: E5NestClient,
+    ) {}
 
     @Put('/volatility')
     @UseGuards(JwtAuthGuard)
@@ -228,35 +231,40 @@ export class ImageFileController {
     }
 
     private async createClient(topicName: string) {
-        // if (this.cacheClearTimeoutPtr) {
-        //     clearTimeout(this.cacheClearTimeoutPtr);
-        //     this.cacheClearTimeoutPtr = null;
-        // }
-        // if (this.clients[topicName] != null) {
-        //     return this.clients[topicName];
-        // }
+        if (this.mqServiceType == 'ENGINE5') {
+            const cl = this.e5;
+            return cl;
+        } else {
+            if (this.cacheClearTimeoutPtr) {
+                clearTimeout(this.cacheClearTimeoutPtr);
+                this.cacheClearTimeoutPtr = null;
+            }
+            if (this.clients[topicName] != null) {
+                return this.clients[topicName];
+            }
 
-        // const cl = ClientProxyFactory.create({
-        //     transport: Transport.KAFKA,
-        //     options: {
-        //         client: {
-        //             clientId: 'clientId',
-        //             brokers: ['kafka:9092'],
-        //         },
-        //         consumer: {
-        //             groupId: 'file_upload_checker_' + topicName + randomUUID(),
-        //         },
-        //     },
-        // }) as any as ClientKafka;
-        const cl = this.e5;
-        // cl.subscribeToResponseOf(topicName);
-        // this.clients[topicName] = cl;
-        // this.cacheClearTimeoutPtr = setTimeout(() => {
-        //     this.clients = {};
-        //     console.info('Cache temizlendi');
-        //     this.cacheClearTimeoutPtr = null;
-        // }, 2000);
-        return cl;
+            const cl = ClientProxyFactory.create({
+                transport: Transport.KAFKA,
+                options: {
+                    client: {
+                        clientId: 'clientId',
+                        brokers: ['kafka:9092'],
+                    },
+                    consumer: {
+                        groupId:
+                            'file_upload_checker_' + topicName + randomUUID(),
+                    },
+                },
+            }) as any as ClientKafka;
+            cl.subscribeToResponseOf(topicName);
+            this.clients[topicName] = cl;
+            this.cacheClearTimeoutPtr = setTimeout(() => {
+                this.clients = {};
+                console.info('Cache temizlendi');
+                this.cacheClearTimeoutPtr = null;
+            }, 2000);
+            return cl;
+        }
     }
 
     checkMimeTypeAndExtension(file) {
