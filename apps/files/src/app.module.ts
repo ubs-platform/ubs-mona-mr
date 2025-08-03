@@ -41,10 +41,6 @@ import { randomUUID } from 'crypto';
         ]),
         ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KafkaClient")]),
 
-        // {
-        //     name: 'KafkaClient',
-        //     customClass: E5NestClient,
-        // } as any,
         BackendJwtUtilsModule,
     ],
     controllers: [ImageFileController, EntityPropertyController],

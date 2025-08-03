@@ -259,11 +259,7 @@ export class ImageFileController {
             }) as any as ClientKafka;
             cl.subscribeToResponseOf(topicName);
             this.clients[topicName] = cl;
-            this.cacheClearTimeoutPtr = setTimeout(() => {
-                this.clients = {};
-                console.info('Cache temizlendi');
-                this.cacheClearTimeoutPtr = null;
-            }, 2000);
+
             return cl;
         }
     }
