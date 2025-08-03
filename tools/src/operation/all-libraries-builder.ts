@@ -88,7 +88,7 @@ export class AllLibrariesBuilder {
                                 `Patching ${currentBuild.packageName} into ${patchDirectory}`,
                             ),
                         );
-                        FileSystem.cp(currentBuild.buildPath, patchDirectory, {
+                        FileSystem.cp(currentBuild.iksirPackage.buildDirectory, patchDirectory, {
                             recursive: true,
                         });
                         console.info(
@@ -117,7 +117,7 @@ export class AllLibrariesBuilder {
         );
 
         await ExecUtil.exec(
-            `cd "${currentBuild.buildPath}" && npm publish --tag ${versionTag} --access ${versionVisibility}`,
+            `cd "${currentBuild.iksirPackage.buildDirectory}" && npm publish --tag ${versionTag} --access ${versionVisibility}`,
         );
     }
 }

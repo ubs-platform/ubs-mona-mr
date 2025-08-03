@@ -13,6 +13,7 @@ import { TypescriptConfiguration } from '../util/typescript-util';
 import { DirectoryUtil } from '../util/directory-util';
 import { ExecUtil } from '../util/exec-util';
 import { TextUtil } from '../util/text-util';
+import { COLORS, strColor } from '../util/colors';
 
 export class IksirPackage {
     directory: string;
@@ -39,6 +40,29 @@ export class IksirPackage {
                 force: true,
             });
             await ExecUtil.exec(`tsc -p ${this.tsBuildConfigFile}`);
+            const pkgName = this.packageName.replace(
+                this.parent!.packageObject.iksir!.childrenPrefix + '/',
+                '',
+            );
+            const multipleLibBuild = await DirectoryUtil.directoryExists(
+                this.buildDirectory,
+                pkgName,
+                'src',
+            );
+
+            if (multipleLibBuild) {
+                console.warn(
+                    strColor(
+                        COLORS.BgYellow,
+                        'Multiple library build detected. path is changing',
+                    ),
+                );
+                this.buildDirectory = path.join(
+                    this.buildDirectory,
+                    pkgName,
+                    'src',
+                );
+            }
         } else {
             throw 'instance-is-not-library';
         }

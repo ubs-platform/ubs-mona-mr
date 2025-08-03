@@ -52,7 +52,7 @@ class PackageBuilder {
     parent;
     packageForFullCompilation;
     _isPrebuilt = false;
-    buildPath;
+    // buildPath: string;
     EMBED_DIRECTORY_NAME = '_monaembed';
     constructor(iksirPackage) {
         this.iksirPackage = iksirPackage;
@@ -72,12 +72,12 @@ class PackageBuilder {
         this.packageForFullCompilation = { ...iksirPackage.packageObject };
         this._isPrebuilt = false;
         this.imports = [];
-        this.buildPath = iksirPackage.buildDirectory;
+        // this.buildPath = iksirPackage.buildDirectory;
     }
     async writePackage(version) {
         console.info('Package.json is writing');
         this.packageForFullCompilation.version = version;
-        await json_util_1.JsonUtil.writeJson(this.packageForFullCompilation, this.buildPath, 'package.json');
+        await json_util_1.JsonUtil.writeJson(this.packageForFullCompilation, this.iksirPackage.buildDirectory, 'package.json');
         // await FileSystem.writeFile(
         //     path.join(this.buildPath, 'package.json'),
         //     JSON.stringify(this.packageForFullCompilation),
@@ -101,8 +101,8 @@ class PackageBuilder {
         }
         else if (xrPak.libraryMode == 'EMBEDDED') {
             console.info(importedLibraryBuild.packageName + 'is being embedded');
-            const theirBuildPath = importedLibraryBuild.buildPath;
-            const ourBuildPath = this.buildPath;
+            const theirBuildPath = importedLibraryBuild.iksirPackage.buildDirectory;
+            const ourBuildPath = this.iksirPackage.buildDirectory;
             const ourEmbedPath = path_1.default.join(ourBuildPath, this.EMBED_DIRECTORY_NAME, importedLibraryBuild.packageName);
             console.info(importedLibraryBuild.packageName + 'is copying');
             await FileSystem.mkdir(ourEmbedPath, { recursive: true });
@@ -145,6 +145,7 @@ class PackageBuilder {
     async prebuild() {
         console.info(this.packageName + ' is pre-building via tsc');
         await this.iksirPackage.beginPrebuild();
+        // this.buildPath = this.iksirPackage.buildDirectory;
         console.info('Collecting imports for' + this.packageName);
         this.imports = await this.collectImports();
         for (let index = 0; index < this.imports.length; index++) {

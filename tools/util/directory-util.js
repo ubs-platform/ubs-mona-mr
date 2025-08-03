@@ -50,6 +50,15 @@ class DirectoryUtil {
         });
         return allFileList;
     }
+    static async directoryExists(...filePath) {
+        try {
+            await FileSystem.access(path.join(...filePath), FileSystem.constants.F_OK);
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
+    }
     /**
      * Circulates files in the folder recursively
      * @param folderPath

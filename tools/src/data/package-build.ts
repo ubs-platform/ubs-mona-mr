@@ -5,6 +5,7 @@ import { IksirPackage } from './iksir-package';
 import * as FileSystem from 'fs/promises';
 import * as cJSON from 'comment-json';
 import { JsonUtil } from '../util/json-util';
+import { DirectoryUtil } from '../util/directory-util';
 export interface ImportedPackage {
     scope: 'PROJECT' | 'PARENT_PACKAGE_JSON' | 'UNKNOWN';
     packageName: string;
@@ -23,7 +24,7 @@ export class PackageBuilder {
     parent: IksirPackage;
     packageForFullCompilation: NpmPackageWithIksir;
     private _isPrebuilt = false;
-    buildPath: string;
+    // buildPath: string;
     readonly EMBED_DIRECTORY_NAME: string = '_monaembed';
 
     constructor(public iksirPackage: IksirPackage) {
@@ -47,7 +48,7 @@ export class PackageBuilder {
         this.packageForFullCompilation = { ...iksirPackage.packageObject };
         this._isPrebuilt = false;
         this.imports = [];
-        this.buildPath = iksirPackage.buildDirectory;
+        // this.buildPath = iksirPackage.buildDirectory;
     }
 
     async writePackage(version: string) {
@@ -55,7 +56,7 @@ export class PackageBuilder {
         this.packageForFullCompilation.version = version;
         await JsonUtil.writeJson(
             this.packageForFullCompilation,
-            this.buildPath,
+            this.iksirPackage.buildDirectory,
             'package.json',
         );
         // await FileSystem.writeFile(
@@ -91,8 +92,8 @@ export class PackageBuilder {
             console.info(
                 importedLibraryBuild.packageName + 'is being embedded',
             );
-            const theirBuildPath = importedLibraryBuild.buildPath;
-            const ourBuildPath = this.buildPath;
+            const theirBuildPath = importedLibraryBuild.iksirPackage.buildDirectory;
+            const ourBuildPath = this.iksirPackage.buildDirectory;
             const ourEmbedPath = path.join(
                 ourBuildPath,
                 this.EMBED_DIRECTORY_NAME,
@@ -155,6 +156,7 @@ export class PackageBuilder {
     public async prebuild() {
         console.info(this.packageName + ' is pre-building via tsc');
         await this.iksirPackage.beginPrebuild();
+        // this.buildPath = this.iksirPackage.buildDirectory;
         console.info('Collecting imports for' + this.packageName);
         this.imports = await this.collectImports();
         for (let index = 0; index < this.imports.length; index++) {

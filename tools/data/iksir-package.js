@@ -42,6 +42,7 @@ const path_1 = __importDefault(require("path"));
 const json_util_1 = require("../util/json-util");
 const directory_util_1 = require("../util/directory-util");
 const exec_util_1 = require("../util/exec-util");
+const colors_1 = require("../util/colors");
 class IksirPackage {
     directory;
     rawBuildDirectory;
@@ -65,6 +66,12 @@ class IksirPackage {
                 force: true,
             });
             await exec_util_1.ExecUtil.exec(`tsc -p ${this.tsBuildConfigFile}`);
+            const pkgName = this.packageName.replace(this.parent.packageObject.iksir.childrenPrefix + '/', '');
+            const multipleLibBuild = await directory_util_1.DirectoryUtil.directoryExists(this.buildDirectory, pkgName, 'src');
+            if (multipleLibBuild) {
+                console.warn((0, colors_1.strColor)(colors_1.COLORS.BgYellow, 'Multiple library build detected. path is changing'));
+                this.buildDirectory = path_1.default.join(this.buildDirectory, pkgName, 'src');
+            }
         }
         else {
             throw 'instance-is-not-library';

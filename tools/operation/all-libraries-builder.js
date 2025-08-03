@@ -90,7 +90,7 @@ class AllLibrariesBuilder {
                             ? path_1.default.join(this.xrRootPackage.directory, props.patchTarget, currentBuild.packageName)
                             : path_1.default.join(props.patchTarget, currentBuild.packageName);
                         console.info((0, colors_1.strColor)(colors_1.COLORS.FgBlue, `Patching ${currentBuild.packageName} into ${patchDirectory}`));
-                        FileSystem.cp(currentBuild.buildPath, patchDirectory, {
+                        FileSystem.cp(currentBuild.iksirPackage.buildDirectory, patchDirectory, {
                             recursive: true,
                         });
                         console.info((0, colors_1.strColor)(colors_1.COLORS.FgGreen, `Patched ${currentBuild.packageName} into ${patchDirectory}`));
@@ -104,7 +104,7 @@ class AllLibrariesBuilder {
     }
     async publishOnNpm(currentBuild, versionTag, versionVisibility) {
         console.info(`${currentBuild.packageName} is about to be published on NPM Registry`);
-        await exec_util_1.ExecUtil.exec(`cd "${currentBuild.buildPath}" && npm publish --tag ${versionTag} --access ${versionVisibility}`);
+        await exec_util_1.ExecUtil.exec(`cd "${currentBuild.iksirPackage.buildDirectory}" && npm publish --tag ${versionTag} --access ${versionVisibility}`);
     }
 }
 exports.AllLibrariesBuilder = AllLibrariesBuilder;
