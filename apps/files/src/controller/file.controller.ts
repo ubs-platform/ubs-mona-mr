@@ -58,6 +58,7 @@ import {
 } from '@blazity/nest-file-fastify';
 import { randomUUID } from 'crypto';
 import { E5NestClient } from '@ubs-platform/microservice-setup-util';
+import { env } from 'process';
 @Controller('file')
 export class ImageFileController {
     clients: { [key: string]: ClientProxy | ClientKafka | ClientRMQ } = {};
@@ -217,7 +218,7 @@ export class ImageFileController {
     ) {
         const topic = `file-volatility-${volatileTag.category}`;
 
-        const client = this.e5;
+        const client = await this.createClient(topic);
         const issue = (await lastValueFrom(
             client.send(topic, {
                 ...volatileTag,
@@ -247,8 +248,8 @@ export class ImageFileController {
                 transport: Transport.KAFKA,
                 options: {
                     client: {
-                        clientId: 'clientId',
-                        brokers: ['kafka:9092'],
+                        clientId: 'filevol' + topicName,
+                        brokers: [env['NX_KAFKA_URL'] as string],
                     },
                     consumer: {
                         groupId:
