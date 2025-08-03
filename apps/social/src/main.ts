@@ -7,7 +7,7 @@ import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { E5NestServer, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import {
     FastifyAdapter,
     NestFastifyApplication,
@@ -22,9 +22,8 @@ async function bootstrap() {
             new FastifyAdapter(),
         );
         const globalPrefix = 'api';
-        app.connectMicroservice(
-            MicroserviceSetupUtil.getMicroserviceConnection(''),
-        );
+
+        app.connectMicroservice(MicroserviceSetupUtil.setupServer(''));
 
         app.setGlobalPrefix(globalPrefix);
         const port = process.env.PORT || 3117;

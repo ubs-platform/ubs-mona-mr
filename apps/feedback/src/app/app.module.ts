@@ -9,20 +9,16 @@ import { UserMessageService } from './service/user-message.service';
 import { UserMessageController } from './controller/user-messages.controller';
 import { EmailService } from './service/email.service';
 import { ClientsModule } from '@nestjs/microservices';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { E5NestClient, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 
 @Module({
     imports: [
         BackendJwtUtilsModule,
-        ClientsModule.register([
-            {
-                name: 'KAFKA_CLIENT',
-                ...MicroserviceSetupUtil.getMicroserviceConnection(''),
-            } as any,
-        ]),
+
+        ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KAFKA_CLIENT")]),
+
         MongooseModule.forRoot(
-            `mongodb://${process.env.NX_MONGO_USERNAME}:${
-                process.env.NX_MONGO_PASSWORD
+            `mongodb://${process.env.NX_MONGO_USERNAME}:${process.env.NX_MONGO_PASSWORD
             }@${process.env.NX_MONGO_URL || 'localhost'}/?authMechanism=DEFAULT`,
             {
                 dbName: process.env.NX_MONGO_DBNAME || 'ubs_users',
@@ -35,4 +31,4 @@ import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
     controllers: [UserMessageController],
     providers: [UserMessageService, EmailService],
 })
-export class AppModule {}
+export class AppModule { }

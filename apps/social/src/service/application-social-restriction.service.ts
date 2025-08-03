@@ -25,7 +25,7 @@ export class ApplicationSocialRestrictionService {
 
         if (!endless) {
             const date = new Date(restrictionAdd.until!);
-            // debugger;
+            // 
             untilDateUtc = new Date(
                 Date.UTC(
                     date.getUTCFullYear(),

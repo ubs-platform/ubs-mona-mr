@@ -339,6 +339,10 @@ export class UserService {
     }
 
     async initOperation() {
+        // const kyle =await this.userModel.findOne({username: "kyle"}).exec()
+        // kyle!.passwordEncyripted = await CryptoOp.encryptPassword("kyle");
+        // await kyle!.save()
+        // return
         const count = await this.userModel.countDocuments();
         if (count == 0) {
             const user = {

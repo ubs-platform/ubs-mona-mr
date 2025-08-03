@@ -40,7 +40,7 @@ export class ApplicationSocialRestrictionController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles([ModeratorRole])
     async addRestriction(@Body() p: ApplicationSocialRestrictionAddDTO) {
-        // debugger;
+        // 
         return await this.srs.restrictUser(p);
     }
 

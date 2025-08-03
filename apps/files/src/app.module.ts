@@ -2,7 +2,11 @@ import { Module } from '@nestjs/common';
 import { ClientsModule } from '@nestjs/microservices';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import {
+    E5NestClient,
+    Engine5Connection,
+    MicroserviceSetupUtil,
+} from '@ubs-platform/microservice-setup-util';
 import { BackendJwtUtilsModule } from '@ubs-platform/users-microservice-helper';
 import { join } from 'path';
 import { FileModel, FileSchema } from './model/file.schema';
@@ -15,13 +19,14 @@ import {
 import { EntityPropertyService } from './service/entity-property.service';
 import { EntityPropertyController } from './controller/entity-property.controller';
 import { ScheduleModule } from '@nestjs/schedule';
+import { Connection } from 'mongoose';
+import { randomUUID } from 'crypto';
 
 @Module({
     imports: [
         ScheduleModule.forRoot(),
         MongooseModule.forRoot(
-            `mongodb://${process.env.NX_MONGO_USERNAME}:${
-                process.env.NX_MONGO_PASSWORD
+            `mongodb://${process.env.NX_MONGO_USERNAME}:${process.env.NX_MONGO_PASSWORD
             }@${process.env.NX_MONGO_URL || 'localhost'}/?authMechanism=DEFAULT`,
             {
                 dbName: process.env.NX_MONGO_DBNAME || 'ubs_files',
@@ -34,15 +39,11 @@ import { ScheduleModule } from '@nestjs/schedule';
             { name: FileModel.name, schema: FileSchema },
             { name: EntityProperty.name, schema: EntityPropertySchema },
         ]),
-        ClientsModule.register([
-            {
-                name: 'KafkaClient',
-                ...MicroserviceSetupUtil.getMicroserviceConnection(''),
-            } as any,
-        ]),
+        ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KafkaClient")]),
+
         BackendJwtUtilsModule,
     ],
     controllers: [ImageFileController, EntityPropertyController],
     providers: [FileService, EntityPropertyService],
 })
-export class AppModule {}
+export class AppModule { }

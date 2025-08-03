@@ -30,7 +30,7 @@ import { EntityOwnershipService } from './services/entity-ownership.service';
 import { EntityOwnershipMapper } from './mapper/entity-ownership.mapper';
 import { UserMicroserviceController } from './web/user-microservice.controller';
 import { BackendJwtUtilsExportModule } from '@ubs-platform/users-microservice-helper';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { E5NestClient, E5NestServer, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { UserCandiate, UserCandiateSchema } from './domain/user-candiate.model';
 import { UserCommonService } from './services/user-common.service';
 import { UserRegisterService } from './services/user-register.service';
@@ -51,8 +51,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     imports: [
         ScheduleModule.forRoot(),
         MongooseModule.forRoot(
-            `mongodb://${process.env.NX_MONGO_USERNAME}:${
-                process.env.NX_MONGO_PASSWORD
+            `mongodb://${process.env.NX_MONGO_USERNAME}:${process.env.NX_MONGO_PASSWORD
             }@${process.env.NX_MONGO_URL || 'localhost'}/?authMechanism=DEFAULT`,
             {
                 dbName: process.env.NX_MONGO_DBNAME || 'ubs_users',
@@ -66,12 +65,8 @@ import { ScheduleModule } from '@nestjs/schedule';
             { name: UserCandiate.name, schema: UserCandiateSchema },
         ]),
         ...BackendJwtUtilsExportModule,
-        ClientsModule.register([
-            {
-                name: 'KAFKA_CLIENT',
-                ...MicroserviceSetupUtil.getMicroserviceConnection(''),
-            } as any,
-        ]),
+        ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KAFKA_CLIENT")]),
+
     ],
     providers: [
         UserService,
@@ -88,4 +83,4 @@ import { ScheduleModule } from '@nestjs/schedule';
     ],
     exports: [],
 })
-export class UsersModule {}
+export class UsersModule { }

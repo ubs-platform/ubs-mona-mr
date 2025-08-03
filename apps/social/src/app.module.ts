@@ -8,7 +8,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 //   EmailTemplateSchema,
 // } from './model/email-template.model';
 import { ClientsModule } from '@nestjs/microservices';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { E5NestClient, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { SocialCommentSchema, SocialComment } from './model/comment';
 import { Reaction, ReactionSchema } from './model/reaction';
 import { CommentController } from './controller/comment.controller';
@@ -52,12 +52,8 @@ import { CommentMicroserviceController } from './controller/comment-microservice
                 schema: ApplicationSocialRestrictionSchema,
             },
         ]),
-        ClientsModule.register([
-            {
-                name: 'KafkaClient',
-                ...MicroserviceSetupUtil.getMicroserviceConnection(''),
-            },
-        ]),
+        ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KafkaClient")])
+
     ],
     controllers: [
         CommentController,

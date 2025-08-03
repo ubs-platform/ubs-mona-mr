@@ -6,7 +6,7 @@
 import { Logger } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { E5NestServer, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { UsersModule } from './users.module';
 import {
     NestFastifyApplication,
@@ -31,9 +31,9 @@ async function bootstrap() {
         console.info(
             'U_USERS_MONA_INTERNAL_COM_PORT: ' + INTERNAL_COMMUNICATION.port,
         );
-        app.connectMicroservice(
-            MicroserviceSetupUtil.getMicroserviceConnection('ubs-users'),
-        );
+
+        app.connectMicroservice(MicroserviceSetupUtil.setupServer('ubs-users'));
+
         // app.connectMicroservice({
         //     transport: Transport.TCP,
         //     options: {
