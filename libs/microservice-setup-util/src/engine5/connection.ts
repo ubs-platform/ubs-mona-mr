@@ -9,12 +9,13 @@ import { exec } from 'child_process';
 
 export class Engine5Connection {
     tcpClient = new net.Socket();
-    connected = false;
-    connectionReady: ReplaySubject<"CONNECTING" | "CLOSED" | "CONNECTED"> = new ReplaySubject(1);
+    connectionStatus: "CONNECTING" | "CLOSED" | "CONNECTED" = "CLOSED";
+    connectionStatusSubject: ReplaySubject<"CONNECTING" | "CLOSED" | "CONNECTED"> = new ReplaySubject(1);
     listeningSubjectCallbacks: { [key: string]: ((a: any) => any)[] } = {};
     ongoingRequestsToComplete: { [key: string]: (a: any) => void } = {};
     readonly queue = new DynamicQueue();
-    reconnectOnFail = false;
+    reconnectOnFail = true;
+    tcpClientEventsRegistered = false;
     // onGoingRequests: Map<string, ((a: any) => any)[]> = new Map();
 
 
@@ -24,12 +25,20 @@ export class Engine5Connection {
         private instanceGroup?: string,
         private instanceId?: string,
     ) {
-        this.connectionReady.next("CLOSED");
+        this.connectionStatusSubject.next("CLOSED");
         this.queue.push(async () => {
             await this.runAtWhenConnected(() => {
                 "This is for prevent add some events or requests before connection"
             })
         })
+
+
+        setInterval(() => {
+            if (this.reconnectOnFail && this.connectionStatus == "CLOSED") {
+                console.info("Trying to establish a connection")
+                this.init().then().catch(e => console.error(e));
+            }
+        }, 5000)
     }
 
     runAtWhenConnected(ac: () => any) {
@@ -37,7 +46,7 @@ export class Engine5Connection {
         return new Promise((ok, fail) => {
             let subscription = null as any
 
-            subscription = this.connectionReady.subscribe(async (a) => {
+            subscription = this.connectionStatusSubject.subscribe(async (a) => {
                 if (!completed && a == "CONNECTED") {
                     completed = true;
                     subscription?.unsubscribe();
@@ -97,7 +106,7 @@ export class Engine5Connection {
 
     async sendRequest(subject: string, data: any) {
         const messageId = Date.now() + '_' + (Math.random() * 100000).toFixed();
-        if (!this.connected) {
+        if (!(this.connectionStatus == "CONNECTED")) {
             await this.init();
         }
         await this.writePayload({
@@ -146,36 +155,34 @@ export class Engine5Connection {
     // }
 
     async init() {
-        let completed = false;
-
         return new Promise<Engine5Connection>((ok, fail) => {
-            let subscription = null as any
-            subscription = this.connectionReady.subscribe((status) => {
-                if (completed) {
-                    subscription?.unsubscribe();
-                } else {
-                    if (status == "CLOSED") {
-                        this._init((v) => {
-                            completed = true;
-                            subscription?.unsubscribe();
-                            ok(v);
-                        });
-                    } else {
-                        this.runAtWhenConnected(() => {
-                            completed = true;
-                            subscription?.unsubscribe();
-                            ok(this)
-                        })
-                    }
-                }
-            })
+            if (this.connectionStatus == "CLOSED") {
+                this._init((v) => {
+                    ok(v);
+                });
+            } else {
+                this.runAtWhenConnected(() => {
+                    ok(this)
+                })
+            }
         });
     }
 
     private _init(ok: (value: Engine5Connection | PromiseLike<Engine5Connection>) => void) {
-        this.connectionReady.next("CONNECTING");
+        this.connectionStatusSubject.next("CONNECTING");
+        this.connectionStatus = "CONNECTING"
         console.info('Connecting to server');
         const client = this.tcpClient;
+        this.registerEvents(client, ok);
+
+        client.connect(parseInt(this.port as any), this.host, () => {
+            //   client.write("I am Chappie");
+            this.startConnection();
+        });
+    }
+
+    private registerEvents(client: net.Socket, ok: (value: Engine5Connection | PromiseLike<Engine5Connection>) => void) {
+        if (this.tcpClientEventsRegistered) return
         let currentBuff: number[] = [];
 
         client.on('data', (data: Buffer) => {
@@ -199,27 +206,12 @@ export class Engine5Connection {
         });
 
         client.on('close', async () => {
-            this.connected = false;
-            this.connectionReady.next("CLOSED")
+            this.connectionStatus = "CLOSED";
+            this.connectionStatusSubject.next("CLOSED");
             console.log('Connection closed');
-
-            if (this.reconnectOnFail) {
-                try {
-                    console.log('Client will try to connect again Engine5 after 5 seconds');
-
-                    setTimeout(() => {
-                        this.init().then().catch(e => console.error(e));
-                    }, 5000)
-                } catch (ex) {
-                    console.error(ex);
-                }
-            }
         });
 
-        client.connect(parseInt(this.port as any), this.host, () => {
-            //   client.write("I am Chappie");
-            this.startConnection();
-        });
+        this.tcpClientEventsRegistered = true;
     }
 
     private startConnection() {
@@ -246,8 +238,8 @@ export class Engine5Connection {
         const decoded: Payload = decode(data) as any as Payload;
         // console.info(decoded)
         if (decoded.Command == 'CONNECT_SUCCESS') {
-            this.connected = true;
-            this.connectionReady.next("CONNECTED");
+            this.connectionStatus = "CONNECTED";
+            this.connectionStatusSubject.next("CONNECTED");
             this.instanceId = decoded.InstanceId!;
             this.instanceGroup = decoded.InstanceGroup!
             promiseResolveFunc?.(this);

@@ -71,7 +71,7 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
 
     // /**
     //  * You can ignore this method if you don't want transporter users
-    //  * to be able to register event listeners. Most custom implementations
+    //  * to be able to register event listeners. Most custom implusentations
     //  * will not need this.
     //  */
     // async on(event: string, callback: Function) {
