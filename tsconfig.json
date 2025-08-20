@@ -21,6 +21,12 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
+      "@ubs-platform/cache-manager": [
+        "libs/cache-manager/src"
+      ],
+      "@ubs-platform/cache-manager/*": [
+        "libs/cache-manager/src/*"
+      ],
       "@ubs-platform/crud-base": [
         "libs/crud-base/src"
       ],

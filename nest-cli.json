@@ -10,6 +10,15 @@
     "webpack": true
   },
   "projects": {
+    "cache-manager": {
+      "type": "library",
+      "root": "libs/cache-manager",
+      "entryFile": "index",
+      "sourceRoot": "libs/cache-manager/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/cache-manager/tsconfig.lib.json"
+      }
+    },
     "crud-base": {
       "type": "library",
       "root": "libs/crud-base",

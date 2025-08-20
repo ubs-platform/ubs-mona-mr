@@ -26,12 +26,14 @@ import {
     UserAuthBackendDTO,
     UserRegisterDTO,
 } from '@ubs-platform/users-common';
+import { CacheManagerService } from '@ubs-platform/cache-manager';
 
 @Controller()
 export class UserMicroserviceController {
     constructor(
         private userService: UserService,
         @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
+        private cacheman: CacheManagerService,
     ) {
         // this.kafkaClient.emit('register-category', {
         //     category: 'PROFILE_PHOTO',
@@ -50,7 +52,11 @@ export class UserMicroserviceController {
 
     @MessagePattern('user-by-id')
     async findUserAuthFromId(id: any): Promise<UserAuthBackendDTO | null> {
-        return await this.userService.findUserAuthBackend(id);
+        return await this.cacheman.getOrCallAsync(
+            `findUserAuthFromId ${id}`,
+            () => this.userService.findUserAuthBackend(id),
+            { livetime: 1000, livetimeExtending: 'ON_GET' },
+        );
     }
 
     @MessagePattern('user-role-check')
@@ -61,9 +67,10 @@ export class UserMicroserviceController {
         userId: string;
         role: string;
     }): Promise<boolean> {
-        return await this.userService.hasUserRoleAtLeastOneOrAdmin(
-            userId,
-            role,
+        return await this.cacheman.getOrCallAsync(
+            `hasUserRoleOrJew ${userId} ${role}`,
+            () => this.userService.hasUserRoleAtLeastOneOrAdmin(userId, role),
+            { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
     }
 
@@ -76,7 +83,6 @@ export class UserMicroserviceController {
         role: string;
     }): Promise<void> {
         await this.userService.insertRole(userId, role);
-        // return await this.userService.hasUserRoleOrJew(roles);
     }
 
     @EventPattern('user-role-remove')
