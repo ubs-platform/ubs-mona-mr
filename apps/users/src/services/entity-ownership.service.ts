@@ -21,7 +21,7 @@ export class EntityOwnershipService {
         private model: Model<EntityOwnership>,
         private userService: UserService,
         private mapper: EntityOwnershipMapper,
-    ) {}
+    ) { }
 
     async insert(eoDto: EntityOwnershipDTO): Promise<void> {
         console.info(
