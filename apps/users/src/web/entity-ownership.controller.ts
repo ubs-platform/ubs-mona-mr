@@ -9,10 +9,11 @@ import {
     EntityOwnershipUserSearch,
 } from '@ubs-platform/users-common';
 import { EOChannelConsts } from '@ubs-platform/users-consts';
+import { CacheManagerService } from '@ubs-platform/cache-manager';
 
 @Controller('entity-ownership')
 export class EntityOwnershipController {
-    constructor(private eoService: EntityOwnershipService) {}
+    constructor(private eoService: EntityOwnershipService, private cacheman: CacheManagerService) { }
 
     @EventPattern(EOChannelConsts.insertOwnership)
     async insertOwnership(oe: EntityOwnershipDTO) {
@@ -27,12 +28,21 @@ export class EntityOwnershipController {
     }
     @MessagePattern(EOChannelConsts.checkOwnership)
     async hasOwnership(eo: EntityOwnershipUserCheck) {
-        return await this.eoService.checkUser(eo);
+        return this.cacheman.getOrCallAsync(
+            `eo-hasOwnership ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.userId}/${eo.capability}`,
+            () => this.eoService.checkUser(eo),
+            { livetime: 1000, livetimeExtending: "ON_GET" }
+        )
     }
 
     @MessagePattern(EOChannelConsts.searchOwnership)
     async searchOwnership(eo: EntityOwnershipSearch) {
-        return await this.eoService.search(eo);
+        return this.cacheman.getOrCallAsync(
+            `eo-searchOwnership ${eo.entityGroup} ${eo.entityId} ${eo.entityName}`,
+            () => this.eoService.search(eo),
+            { livetime: 1000, livetimeExtending: "ON_GET" }
+        )
+
     }
 
     @EventPattern(EOChannelConsts.deleteOwnership)

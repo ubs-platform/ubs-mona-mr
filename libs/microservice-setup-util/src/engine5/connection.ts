@@ -100,12 +100,12 @@ export class Engine5Connection {
         });
     }
 
-    private messageIdGenerate(): string | undefined {
+    private messageIdGenerate(): string  {
         return Date.now() + '_' + (Math.random() * 100000).toFixed();
     }
 
     async sendRequest(subject: string, data: any) {
-        const messageId = Date.now() + '_' + (Math.random() * 100000).toFixed();
+        const messageId = this.messageIdGenerate();
         if (!(this.connectionStatus == "CONNECTED")) {
             await this.init();
         }
@@ -288,8 +288,6 @@ export class Engine5Connection {
         console.info("E5JSCL - Connection is about to be closed")
         this.reconnectOnFail = false;
         await this.writePayload({ "Command": "CLOSE" })
-        // this.tcpClient.end();
-        // this.connected = false;
     }
 
 
