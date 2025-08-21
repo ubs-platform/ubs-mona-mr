@@ -65,7 +65,6 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
      * Triggered on application shutdown.
      */
     close() {
-        debugger
         this.connection.close();
     }
 

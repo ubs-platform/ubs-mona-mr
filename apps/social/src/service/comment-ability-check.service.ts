@@ -94,6 +94,7 @@ export class CommentAbilityCheckService {
             if (alreadyExist) {
                 return alreadyExist.userCapabilities.find(a => a.userId == user.id)
             }
+     
             return await lastValueFrom(
                 this.eoService.hasOwnership({
                     entityGroup: saved.entityGroup,

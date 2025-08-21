@@ -285,7 +285,6 @@ export class Engine5Connection {
     }
 
     async close() {
-        debugger
         console.info("E5JSCL - Connection is about to be closed")
         this.reconnectOnFail = false;
         await this.writePayload({ "Command": "CLOSE" })

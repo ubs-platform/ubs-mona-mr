@@ -16,8 +16,6 @@ export class EntityOwnershipController {
 
     @EventPattern(EOChannelConsts.insertOwnership)
     async insertOwnership(oe: EntityOwnershipDTO) {
-        console.info(oe);
-
         await this.eoService.insert(oe);
     }
 

@@ -106,7 +106,7 @@ export class EntityOwnershipService {
             if (user.roles.includes('ADMIN')) {
                 return {
                     userId: user._id,
-                    capability: eouc.capability!.toString(),
+                    capability: eouc.capability?.toString(),
                 };
             } else {
                 for (let index = 0; index < user.roles.length; index++) {
@@ -134,10 +134,6 @@ export class EntityOwnershipService {
                         entityName: eouc.entityName,
                         entityGroup: eouc.entityGroup,
                         entityId: eouc.entityId,
-                        'userCapabilities.userId': eouc.userId,
-                        ...(eouc.capability
-                            ? { capability: eouc.capability }
-                            : {}),
                     },
                 },
 
@@ -147,6 +143,9 @@ export class EntityOwnershipService {
                 {
                     $match: {
                         'userCapabilities.userId': eouc.userId,
+                        ...(eouc.capability
+                            ? { 'userCapabilities.capability': eouc.capability }
+                            : {}),
                     },
                 },
 
@@ -160,6 +159,7 @@ export class EntityOwnershipService {
             ])
             .exec();
         console.info(cap);
+        console.info("----");
         const found = cap[0]?.['userCapabilities'];
 
         if (found) {
