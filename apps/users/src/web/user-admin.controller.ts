@@ -19,13 +19,20 @@ import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import { UserFullDto } from '@ubs-platform/users-common';
 import { Roles, RolesGuard } from '@ubs-platform/users-roles';
 import { UserAdminSearch } from 'libs/users-common/src/user-admin-search.dto';
+import { CacheManagerService } from '@ubs-platform/cache-manager';
 
 // TODO: Admin ile alakalı sorun çıkarsa tekrar ekle @Roles(['ADMIN'])
 
 @Controller('_adm_/user')
 @Roles(['ADMIN'])
 export class UserAdminController {
-    constructor(private userService: UserService) {}
+    CACHE_PREFIX_MSC = 'usermsctrl';
+    CACHE_PREFIX = 'userms';
+
+    constructor(
+        private userService: UserService,
+        private cacheman: CacheManagerService,
+    ) {}
 
     @Get()
     @UseGuards(JwtAuthLocalGuard, RolesGuard)
@@ -64,6 +71,10 @@ export class UserAdminController {
     @Delete(':id')
     @UseGuards(JwtAuthLocalGuard, RolesGuard)
     async deleteUser(@Param() params: { id: any }) {
-        return await this.userService.deleteUser(params.id);
+        const removedUserInfo = await this.userService.deleteUser(params.id);
+        this.cacheman.invalidateStr(
+            `${this.CACHE_PREFIX_MSC} findUserAuthFromId ${params.id}`,
+        );
+        return removedUserInfo;
     }
 }

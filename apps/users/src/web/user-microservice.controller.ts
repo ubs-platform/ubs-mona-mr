@@ -30,6 +30,7 @@ import { CacheManagerService } from '@ubs-platform/cache-manager';
 
 @Controller()
 export class UserMicroserviceController {
+    CACHE_PREFIX_MSCTRL = 'usermsctrl';
     constructor(
         private userService: UserService,
         @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
@@ -53,7 +54,7 @@ export class UserMicroserviceController {
     @MessagePattern('user-by-id')
     async findUserAuthFromId(id: any): Promise<UserAuthBackendDTO | null> {
         return await this.cacheman.getOrCallAsync(
-            `findUserAuthFromId ${id}`,
+            `${this.CACHE_PREFIX_MSCTRL} findUserAuthFromId ${id}`,
             () => this.userService.findUserAuthBackend(id),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
@@ -68,7 +69,7 @@ export class UserMicroserviceController {
         role: string;
     }): Promise<boolean> {
         return await this.cacheman.getOrCallAsync(
-            `hasUserRoleOrJew ${userId} ${role}`,
+            `${this.CACHE_PREFIX_MSCTRL} hasUserRoleOrJew ${userId} ${role}`,
             () => this.userService.hasUserRoleAtLeastOneOrAdmin(userId, role),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );

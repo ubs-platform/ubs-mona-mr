@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { EntityOwnership } from '../domain/entity-ownership.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -16,15 +16,19 @@ import { exec } from 'child_process';
 
 @Injectable()
 export class EntityOwnershipService {
+    private readonly logger = new Logger(EntityOwnershipService.name, {
+        timestamp: true,
+    });
+
     constructor(
         @InjectModel(EntityOwnership.name)
         private model: Model<EntityOwnership>,
         private userService: UserService,
         private mapper: EntityOwnershipMapper,
-    ) { }
+    ) {}
 
     async insert(eoDto: EntityOwnershipDTO): Promise<void> {
-        console.info(
+        this.logger.debug(
             'EO INSERT',
             eoDto.entityGroup,
             eoDto.entityId,
@@ -82,7 +86,7 @@ export class EntityOwnershipService {
                 await entity.save();
             }
         }
-        // console.info('EO INS UC', oe.entityGroup, oe.entityId, oe.entityName);
+        // this.logger.debug('EO INS UC', oe.entityGroup, oe.entityId, oe.entityName);
 
         // let entity;
     }
@@ -90,7 +94,7 @@ export class EntityOwnershipService {
     public async checkUser(
         eouc: EntityOwnershipUserCheck,
     ): Promise<UserCapabilityDTO | null> {
-        console.info(
+        this.logger.debug(
             'EO CHK',
             eouc.entityGroup,
             eouc.entityId,
@@ -126,7 +130,7 @@ export class EntityOwnershipService {
     private async findInsertedUserCapability(
         eouc: EntityOwnershipUserCheck,
     ): Promise<UserCapabilityDTO | null> {
-        // console.info({ cap: eouc.capability });
+        // this.logger.debug({ cap: eouc.capability });
         const cap = await this.model
             .aggregate([
                 {
@@ -158,8 +162,8 @@ export class EntityOwnershipService {
                 },
             ])
             .exec();
-        console.info(cap);
-        console.info("----");
+        this.logger.debug(cap);
+        this.logger.debug('----');
         const found = cap[0]?.['userCapabilities'];
 
         if (found) {

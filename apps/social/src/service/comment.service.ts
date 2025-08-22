@@ -236,7 +236,6 @@ export class CommentService {
             if (allow) {
                 await commentWillBeDeleted.deleteOne();
             } else {
-                console.info('remove-comment-not-allowed');
                 throw new UnauthorizedException();
             }
         }

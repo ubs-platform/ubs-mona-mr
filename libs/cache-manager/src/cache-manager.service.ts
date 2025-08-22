@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { max } from 'rxjs';
+import { debounce, max } from 'rxjs';
 
 export interface CachingOptions {
     livetime?: number; // ms
@@ -21,7 +21,9 @@ type ExpireItem = {
 
 @Injectable()
 export class CacheManagerService {
-    private readonly logger = new Logger(CacheManagerService.name, { timestamp: true });
+    private readonly logger = new Logger(CacheManagerService.name, {
+        timestamp: true,
+    });
 
     // ana veri
     private map = new Map<string, Entry<any>>();
@@ -52,17 +54,18 @@ export class CacheManagerService {
         if (e.policy === 'ON_GET' && e.expiresAt !== null && co?.livetime) {
             this.extendTtl(key, co.livetime);
         }
+        this.logger.debug('Presenting cached value: ', key);
 
         return e.value;
     }
 
     put<T>(key: string, value: T, co?: CachingOptions): void {
+        this.logger.debug('Caching value with key: ', key);
         const policy = co?.livetime
             ? (co.livetimeExtending ?? 'CONSTANT')
             : null;
 
-        const expiresAt =
-            co?.livetime ? Date.now() + co.livetime : null;
+        const expiresAt = co?.livetime ? Date.now() + co.livetime : null;
 
         this.map.set(key, { value, policy, expiresAt });
 
@@ -78,8 +81,8 @@ export class CacheManagerService {
     ): Promise<T> {
         const cached = this.get<T>(key, co);
         if (cached !== undefined) {
-            return cached
-        };
+            return cached;
+        }
 
         // inflight dedupe
         const pending = this.inflight.get(key) as Promise<T> | undefined;
@@ -109,19 +112,37 @@ export class CacheManagerService {
     }
 
     invalidateStr(key: string): void {
-        const existed = this.map.delete(key);
+        const existed = this.mapKeyDeletion(key);
         if (!existed) return;
         // expirations listesinden de temizle (lazy clean yapmasak da olur ama listeyi küçük tutmak iyi)
+        this.cleanExpirations(key);
+    }
+
+    private cleanExpirations(key: string) {
         this.expirations = this.expirations.filter((x) => x.key !== key);
         if (this.expirations.length === 0) this.stopScheduler();
     }
 
+    private mapKeyDeletion(key: string) {
+        this.logger.debug('Cached value is about to be invalidated: ', key);
+
+        const existed = this.map.delete(key);
+        return existed;
+    }
+
     invalidateRegex(regex: RegExp): void {
-        const keys: string[] = [];
-        for (const k of this.map.keys()) {
-            if (regex.test(k)) keys.push(k);
+        const mapKeys = this.map.keys();
+        // const keys: string[] = [];
+        // for (const k of this.map.keys()) {
+        //     if (regex.test(k)) keys.push(k);
+        // }
+        // for (const k of keys) this.invalidateStr(k);
+
+        for (const k of mapKeys) {
+            if (regex.test(k)) {
+                this.invalidateStr(k);
+            }
         }
-        for (const k of keys) this.invalidateStr(k);
     }
 
     clear(): void {
@@ -154,9 +175,12 @@ export class CacheManagerService {
 
     private ensureScheduler(): void {
         if (this.scheduler) return;
-        this.scheduler = setTimeout(() => this.drainExpirations(), this.nextDelay());
+        this.scheduler = setTimeout(
+            () => this.drainExpirations(),
+            this.nextDelay(),
+        );
         // Node 16+ için unref opsiyonel: process çıkışını engellemesin
-        if (this.scheduler.unref) this.scheduler.unref();
+        // if (this.scheduler.unref) this.scheduler.unref();
     }
 
     private stopScheduler(): void {
@@ -181,12 +205,22 @@ export class CacheManagerService {
 
         // baştan başlayarak süresi dolanları at
         let i = 0;
-        while (i < this.expirations.length && this.expirations[i].expiresAt <= now) {
+        while (
+            i < this.expirations.length &&
+            this.expirations[i].expiresAt <= now
+        ) {
             const { key, expiresAt } = this.expirations[i];
             const e = this.map.get(key);
             // lazy doğrulama: entry hâlâ var ve expiresAt eşleşiyorsa invalid et
-            if (e && e.expiresAt !== null && e.expiresAt <= now && e.expiresAt === expiresAt) {
-                this.map.delete(key);
+            if (
+                e &&
+                e.expiresAt !== null &&
+                e.expiresAt <= now &&
+                e.expiresAt === expiresAt
+            ) {
+                // this.invalidateStr(key)
+                // this.map.delete(key);
+                this.mapKeyDeletion(key);
             }
             i++;
         }

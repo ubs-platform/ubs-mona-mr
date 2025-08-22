@@ -60,7 +60,6 @@ export class RealtimeChatController {
 
     @EventPattern('llm-result')
     async llmResulting(a: ChatMessageStreamDTO) {
-        console.info('llm result kafka', a.textContent);
         await this.rcsFeeder.saveGeneratedAnswer(a);
         await this.sessionListenStreams.next(a);
     }
