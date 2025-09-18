@@ -39,7 +39,7 @@ export class CommentController {
         private commentService: CommentService,
         private commentAbility: CommentAbilityCheckService,
         private commntMetaService: CommentMetaService,
-    ) {}
+    ) { }
     @Post()
     @UseGuards(JwtAuthGuard)
     async addComment(
@@ -52,12 +52,13 @@ export class CommentController {
     @Get()
     @UseGuards(UserIntercept)
     async fetchComments(
-        @Query() comment: CommentSearchDTO & SearchRequest,
+        @Query() comment: CommentSearchDTO,
+        @Query() search: SearchRequest,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         console.info(currentUser);
         return await this.commentService.searchComments(
-            comment,
+            search,
             currentUser,
             comment,
         );
