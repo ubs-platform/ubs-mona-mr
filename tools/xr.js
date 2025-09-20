@@ -4,6 +4,7 @@ const colors_1 = require("./util/colors");
 const all_libraries_builder_1 = require("./operation/all-libraries-builder");
 const iksir_package_1 = require("./data/iksir-package");
 const nest_cli_wrap_1 = require("./operation/nest-cli-wrap");
+const rest_api_doc_gen_1 = require("./operation/rest-api-doc-gen");
 console.info(`
 ▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖▗▄▄▖ 
 ▐▛▚▞▜▌▐▌ ▐▌▐▛▚▖▐▌▐▌ ▐▌ ▝▚▞▘ ▐▌ ▐▌
@@ -11,6 +12,12 @@ console.info(`
 ▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌▐▌ ▐▌▗▞▘▝▚▖▐▌ ▐▌
 MonaXr for Mona5            H.C.G`);
 const actionList = {
+    'generate-rest-doc': {
+        info: 'Generates REST API documentation from source codes',
+        action: async () => {
+            await rest_api_doc_gen_1.RestApiDocGen.generate();
+        },
+    },
     'publish-libs': {
         info: 'Builds libraries and pushes into NPM Registry',
         action: async (workDir) => {
@@ -76,3 +83,4 @@ actionObj
     console.info((0, colors_1.strColor)(colors_1.COLORS.FgRed, 'Task has been failed. You can review error via following output'));
     console.error(error);
 });
+//# sourceMappingURL=xr.js.map

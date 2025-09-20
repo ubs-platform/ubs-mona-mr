@@ -32,3 +32,4 @@ const strColor = (color, text) => {
     return color + text + exports.COLORS.Reset;
 };
 exports.strColor = strColor;
+//# sourceMappingURL=colors.js.map

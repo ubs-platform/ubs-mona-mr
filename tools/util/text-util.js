@@ -37,11 +37,6 @@ exports.TextUtil = void 0;
 const directory_util_1 = require("./directory-util");
 const FileSystem = __importStar(require("fs/promises"));
 class TextUtil {
-    /**
-     * Replaces a text with a another text recursively
-     * @param path
-     * @param replaceTextRecipes please see `ReplaceTextRecipe`
-     */
     static async replaceText(path, replaceTextRecipes) {
         await directory_util_1.DirectoryUtil.circulateFilesRecursive(path, async (filePath) => {
             let content = await FileSystem.readFile(filePath, 'utf8');
@@ -85,11 +80,4 @@ class TextUtil {
     }
 }
 exports.TextUtil = TextUtil;
-// DirectoryUtil.listAllFiles(
-//     '/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr/dist',
-// ).then(console.info);
-// TextUtil.replaceText(
-//     '/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr/dist',
-//     `@ubs-platform/microservice-setup-util`,
-//     '@ubs-platform/microservice-setup-util',
-// ).then(console.info);
+//# sourceMappingURL=text-util.js.map

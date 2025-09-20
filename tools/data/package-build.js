@@ -42,20 +42,11 @@ const text_util_1 = require("../util/text-util");
 const FileSystem = __importStar(require("fs/promises"));
 const json_util_1 = require("../util/json-util");
 class PackageBuilder {
-    iksirPackage;
-    /**
-     *
-     */
-    imports = [];
-    // projectImports: ImportedPackage[] = [];
-    // parentPackageImports: ImportedPackage[] = [];
-    parent;
-    packageForFullCompilation;
-    _isPrebuilt = false;
-    // buildPath: string;
-    EMBED_DIRECTORY_NAME = '_monaembed';
     constructor(iksirPackage) {
         this.iksirPackage = iksirPackage;
+        this.imports = [];
+        this._isPrebuilt = false;
+        this.EMBED_DIRECTORY_NAME = '_monaembed';
         this.reset(iksirPackage);
     }
     get packageName() {
@@ -72,18 +63,11 @@ class PackageBuilder {
         this.packageForFullCompilation = { ...iksirPackage.packageObject };
         this._isPrebuilt = false;
         this.imports = [];
-        // this.buildPath = iksirPackage.buildDirectory;
     }
     async writePackage(version) {
         console.info('Package.json is writing');
         this.packageForFullCompilation.version = version;
         await json_util_1.JsonUtil.writeJson(this.packageForFullCompilation, this.iksirPackage.buildDirectory, 'package.json');
-        // await FileSystem.writeFile(
-        //     path.join(this.buildPath, 'package.json'),
-        //     JSON.stringify(this.packageForFullCompilation),
-        //     'utf-8',
-        // );
-        // todo: package jsonu kaydet
     }
     async digest(importedLibraryBuild) {
         console.info(importedLibraryBuild.packageName +
@@ -97,7 +81,6 @@ class PackageBuilder {
                 "'s library mode is PEER, that is mean you need to publish to registry");
             localImport.parentNpmVersion = version;
             this.applyToPackageJsonBuild(localImport);
-            // const import =
         }
         else if (xrPak.libraryMode == 'EMBEDDED') {
             console.info(importedLibraryBuild.packageName + 'is being embedded');
@@ -145,7 +128,6 @@ class PackageBuilder {
     async prebuild() {
         console.info(this.packageName + ' is pre-building via tsc');
         await this.iksirPackage.beginPrebuild();
-        // this.buildPath = this.iksirPackage.buildDirectory;
         console.info('Collecting imports for' + this.packageName);
         this.imports = await this.collectImports();
         for (let index = 0; index < this.imports.length; index++) {
@@ -209,7 +191,7 @@ class PackageBuilder {
             }
         }
         return usedPackages;
-        // .forEach((a) => console.info());
     }
 }
 exports.PackageBuilder = PackageBuilder;
+//# sourceMappingURL=package-build.js.map

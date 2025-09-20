@@ -43,7 +43,6 @@ const FileSystem = __importStar(require("fs/promises"));
 const path_1 = __importDefault(require("path"));
 const colors_1 = require("../util/colors");
 class AllLibrariesBuilder {
-    xrRootPackage;
     constructor(xrRootPackage) {
         this.xrRootPackage = xrRootPackage;
         if (xrRootPackage.projectMode == 'LIBRARY') {
@@ -51,14 +50,10 @@ class AllLibrariesBuilder {
         }
     }
     async initiateBuildPublish(props) {
-        // PREBUILD
         const packageBuilders = [];
         const version = this.xrRootPackage.version;
         const versionTag = this.xrRootPackage.childrenVersionTag;
         const versionVisibility = this.xrRootPackage.childrenAccess;
-        //  = this.xrRootPackage.children.map(
-        //     (a) => new PackageBuilder(a),
-        // );
         const chldrn = this.xrRootPackage.children;
         const builderMap = new Map();
         for (let index = 0; index < chldrn.length; index++) {
@@ -108,3 +103,4 @@ class AllLibrariesBuilder {
     }
 }
 exports.AllLibrariesBuilder = AllLibrariesBuilder;
+//# sourceMappingURL=all-libraries-builder.js.map

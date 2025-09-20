@@ -1,8 +1,21 @@
 {
-    "include": ["./**/*.ts"],
-    "compilerOptions": {
-        "module": "Node16",
-        "outDir": "../"
-    },
-    "exclude": ["node_modules"]
+  "compilerOptions": {
+    "module": "nodenext",
+    "moduleDetection": "auto",
+    "moduleResolution": "nodenext",
+    "declaration": true,
+    "removeComments": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "allowSyntheticDefaultImports": true,
+    "target": "ES2021",
+    "sourceMap": true,
+    "outDir": "../",
+    "baseUrl": "./",
+    "incremental": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": false,
+  },
+  "exclude": ["dist/**/*", "node_modules", "**/*.spec.ts"],
 }

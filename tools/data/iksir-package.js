@@ -44,21 +44,9 @@ const directory_util_1 = require("../util/directory-util");
 const exec_util_1 = require("../util/exec-util");
 const colors_1 = require("../util/colors");
 class IksirPackage {
-    directory;
-    rawBuildDirectory;
-    buildDirectory;
-    projectMode;
-    libraryMode;
-    packageObject;
-    tsConfigFile;
-    tsConfig;
-    tsBuildConfig;
-    tsBuildConfigFile;
-    parent;
-    children = [];
-    childrenVersionTag;
-    version;
-    childrenAccess;
+    constructor() {
+        this.children = [];
+    }
     async beginPrebuild() {
         if (this.projectMode == 'LIBRARY') {
             await FileSystem.rm(this.rawBuildDirectory, {
@@ -137,3 +125,4 @@ class IksirPackage {
     }
 }
 exports.IksirPackage = IksirPackage;
+//# sourceMappingURL=iksir-package.js.map

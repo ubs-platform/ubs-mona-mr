@@ -42,7 +42,6 @@ const colors_1 = require("../util/colors");
 const FileSystem = __importStar(require("fs/promises"));
 const path_1 = __importDefault(require("path"));
 class NestJsCliWrap {
-    workingDirectory;
     constructor(workingDirectory) {
         this.workingDirectory = workingDirectory;
     }
@@ -85,15 +84,7 @@ class NestJsCliWrap {
         console.info((0, colors_1.strColor)(colors_1.COLORS.BgYellow, "If you don't want to push to NPM Registry, set iksir.libraryMode to 'EMBEDDED' in package.json"));
         console.info((0, colors_1.strColor)(colors_1.COLORS.BgYellow, `And if another libraries is being imported, tsc will compile with others. So you should set iksir.buildSubFolder to '${libName}/src'`));
         await json_util_1.JsonUtil.writeJson(libNodePackage, libPackageJsonPath);
-        // await ExecUtil.exec(
-        //     `node node_modules/@nestjs/schematics/dist/index.js --name=${name} --source-root="${this.workingDirectory}" --no-dry-run --no-skip-import --language="ts" --spec --no-flat --spec-file-suffix="spec"`,
-        // );
     }
 }
 exports.NestJsCliWrap = NestJsCliWrap;
-// const wrp = new NestJsCliWrap(
-//     '/home/huseyin/Belgeler/dev/tk/lotus-ubs/ubs-mona-mr',
-// );
-// wrp.checkPrefixIsSame().then(async (a) => {
-//     await wrp.extendLib('libs/extend-lib-test');
-// });
+//# sourceMappingURL=nest-cli-wrap.js.map
