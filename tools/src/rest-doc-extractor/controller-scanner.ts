@@ -118,8 +118,8 @@ export class ControllerScanner {
                                 if (!restParameterTypeName) {
                                     console.error(
                                         'Bilinmeyen parametre türü: ' +
-                                            parameter.getName() +
-                                            ' dekoratör bulunamadı',
+                                        parameter.getName() +
+                                        ' dekoratör bulunamadı',
                                     );
                                 } else {
                                     if (restParameterTypeName === 'Body') {
@@ -146,9 +146,9 @@ export class ControllerScanner {
                                         };
                                         console.info(
                                             'Payload parametre: ' +
-                                                parameter.getName() +
-                                                ' tipi: ' +
-                                                parameter.getType().getText(),
+                                            parameter.getName() +
+                                            ' tipi: ' +
+                                            parameter.getType().getText(),
                                         );
                                     } else {
                                         const extractedParameters =
@@ -169,18 +169,16 @@ export class ControllerScanner {
                                     }
                                 }
                             });
-
                             //  returnType.getTypeNode().getType();
                             const returnTypeInline = inlineTypeText(
                                 returnTypeRaw,
                                 method,
-                                {},
+                                { maxDepth: 1 },
                             );
                             const returnRestAp = {
                                 typeNode: returnTypeRaw,
                                 typeName:
-                                    returnTypeRaw.getSymbol()?.getName() ??
-                                    returnTypeRaw.getText(),
+                                    ControllerScanner.returnTypeNameDetermination(returnTypeRaw),
                                 importedFrom:
                                     TypescriptNestUtils.findImportSource(
                                         returnTypeRaw,
@@ -210,5 +208,59 @@ export class ControllerScanner {
             });
         });
         return collectionsByProject;
+    }
+
+    private static returnTypeNameDetermination(returnTypeRaw) {
+        if (returnTypeRaw.isArray()) {
+            const arrayElementType = returnTypeRaw.getArrayElementType();
+            if (arrayElementType) {
+                return (
+                    ControllerScanner.returnTypeNameDetermination(
+                        arrayElementType,
+                    ) + '[]'
+                );
+            } else {
+                return 'any[]';
+            }
+        } else if (returnTypeRaw.isUnion()) {
+            return returnTypeRaw
+                .getUnionTypes()
+                .map((t) =>
+                    ControllerScanner.returnTypeNameDetermination(t),
+                )
+                .join(' | ');
+        } else if (returnTypeRaw.isIntersection()) {
+            return returnTypeRaw
+                .getIntersectionTypes()
+                .map((t) =>
+                    ControllerScanner.returnTypeNameDetermination(t),
+                )
+                .join(' & ');
+        } else if (returnTypeRaw.isAnonymous()) {
+            return inlineTypeText(returnTypeRaw, null, { maxDepth: 1 });
+        } else if (returnTypeRaw.isString()) {
+            return 'string';
+        } else if (returnTypeRaw.isNumber()) {
+            return 'number';
+        } else if (returnTypeRaw.isBoolean()) {
+            return 'boolean';
+        } else if (returnTypeRaw.isUndefined()) {
+            return 'undefined';
+        }
+        const typeArgs = returnTypeRaw.getTypeArguments();
+        let tsArgsStr = "";
+        if (typeArgs.length) {
+            tsArgsStr = (
+                '<' +
+                typeArgs
+                    .map((t) =>
+                        ControllerScanner.returnTypeNameDetermination(t),
+                    )
+                    .join(', ') +
+                '>'
+            );
+        }
+        return (returnTypeRaw.getSymbol()?.getName() ??
+            returnTypeRaw.getText()) + tsArgsStr;
     }
 }

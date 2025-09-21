@@ -19,7 +19,10 @@ export class TypescriptNestUtils {
 
   static findImportSource(type: Type<ts.Type>): string {
     let importedFrom: string | undefined;
-
+    if (type.isArray()) {
+      type = type.getArrayElementTypeOrThrow();
+    }
+    
     const symbol: Symbol | undefined = type.getSymbol();
     if (symbol) {
       const decl = symbol.getDeclarations()?.[0];

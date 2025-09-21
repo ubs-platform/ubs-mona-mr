@@ -143,11 +143,10 @@ class ControllerScanner {
                                     }
                                 }
                             });
-                            const returnTypeInline = (0, extractReturnTypes_js_1.inlineTypeText)(returnTypeRaw, method, {});
+                            const returnTypeInline = (0, extractReturnTypes_js_1.inlineTypeText)(returnTypeRaw, method, { maxDepth: 1 });
                             const returnRestAp = {
                                 typeNode: returnTypeRaw,
-                                typeName: returnTypeRaw.getSymbol()?.getName() ??
-                                    returnTypeRaw.getText(),
+                                typeName: ControllerScanner.returnTypeNameDetermination(returnTypeRaw),
                                 importedFrom: typescript_utils_js_1.TypescriptNestUtils.findImportSource(returnTypeRaw),
                                 typeExpandedText: returnTypeInline,
                             };
@@ -170,6 +169,55 @@ class ControllerScanner {
             });
         });
         return collectionsByProject;
+    }
+    static returnTypeNameDetermination(returnTypeRaw) {
+        if (returnTypeRaw.isArray()) {
+            const arrayElementType = returnTypeRaw.getArrayElementType();
+            if (arrayElementType) {
+                return (ControllerScanner.returnTypeNameDetermination(arrayElementType) + '[]');
+            }
+            else {
+                return 'any[]';
+            }
+        }
+        else if (returnTypeRaw.isUnion()) {
+            return returnTypeRaw
+                .getUnionTypes()
+                .map((t) => ControllerScanner.returnTypeNameDetermination(t))
+                .join(' | ');
+        }
+        else if (returnTypeRaw.isIntersection()) {
+            return returnTypeRaw
+                .getIntersectionTypes()
+                .map((t) => ControllerScanner.returnTypeNameDetermination(t))
+                .join(' & ');
+        }
+        else if (returnTypeRaw.isAnonymous()) {
+            return (0, extractReturnTypes_js_1.inlineTypeText)(returnTypeRaw, null, { maxDepth: 1 });
+        }
+        else if (returnTypeRaw.isString()) {
+            return 'string';
+        }
+        else if (returnTypeRaw.isNumber()) {
+            return 'number';
+        }
+        else if (returnTypeRaw.isBoolean()) {
+            return 'boolean';
+        }
+        else if (returnTypeRaw.isUndefined()) {
+            return 'undefined';
+        }
+        const typeArgs = returnTypeRaw.getTypeArguments();
+        let tsArgsStr = "";
+        if (typeArgs.length) {
+            tsArgsStr = ('<' +
+                typeArgs
+                    .map((t) => ControllerScanner.returnTypeNameDetermination(t))
+                    .join(', ') +
+                '>');
+        }
+        return (returnTypeRaw.getSymbol()?.getName() ??
+            returnTypeRaw.getText()) + tsArgsStr;
     }
 }
 exports.ControllerScanner = ControllerScanner;

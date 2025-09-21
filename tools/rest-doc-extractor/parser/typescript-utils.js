@@ -14,6 +14,9 @@ class TypescriptNestUtils {
     }
     static findImportSource(type) {
         let importedFrom;
+        if (type.isArray()) {
+            type = type.getArrayElementTypeOrThrow();
+        }
         const symbol = type.getSymbol();
         if (symbol) {
             const decl = symbol.getDeclarations()?.[0];
