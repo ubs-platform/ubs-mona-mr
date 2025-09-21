@@ -27,8 +27,8 @@ class RestApiDocGen {
                 });
             });
         });
-        await directory_util_1.DirectoryUtil.ensureDirectory('xr-generate-rest-doc');
-        (0, fs_1.writeFileSync)('xr-generate-rest-doc/output.json', JSON.stringify(byProject, null, 2));
+        await directory_util_1.DirectoryUtil.ensureDirectory('xr-generated');
+        (0, fs_1.writeFileSync)('xr-generated/rest-api.json', JSON.stringify(byProject, null, 2));
     }
 }
 exports.RestApiDocGen = RestApiDocGen;

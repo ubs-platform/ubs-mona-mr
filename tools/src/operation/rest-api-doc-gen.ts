@@ -27,10 +27,10 @@ export class RestApiDocGen {
                 });
             });
         });
-        await DirectoryUtil.ensureDirectory('xr-generate-rest-doc');
+        await DirectoryUtil.ensureDirectory('xr-generated');
         // save to file
         writeFileSync(
-            'xr-generate-rest-doc/output.json',
+            'xr-generated/rest-api.json',
             JSON.stringify(byProject, null, 2),
         );
     }
