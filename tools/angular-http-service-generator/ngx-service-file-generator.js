@@ -47,7 +47,7 @@ class NgxServiceFileGenerator {
         const className = `${controller.name}Service`;
         const necessaryImports = (0, templates_1.ANGULAR_SERVICE_NECESSARY_IMPORTS)(workDir, libraryPackageName, controller.methods);
         const methods = controller.methods.map(method => (0, templates_1.ANGULAR_SERVICE_METHOD)(method)).join('\n');
-        return `${templates_1.ANGULAR_SERVICE_HEADER}\n${necessaryImports}\n${(0, templates_1.ANGULAR_SERVICE_FILE_CORE_HEAD)(className)}\n${methods}\n${templates_1.ANGULAR_SERVICE_FILE_CORE_TAIL}`;
+        return `${templates_1.ANGULAR_SERVICE_HEADER}\n${necessaryImports}\n${(0, templates_1.ANGULAR_SERVICE_FILE_CORE_HEAD)(className, controller.parentPath)}\n${methods}\n${templates_1.ANGULAR_SERVICE_FILE_CORE_TAIL}`;
     }
     static async saveServiceToPath(workDir, libraryPackageName, savingPathPrefix, controller) {
         await directory_util_1.DirectoryUtil.ensureDirectory(savingPathPrefix);
@@ -57,6 +57,9 @@ class NgxServiceFileGenerator {
     static async generateAndSaveServices(workDir, libraryPackageName, savingPathPrefix, controllers) {
         for (let index = 0; index < controllers.length; index++) {
             const controller = controllers[index];
+            if (controller.methods.length == 0) {
+                continue;
+            }
             await this.saveServiceToPath(workDir, libraryPackageName, savingPathPrefix, controller);
         }
     }

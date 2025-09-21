@@ -14,7 +14,7 @@ import { inlineTypeText } from './parser/extractReturnTypes.js';
 export class ControllerScanner {
     public static scanAllControllers(mainPath: string) {
         const collectionsByProject: { [key: string]: RestApiCollection[] } = {};
-
+        const globalPrefixes: { [key: string]: string } = {};
         const project = new Project({
             tsConfigFilePath: path.join(mainPath, 'tsconfig.json'),
             skipAddingFilesFromTsConfig: true,
@@ -57,6 +57,7 @@ export class ControllerScanner {
             } else {
                 projectName = 'root-' + randomUUID().slice(0, 4);
             }
+
             if (!collectionsByProject[projectName]) {
                 collectionsByProject[projectName] = [];
             }
@@ -64,6 +65,15 @@ export class ControllerScanner {
 
             const filePath = typescriptFile.getFilePath();
             console.info('Dosya: ' + filePath);
+            if (filePath.includes("main.ts")) {
+                const capturedGlobalPrefix = /globalPrefix\s*=\s*"(.*)"|globalPrefix\s*=\s*'(.*)'|\.setGlobalPrefix\(('.*')\)|\.setGlobalPrefix\("(.*)"\)/g.exec(typescriptFile.getFullText());
+                if (capturedGlobalPrefix) {
+                    globalPrefixes[projectName] = capturedGlobalPrefix[1] || capturedGlobalPrefix[2] || capturedGlobalPrefix[3] || capturedGlobalPrefix[4];
+                    console.info('Global prefix: ' + (capturedGlobalPrefix[1] || capturedGlobalPrefix[2] || capturedGlobalPrefix[3] || capturedGlobalPrefix[4]));
+                }
+                // source kodlarını okuyup global prefixi bulmakk
+            }
+
             // const collection : RestApiCollection = {
             //     methods:
             // }
@@ -99,7 +109,6 @@ export class ControllerScanner {
                             let methodType = restMethodDecorator.getName();
 
                             let path = join(
-                                parentPath,
                                 TypescriptNestUtils.firstParameterAsString(
                                     restMethodDecorator,
                                 ),
@@ -192,6 +201,7 @@ export class ControllerScanner {
                                     | 'PUT'
                                     | 'DELETE',
                                 path: path,
+                                methodName: method.getName(),
                                 queryParameters: queryParameters,
                                 pathParameters: pathParameters,
                                 responseType: returnRestAp,
@@ -206,6 +216,14 @@ export class ControllerScanner {
                     });
                 }
             });
+        });
+        Object.keys(collectionsByProject).forEach(key => {
+            const globalPrefix = globalPrefixes[key];
+            if (globalPrefix) {
+                collectionsByProject[key].forEach(controller => {
+                    controller.parentPath = path.join(globalPrefix, controller.parentPath);
+                });
+            }
         });
         return collectionsByProject;
     }

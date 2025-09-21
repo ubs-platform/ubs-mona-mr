@@ -18,6 +18,7 @@ export interface RestObjectTypeInfo {
 
 export interface RestApiMethod {
   path: string;
+  methodName: string;
   methodType: string; // "Get" | "Put" | "Delete" | "Post";
   responseType?: RestObjectTypeInfo;
   queryParameters: RestPrimitiveTypeInfo[];

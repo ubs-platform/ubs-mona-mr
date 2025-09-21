@@ -10,7 +10,7 @@ export class NgxServiceFileGenerator {
         const className = `${controller.name}Service`;
         const necessaryImports = ANGULAR_SERVICE_NECESSARY_IMPORTS(workDir, libraryPackageName, controller.methods);
         const methods = controller.methods.map(method => ANGULAR_SERVICE_METHOD(method)).join('\n');
-        return `${ANGULAR_SERVICE_HEADER}\n${necessaryImports}\n${ANGULAR_SERVICE_FILE_CORE_HEAD(className)}\n${methods}\n${ANGULAR_SERVICE_FILE_CORE_TAIL}`;
+        return `${ANGULAR_SERVICE_HEADER}\n${necessaryImports}\n${ANGULAR_SERVICE_FILE_CORE_HEAD(className, controller.parentPath)}\n${methods}\n${ANGULAR_SERVICE_FILE_CORE_TAIL}`;
     }
 
     static async saveServiceToPath(workDir: string, libraryPackageName: string, savingPathPrefix: string, controller: RestApiCollection) {
@@ -19,9 +19,12 @@ export class NgxServiceFileGenerator {
         await FileSystem.writeFile(servicePath, this.generateServiceClassStr(workDir, libraryPackageName, controller), 'utf8');
     }
 
-    static async generateAndSaveServices(workDir: string, libraryPackageName: string,savingPathPrefix: string, controllers: RestApiCollection[]) {
+    static async generateAndSaveServices(workDir: string, libraryPackageName: string, savingPathPrefix: string, controllers: RestApiCollection[]) {
         for (let index = 0; index < controllers.length; index++) {
             const controller = controllers[index];
+            if (controller.methods.length == 0) {
+                continue;
+            }
             await this.saveServiceToPath(workDir, libraryPackageName, savingPathPrefix, controller);
         }
     }

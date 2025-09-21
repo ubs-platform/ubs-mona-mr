@@ -43,6 +43,7 @@ const extractReturnTypes_js_1 = require("./parser/extractReturnTypes.js");
 class ControllerScanner {
     static scanAllControllers(mainPath) {
         const collectionsByProject = {};
+        const globalPrefixes = {};
         const project = new ts_morph_1.Project({
             tsConfigFilePath: path.join(mainPath, 'tsconfig.json'),
             skipAddingFilesFromTsConfig: true,
@@ -80,6 +81,13 @@ class ControllerScanner {
             const collectionsForThisProject = collectionsByProject[projectName];
             const filePath = typescriptFile.getFilePath();
             console.info('Dosya: ' + filePath);
+            if (filePath.includes("main.ts")) {
+                const capturedGlobalPrefix = /globalPrefix\s*=\s*"(.*)"|globalPrefix\s*=\s*'(.*)'|\.setGlobalPrefix\(('.*')\)|\.setGlobalPrefix\("(.*)"\)/g.exec(typescriptFile.getFullText());
+                if (capturedGlobalPrefix) {
+                    globalPrefixes[projectName] = capturedGlobalPrefix[1] || capturedGlobalPrefix[2] || capturedGlobalPrefix[3] || capturedGlobalPrefix[4];
+                    console.info('Global prefix: ' + (capturedGlobalPrefix[1] || capturedGlobalPrefix[2] || capturedGlobalPrefix[3] || capturedGlobalPrefix[4]));
+                }
+            }
             typescriptFile.getClasses().forEach((tsClass) => {
                 const itIsController = tsClass.getDecorator('Controller');
                 if (itIsController) {
@@ -100,7 +108,7 @@ class ControllerScanner {
                             const queryParameters = [];
                             const pathParameters = [];
                             let methodType = restMethodDecorator.getName();
-                            let path = (0, path_1.join)(parentPath, typescript_utils_js_1.TypescriptNestUtils.firstParameterAsString(restMethodDecorator));
+                            let path = (0, path_1.join)(typescript_utils_js_1.TypescriptNestUtils.firstParameterAsString(restMethodDecorator));
                             console.info(path);
                             method.getParameters().forEach((parameter) => {
                                 const restParameterTypeName = parameter
@@ -153,6 +161,7 @@ class ControllerScanner {
                             methods.push({
                                 methodType: methodType.toUpperCase(),
                                 path: path,
+                                methodName: method.getName(),
                                 queryParameters: queryParameters,
                                 pathParameters: pathParameters,
                                 responseType: returnRestAp,
@@ -167,6 +176,14 @@ class ControllerScanner {
                     });
                 }
             });
+        });
+        Object.keys(collectionsByProject).forEach(key => {
+            const globalPrefix = globalPrefixes[key];
+            if (globalPrefix) {
+                collectionsByProject[key].forEach(controller => {
+                    controller.parentPath = path.join(globalPrefix, controller.parentPath);
+                });
+            }
         });
         return collectionsByProject;
     }
