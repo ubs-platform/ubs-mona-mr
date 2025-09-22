@@ -81,11 +81,19 @@ class ControllerScanner {
             const collectionsForThisProject = collectionsByProject[projectName];
             const filePath = typescriptFile.getFilePath();
             console.info('Dosya: ' + filePath);
-            if (filePath.includes("main.ts")) {
+            if (filePath.includes('main.ts')) {
                 const capturedGlobalPrefix = /globalPrefix\s*=\s*"(.*)"|globalPrefix\s*=\s*'(.*)'|\.setGlobalPrefix\(('.*')\)|\.setGlobalPrefix\("(.*)"\)/g.exec(typescriptFile.getFullText());
                 if (capturedGlobalPrefix) {
-                    globalPrefixes[projectName] = capturedGlobalPrefix[1] || capturedGlobalPrefix[2] || capturedGlobalPrefix[3] || capturedGlobalPrefix[4];
-                    console.info('Global prefix: ' + (capturedGlobalPrefix[1] || capturedGlobalPrefix[2] || capturedGlobalPrefix[3] || capturedGlobalPrefix[4]));
+                    globalPrefixes[projectName] =
+                        capturedGlobalPrefix[1] ||
+                            capturedGlobalPrefix[2] ||
+                            capturedGlobalPrefix[3] ||
+                            capturedGlobalPrefix[4];
+                    console.info('Global prefix: ' +
+                        (capturedGlobalPrefix[1] ||
+                            capturedGlobalPrefix[2] ||
+                            capturedGlobalPrefix[3] ||
+                            capturedGlobalPrefix[4]));
                 }
             }
             typescriptFile.getClasses().forEach((tsClass) => {
@@ -177,11 +185,13 @@ class ControllerScanner {
                 }
             });
         });
-        Object.keys(collectionsByProject).forEach(key => {
+        Object.keys(collectionsByProject).forEach((key) => {
             const globalPrefix = globalPrefixes[key];
             if (globalPrefix) {
-                collectionsByProject[key].forEach(controller => {
-                    controller.parentPath = path.join(globalPrefix, controller.parentPath);
+                collectionsByProject[key].forEach((controller) => {
+                    controller.parentPath =
+                        '/' +
+                            path.join('service', key, globalPrefix, controller.parentPath);
                 });
             }
         });
@@ -225,16 +235,17 @@ class ControllerScanner {
             return 'undefined';
         }
         const typeArgs = returnTypeRaw.getTypeArguments();
-        let tsArgsStr = "";
+        let tsArgsStr = '';
         if (typeArgs.length) {
-            tsArgsStr = ('<' +
-                typeArgs
-                    .map((t) => ControllerScanner.returnTypeNameDetermination(t))
-                    .join(', ') +
-                '>');
+            tsArgsStr =
+                '<' +
+                    typeArgs
+                        .map((t) => ControllerScanner.returnTypeNameDetermination(t))
+                        .join(', ') +
+                    '>';
         }
-        return (returnTypeRaw.getSymbol()?.getName() ??
-            returnTypeRaw.getText()) + tsArgsStr;
+        return ((returnTypeRaw.getSymbol()?.getName() ?? returnTypeRaw.getText()) +
+            tsArgsStr);
     }
 }
 exports.ControllerScanner = ControllerScanner;

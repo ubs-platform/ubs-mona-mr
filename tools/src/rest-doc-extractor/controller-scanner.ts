@@ -18,7 +18,6 @@ export class ControllerScanner {
         const project = new Project({
             tsConfigFilePath: path.join(mainPath, 'tsconfig.json'),
             skipAddingFilesFromTsConfig: true,
-
         });
 
         const testSourceFiles = project.addSourceFilesAtPaths([
@@ -65,11 +64,24 @@ export class ControllerScanner {
 
             const filePath = typescriptFile.getFilePath();
             console.info('Dosya: ' + filePath);
-            if (filePath.includes("main.ts")) {
-                const capturedGlobalPrefix = /globalPrefix\s*=\s*"(.*)"|globalPrefix\s*=\s*'(.*)'|\.setGlobalPrefix\(('.*')\)|\.setGlobalPrefix\("(.*)"\)/g.exec(typescriptFile.getFullText());
+            if (filePath.includes('main.ts')) {
+                const capturedGlobalPrefix =
+                    /globalPrefix\s*=\s*"(.*)"|globalPrefix\s*=\s*'(.*)'|\.setGlobalPrefix\(('.*')\)|\.setGlobalPrefix\("(.*)"\)/g.exec(
+                        typescriptFile.getFullText(),
+                    );
                 if (capturedGlobalPrefix) {
-                    globalPrefixes[projectName] = capturedGlobalPrefix[1] || capturedGlobalPrefix[2] || capturedGlobalPrefix[3] || capturedGlobalPrefix[4];
-                    console.info('Global prefix: ' + (capturedGlobalPrefix[1] || capturedGlobalPrefix[2] || capturedGlobalPrefix[3] || capturedGlobalPrefix[4]));
+                    globalPrefixes[projectName] =
+                        capturedGlobalPrefix[1] ||
+                        capturedGlobalPrefix[2] ||
+                        capturedGlobalPrefix[3] ||
+                        capturedGlobalPrefix[4];
+                    console.info(
+                        'Global prefix: ' +
+                            (capturedGlobalPrefix[1] ||
+                                capturedGlobalPrefix[2] ||
+                                capturedGlobalPrefix[3] ||
+                                capturedGlobalPrefix[4]),
+                    );
                 }
                 // source kodlarını okuyup global prefixi bulmakk
             }
@@ -127,8 +139,8 @@ export class ControllerScanner {
                                 if (!restParameterTypeName) {
                                     console.error(
                                         'Bilinmeyen parametre türü: ' +
-                                        parameter.getName() +
-                                        ' dekoratör bulunamadı',
+                                            parameter.getName() +
+                                            ' dekoratör bulunamadı',
                                     );
                                 } else {
                                     if (restParameterTypeName === 'Body') {
@@ -155,9 +167,9 @@ export class ControllerScanner {
                                         };
                                         console.info(
                                             'Payload parametre: ' +
-                                            parameter.getName() +
-                                            ' tipi: ' +
-                                            parameter.getType().getText(),
+                                                parameter.getName() +
+                                                ' tipi: ' +
+                                                parameter.getType().getText(),
                                         );
                                     } else {
                                         const extractedParameters =
@@ -187,7 +199,9 @@ export class ControllerScanner {
                             const returnRestAp = {
                                 typeNode: returnTypeRaw,
                                 typeName:
-                                    ControllerScanner.returnTypeNameDetermination(returnTypeRaw),
+                                    ControllerScanner.returnTypeNameDetermination(
+                                        returnTypeRaw,
+                                    ),
                                 importedFrom:
                                     TypescriptNestUtils.findImportSource(
                                         returnTypeRaw,
@@ -217,11 +231,18 @@ export class ControllerScanner {
                 }
             });
         });
-        Object.keys(collectionsByProject).forEach(key => {
+        Object.keys(collectionsByProject).forEach((key) => {
             const globalPrefix = globalPrefixes[key];
             if (globalPrefix) {
-                collectionsByProject[key].forEach(controller => {
-                    controller.parentPath = path.join(globalPrefix, controller.parentPath);
+                collectionsByProject[key].forEach((controller) => {
+                    controller.parentPath =
+                        '/' +
+                        path.join(
+                            'service',
+                            key,
+                            globalPrefix,
+                            controller.parentPath,
+                        );
                 });
             }
         });
@@ -243,16 +264,12 @@ export class ControllerScanner {
         } else if (returnTypeRaw.isUnion()) {
             return returnTypeRaw
                 .getUnionTypes()
-                .map((t) =>
-                    ControllerScanner.returnTypeNameDetermination(t),
-                )
+                .map((t) => ControllerScanner.returnTypeNameDetermination(t))
                 .join(' | ');
         } else if (returnTypeRaw.isIntersection()) {
             return returnTypeRaw
                 .getIntersectionTypes()
-                .map((t) =>
-                    ControllerScanner.returnTypeNameDetermination(t),
-                )
+                .map((t) => ControllerScanner.returnTypeNameDetermination(t))
                 .join(' & ');
         } else if (returnTypeRaw.isAnonymous()) {
             return inlineTypeText(returnTypeRaw, null, { maxDepth: 1 });
@@ -266,19 +283,20 @@ export class ControllerScanner {
             return 'undefined';
         }
         const typeArgs = returnTypeRaw.getTypeArguments();
-        let tsArgsStr = "";
+        let tsArgsStr = '';
         if (typeArgs.length) {
-            tsArgsStr = (
+            tsArgsStr =
                 '<' +
                 typeArgs
                     .map((t) =>
                         ControllerScanner.returnTypeNameDetermination(t),
                     )
                     .join(', ') +
-                '>'
-            );
+                '>';
         }
-        return (returnTypeRaw.getSymbol()?.getName() ??
-            returnTypeRaw.getText()) + tsArgsStr;
+        return (
+            (returnTypeRaw.getSymbol()?.getName() ?? returnTypeRaw.getText()) +
+            tsArgsStr
+        );
     }
 }
