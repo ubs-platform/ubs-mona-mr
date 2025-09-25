@@ -77,7 +77,7 @@ const ANGULAR_SERVICE_METHOD = (restMethod) => {
     }
     return `
   ${methodName}(${[ngMethodPathParameters, ngMethodQueryParams, ngMethodBodyParamString].filter(x => x).join(', ')}): Observable<${responseType || 'any'}> {
-    let urlAltered = this.interceptUrl("${url}"${urlAlteration});
+    let urlAltered = this.interceptUrl("${url}")${urlAlteration};
 
     return this.http.${httpMethod}<${restMethod.responseType?.typeName || 'any'}>(urlAltered${restMethod.requestBody ? ', requestBody' : ''});
   }
