@@ -9,17 +9,17 @@ const directory_util_1 = require("../util/directory-util");
 const ngx_service_file_generator_1 = require("../angular-http-service-generator/ngx-service-file-generator");
 const path_1 = __importDefault(require("path"));
 class RestApiAngularClientGen {
-    static async generate(workDir, paket) {
+    static async generate(workDir, paket, exportPath) {
         const mainPath = workDir;
         console.info('Project directory: ' + mainPath);
         const byProject = controller_scanner_1.ControllerScanner.scanAllControllers(mainPath);
-        const ngServiceGenerationPathSegments = [mainPath, 'xr-generated', 'angular-services'];
-        await directory_util_1.DirectoryUtil.ensureDirectory(...ngServiceGenerationPathSegments);
+        const exportPathEdited = exportPath ? exportPath : `${mainPath}/xr-generated/angular-services/${paket.packageObject.name}`;
+        await directory_util_1.DirectoryUtil.ensureDirectory(exportPathEdited);
         const projKeys = Object.keys(byProject);
         for (let index = 0; index < projKeys.length; index++) {
             const key = projKeys[index];
             const projectControllers = byProject[key];
-            await ngx_service_file_generator_1.NgxServiceFileGenerator.generateAndSaveServices(workDir, paket.packageObject.iksir.childrenPrefix, path_1.default.join(...ngServiceGenerationPathSegments, key), projectControllers);
+            await ngx_service_file_generator_1.NgxServiceFileGenerator.generateAndSaveServices(workDir, paket.packageObject.iksir.childrenPrefix, path_1.default.join(exportPathEdited, key), projectControllers);
         }
     }
 }

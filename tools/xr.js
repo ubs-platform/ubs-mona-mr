@@ -15,9 +15,9 @@ MonaXr for Mona5            H.C.G`);
 const actionList = {
     'generate-ngx-services': {
         info: "Generates Angular HttpClient services from REST API controllers in the current project",
-        action: async (workDir) => {
+        action: async (workDir, targetDirectory) => {
             const paket = await iksir_package_1.IksirPackage.scanRoot(workDir);
-            await rest_api_angular_client_gen_1.RestApiAngularClientGen.generate(workDir, paket);
+            await rest_api_angular_client_gen_1.RestApiAngularClientGen.generate(workDir, paket, targetDirectory);
         },
     },
     'generate-rest-doc': {
