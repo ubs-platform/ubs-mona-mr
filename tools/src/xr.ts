@@ -23,10 +23,10 @@ export interface IAction {
 const actionList: { [key: string]: IAction } = {
     'generate-ngx-services': {
         info: "Generates Angular HttpClient services from REST API controllers in the current project",
-        action: async (workDir) => {
+        action: async (workDir, targetDirectory) => {
             const paket = await IksirPackage.scanRoot(workDir);
 
-            await RestApiAngularClientGen.generate(workDir,paket);
+            await RestApiAngularClientGen.generate(workDir, paket, targetDirectory);
         },
     },
     'generate-rest-doc': {

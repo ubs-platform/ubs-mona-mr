@@ -23,7 +23,7 @@ export class ${className} {
   
   interceptUrl(url: string): string {
     // you can modify url here if needed
-    return this.basePath + url;
+    return this.basePath + (!url || this.basePath.endsWith("/") ? "" : "/") + url;
   }  
   
 `;
