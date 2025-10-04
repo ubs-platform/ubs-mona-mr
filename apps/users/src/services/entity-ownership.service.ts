@@ -13,6 +13,7 @@ import {
 } from '@ubs-platform/users-common';
 import { UserService } from './user.service';
 import { exec } from 'child_process';
+import { EntityOwnershipGroup } from '../domain/entity-ownership-group.schema';
 
 @Injectable()
 export class EntityOwnershipService {
@@ -22,10 +23,12 @@ export class EntityOwnershipService {
 
     constructor(
         @InjectModel(EntityOwnership.name)
-        private model: Model<EntityOwnership>,
+        private eoModel: Model<EntityOwnership>,
+        @InjectModel(EntityOwnershipGroup.name)
+        private eogModel: Model<EntityOwnershipGroup>,
         private userService: UserService,
         private mapper: EntityOwnershipMapper,
-    ) {}
+    ) { }
 
     async insert(eoDto: EntityOwnershipDTO): Promise<void> {
         this.logger.debug(
@@ -50,6 +53,7 @@ export class EntityOwnershipService {
 
         await entity.save();
     }
+
     public async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO) {
         const hasRoleAlready = await this.findInsertedUserCapability(oe);
         const searchKeys: EntityOwnershipSearch = {
@@ -59,7 +63,7 @@ export class EntityOwnershipService {
         };
         if (hasRoleAlready?.userId) {
             if (hasRoleAlready.capability != oe.capability) {
-                const updateExistOne = await this.model.updateOne(
+                const updateExistOne = await this.eoModel.updateOne(
                     { ...searchKeys, 'userCapabilities.userId': oe.userId },
                     {
                         $set: {
@@ -91,7 +95,7 @@ export class EntityOwnershipService {
         // let entity;
     }
 
-    public async checkUser(
+    public async checkUserOrGroup(
         eouc: EntityOwnershipUserCheck,
     ): Promise<UserCapabilityDTO | null> {
         this.logger.debug(
@@ -106,7 +110,15 @@ export class EntityOwnershipService {
         }
         const u = await this.findExisting(eouc);
         if (u) {
-            const user = await this.userService.findById(eouc.userId);
+            // if (eouc.entityOwnershipGroupId) {
+            //     const group = await this.eogModel.findById(
+            //         eouc.entityOwnershipGroupId,
+            //     );
+            //     if (group) {
+            //         return this.checkUserInGroup(eouc, group);
+            //     }
+            // }
+            let user = await this.userService.findById(eouc.userId);
             if (user.roles.includes('ADMIN')) {
                 return {
                     userId: user._id,
@@ -131,7 +143,7 @@ export class EntityOwnershipService {
         eouc: EntityOwnershipUserCheck,
     ): Promise<UserCapabilityDTO | null> {
         // this.logger.debug({ cap: eouc.capability });
-        const cap = await this.model
+        const cap = await this.eoModel
             .aggregate([
                 {
                     $match: {
@@ -175,7 +187,7 @@ export class EntityOwnershipService {
     }
 
     async searchByUser(eo: EntityOwnershipUserSearch) {
-        const entityOwnerships = await this.model.find({
+        const entityOwnerships = await this.eoModel.find({
             entityGroup: eo.entityGroup,
             entityName: eo.entityName,
             'userCapabilities.userId': eo.userId,
@@ -187,7 +199,7 @@ export class EntityOwnershipService {
     private async findExisting(
         eouc: EntityOwnershipUserCheck,
     ): Promise<EntityOwnershipDTO> {
-        const entityOwnership = await this.model.findOne({
+        const entityOwnership = await this.eoModel.findOne({
             entityGroup: eouc.entityGroup,
             entityId: eouc.entityId,
             entityName: eouc.entityName,
@@ -202,7 +214,7 @@ export class EntityOwnershipService {
     }
 
     public async deleteOwnership(sk: EntityOwnershipSearch) {
-        await this.model.deleteOne({
+        await this.eoModel.deleteOne({
             entityGroup: sk.entityGroup,
             entityId: sk.entityId,
             entityName: sk.entityName,
@@ -210,6 +222,6 @@ export class EntityOwnershipService {
     }
 
     private async findRaw(searchKeys: EntityOwnershipSearch) {
-        return await this.model.find(searchKeys);
+        return await this.eoModel.find(searchKeys);
     }
 }

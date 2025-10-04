@@ -19,11 +19,13 @@ export interface EntityOwnershipInsertCapabiltyDTO {
     capability: string;
 }
 
+
 export interface EntityOwnershipUserSearch {
     entityGroup: String;
     entityName: String;
     userId: string;
-    capability?: string;
+    entityOwnershipGroupId?: string;
+    capability?: string[];
 }
 
 export interface EntityOwnershipSearch {
@@ -37,5 +39,6 @@ export interface EntityOwnershipUserCheck {
     entityName: String;
     entityId: String;
     capability?: String;
-    userId: string;
+    userId?: string;
+    entityOwnershipGroupId?: string;
 }
