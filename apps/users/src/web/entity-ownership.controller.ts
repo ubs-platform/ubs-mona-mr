@@ -24,15 +24,15 @@ export class EntityOwnershipController {
         this.cacheman.invalidateRegex(/eo-*/);
     }
 
-    @EventPattern(EOChannelConsts.insertUserCapability)
-    async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO) {
-        console.info(oe);
+    // @EventPattern(EOChannelConsts.insertUserCapability)
+    // async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO) {
+    //     console.info(oe);
 
-        await this.eoService.insertUserCapability(oe);
-        this.cacheman.invalidateRegex(/eo-*/);
-    }
+    //     await this.eoService.insertUserCapability(oe);
+    //     this.cacheman.invalidateRegex(/eo-*/);
+    // }
 
-    @MessagePattern(EOChannelConsts.checkOwnershipDetailed)
+    @MessagePattern(EOChannelConsts.checkOwnership)
     async hasOwnershipDetailed(eo: EntityOwnershipUserCheck) {
         this.validateOwnershipParameters(eo);
         return this.cacheman.getOrCallAsync(
