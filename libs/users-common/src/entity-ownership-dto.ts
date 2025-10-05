@@ -25,7 +25,7 @@ export interface EntityOwnershipUserSearch {
     entityName: String;
     userId: string;
     entityOwnershipGroupId?: string;
-    capability?: string[];
+    capabilityAtLeastOne?: string[];
 }
 
 export interface EntityOwnershipSearch {
@@ -39,6 +39,6 @@ export interface EntityOwnershipUserCheck {
     entityName: String;
     entityId: String;
     capability?: String;
-    userId?: string;
+    userId: string;
     entityOwnershipGroupId?: string;
 }

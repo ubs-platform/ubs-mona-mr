@@ -3,6 +3,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 export class UserCapability {
     userId?: string;
     capability?: string;
+    /**
+     * Group capability defines the ability of the EntityOwnershipGroup as a whole.
+     */
     // canEdit: boolean;
     // canRemove: boolean;
     // canView: boolean;
@@ -19,13 +22,16 @@ export class EntityOwnershipGroup {
      * Group name of the ownership group. Can be used for best reading
      */
     @Prop({ type: String })
-    groupName?: String;
+    groupName?: string;
+
+    @Prop({ type: String })
+    description?: string;
 
     /**
      * List of roles that can override the ownership settings
      */
     @Prop({ type: [String], default: [] })
-    overriderRoles?: String[] = [];
+    overriderRoles?: string[] = [];
 
 }
 

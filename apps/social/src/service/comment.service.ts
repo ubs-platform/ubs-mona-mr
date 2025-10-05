@@ -204,7 +204,7 @@ export class CommentService {
                         entityGroup: commentSearch.entityGroup,
                         entityName: commentSearch.mainEntityName!,
                         userId,
-                        capability: 'OWNER',
+                        capabilityAtLeastOne: ['OWNER'],
                     }),
                 );
                 entities.forEach((a) => {

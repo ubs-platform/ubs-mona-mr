@@ -51,10 +51,12 @@ export class EntityOwnershipService implements OnModuleInit {
         this.kafkaClient.emit(EOChannelConsts.insertUserCapability, oe);
     }
 
-    hasOwnership(eo: EntityOwnershipUserCheck): Observable<UserCapabilityDTO> {
+    hasOwnershipDetailed(eo: EntityOwnershipUserCheck): Observable<UserCapabilityDTO> {
+        return this.kafkaClient.send(EOChannelConsts.checkOwnershipDetailed, eo);
+    }
+    hasOwnership(eo: EntityOwnershipUserCheck): Observable<boolean> {
         return this.kafkaClient.send(EOChannelConsts.checkOwnership, eo);
     }
-
     searchOwnership(
         eo: EntityOwnershipSearch,
     ): Observable<EntityOwnershipDTO[]> {

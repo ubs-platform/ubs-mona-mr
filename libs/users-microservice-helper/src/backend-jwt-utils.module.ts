@@ -21,7 +21,12 @@ export const INTERNAL_COMMUNICATION = {
         ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KAFKA_CLIENT")])
     ],
 })
-export class BackendJwtUtilsModule { }
+export class UserMicroserviceHelperModule { }
+
+/**
+ * @deprecated BackendJwtUtilsModule is deprecated, use UserMicroserviceHelperModule instead
+ */
+export const BackendJwtUtilsModule = UserMicroserviceHelperModule;
 /**
  * todo: acaba BackendJwtUtilsModule yerine UserMicroserviceHelperModule mi yapsam
  */

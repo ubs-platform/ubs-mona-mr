@@ -9,11 +9,13 @@ import {
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
     EntityOwnershipUserSearch,
+    UserAuthBackendDTO,
     UserCapabilityDTO,
 } from '@ubs-platform/users-common';
 import { UserService } from './user.service';
 import { exec } from 'child_process';
 import { EntityOwnershipGroup } from '../domain/entity-ownership-group.schema';
+import { Optional } from '@ubs-platform/crud-base-common/utils';
 
 @Injectable()
 export class EntityOwnershipService {
@@ -55,7 +57,8 @@ export class EntityOwnershipService {
     }
 
     public async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO) {
-        const hasRoleAlready = await this.findInsertedUserCapability(oe);
+        // Ekleneceği zaman rol kontrol edilmeyebilir, çünkü sonradan override edilebilir
+        const hasRoleAlready = await this.findInsertedUserCapability(oe, false);
         const searchKeys: EntityOwnershipSearch = {
             entityGroup: oe.entityGroup,
             entityId: oe.entityId,
@@ -90,100 +93,82 @@ export class EntityOwnershipService {
                 await entity.save();
             }
         }
-        // this.logger.debug('EO INS UC', oe.entityGroup, oe.entityId, oe.entityName);
-
-        // let entity;
     }
 
-    public async checkUserOrGroup(
+    public async hasInsertedUserCapability(
         eouc: EntityOwnershipUserCheck,
-    ): Promise<UserCapabilityDTO | null> {
-        this.logger.debug(
-            'EO CHK',
-            eouc.entityGroup,
-            eouc.entityId,
-            eouc.entityName,
-        );
-        const existCapability = await this.findInsertedUserCapability(eouc);
-        if (existCapability) {
-            return existCapability;
+        checkRoleOverride: boolean,
+    ): Promise<boolean> {
+        const found = await this.findInsertedUserCapability(eouc, checkRoleOverride);
+        return !!found;
+    }
+
+    public async findInsertedUserCapability(
+        eouc: EntityOwnershipUserCheck,
+        checkRoleOverride: boolean,
+    ): Promise<Optional<UserCapabilityDTO>> {
+        this.logger.debug({ cap: eouc.capability });
+        const entityOwnership = await this.eoModel.findOne({
+            entityGroup: eouc.entityGroup,
+            entityId: eouc.entityId,
+            entityName: eouc.entityName,
+            "userCapabilities.userId": eouc.userId,
+            ...(eouc.capability ? { 'userCapabilities.capability': eouc.capability } : {}),
+        });
+        let found;
+        let roleOverrides: Optional<string[]> = null;
+
+        // checking inside entityOwnership's userCapabilities
+        if (entityOwnership && entityOwnership.userCapabilities.length) {
+            found = entityOwnership.userCapabilities.find(
+                (uc) => uc.userId === eouc.userId && (!eouc.capability || uc.capability === eouc.capability),
+            );
+            roleOverrides = entityOwnership.overriderRoles;
         }
-        const u = await this.findExisting(eouc);
-        if (u) {
-            // if (eouc.entityOwnershipGroupId) {
-            //     const group = await this.eogModel.findById(
-            //         eouc.entityOwnershipGroupId,
-            //     );
-            //     if (group) {
-            //         return this.checkUserInGroup(eouc, group);
-            //     }
-            // }
-            let user = await this.userService.findById(eouc.userId);
-            if (user.roles.includes('ADMIN')) {
-                return {
-                    userId: user._id,
-                    capability: eouc.capability?.toString(),
-                };
-            } else {
-                for (let index = 0; index < user.roles.length; index++) {
-                    const userRole = user.roles[index];
-                    const role = u.overriderRoles.includes(userRole);
-                    if (role)
-                        return {
-                            userId: user._id,
-                            capability: eouc.capability?.toString(),
-                        };
+        // if not found, checking inside entityOwnershipGroup's userCapabilities
+        if (!found && entityOwnership && entityOwnership.entityOwnershipGroupId) {
+            const ownerShipGroup = await this.eogModel.findOne({
+                id: entityOwnership.entityOwnershipGroupId
+            });
+            if (ownerShipGroup && ownerShipGroup.userCapabilities.length) {
+                found = ownerShipGroup.userCapabilities.find(
+                    (uc) => uc.userId === eouc.userId && (!eouc.capability || uc.capability === eouc.capability),
+                );
+                if (!roleOverrides) {
+                    roleOverrides = ownerShipGroup.overriderRoles;
                 }
             }
         }
-        return null;
-    }
+        // if not found, checking overriderRoles with user roles
+        if (!found && roleOverrides?.length && eouc.userId && checkRoleOverride) {
+            let user: Optional<UserAuthBackendDTO>  = await this.userService.findUserAuthBackend(eouc.userId);
 
-    private async findInsertedUserCapability(
-        eouc: EntityOwnershipUserCheck,
-    ): Promise<UserCapabilityDTO | null> {
-        // this.logger.debug({ cap: eouc.capability });
-        const cap = await this.eoModel
-            .aggregate([
-                {
-                    $match: {
-                        entityName: eouc.entityName,
-                        entityGroup: eouc.entityGroup,
-                        entityId: eouc.entityId,
-                    },
-                },
-
-                {
-                    $unwind: '$userCapabilities',
-                },
-                {
-                    $match: {
-                        'userCapabilities.userId': eouc.userId,
-                        ...(eouc.capability
-                            ? { 'userCapabilities.capability': eouc.capability }
-                            : {}),
-                    },
-                },
-
-                {
-                    $project: {
-                        'userCapabilities.userId': 1,
-                        'userCapabilities.capability': 1,
-                        _id: 0,
-                    },
-                },
-            ])
-            .exec();
-        this.logger.debug(cap);
-        this.logger.debug('----');
-        const found = cap[0]?.['userCapabilities'];
-
-        if (found) {
-            return {
-                capability: found.capability,
-                userId: found.userId,
-            };
-        } else return null;
+            // Admin overrides all
+            if (user && user.roles?.includes('ADMIN')) {
+                return {
+                    userId: user.id,
+                    capability: eouc.capability?.toString(),
+                };
+            }
+            // Check other roles
+            if (!found && entityOwnership && roleOverrides.length && user?.roles?.length) {
+                for (let index = 0; index < user.roles.length; index++) {
+                    const userRole = user.roles[index];
+                    const role = roleOverrides.includes(userRole);
+                    if (role) {
+                        found = {
+                            userId: user.id,
+                            capability: eouc.capability?.toString(),
+                        };
+                    }
+                }
+            }
+        }
+        if (!found) return null;
+        return {
+            capability: found.capability!,
+            userId: found.userId!,
+        };
     }
 
     async searchByUser(eo: EntityOwnershipUserSearch) {
@@ -191,6 +176,7 @@ export class EntityOwnershipService {
             entityGroup: eo.entityGroup,
             entityName: eo.entityName,
             'userCapabilities.userId': eo.userId,
+            ...(eo.capabilityAtLeastOne ? { 'userCapabilities.capability': { $in: eo.capabilityAtLeastOne } } : {}),
             // ...(eo.capability ? { capability: eo.capability } : {}),
         });
         return entityOwnerships.map((a) => this.mapper.toDto(a));

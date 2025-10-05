@@ -32,13 +32,13 @@ export class CommentAbilityCheckService {
         private eoService: EntityOwnershipService,
         private commentMetaService: CommentMetaService,
         private appSocialRestrictionService: ApplicationSocialRestrictionService,
-    ) {}
+    ) { }
     // todo: support for multiple 
     public async checkCanEdit(
         socialComment: SocialComment,
         currentUser: any,
     ): Promise<CanManuplateComment> {
-        
+
         if (currentUser != null) {
             let allow = this.isCommentPoster(socialComment, currentUser.id);
 
@@ -62,13 +62,12 @@ export class CommentAbilityCheckService {
                     socialComment,
                     currentUser,
                 );
-                allow = e != null;
+                allow = e ?? false;
             }
 
             return { allow };
-        } else {
-            return { allow: false };
         }
+        return { allow: false };
     }
 
     isCommentPoster(socialComment: SocialComment, userId: string) {
@@ -85,6 +84,8 @@ export class CommentAbilityCheckService {
         );
     }
 
+    // Test
+
     public async isUserOwnerOfRealEntity(
         saved: SocialComment,
         user: UserAuthBackendDTO,
@@ -92,9 +93,9 @@ export class CommentAbilityCheckService {
     ) {
         if (user) {
             if (alreadyExist) {
-                return alreadyExist.userCapabilities.find(a => a.userId == user.id)
+                return alreadyExist.userCapabilities.find(a => a.userId == user.id) != null
             }
-     
+
             return await lastValueFrom(
                 this.eoService.hasOwnership({
                     entityGroup: saved.entityGroup,
@@ -105,7 +106,7 @@ export class CommentAbilityCheckService {
                 }),
             );
         } else {
-            return null;
+            return false;
         }
     }
 

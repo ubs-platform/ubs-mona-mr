@@ -18,9 +18,6 @@ export class EntityOwnershipController {
         private cacheman: CacheManagerService,
     ) { }
 
-
-
-
     @EventPattern(EOChannelConsts.insertOwnership)
     async insertOwnership(oe: EntityOwnershipDTO) {
         await this.eoService.insert(oe);
@@ -34,15 +31,20 @@ export class EntityOwnershipController {
         await this.eoService.insertUserCapability(oe);
         this.cacheman.invalidateRegex(/eo-*/);
     }
-    
-    @MessagePattern(EOChannelConsts.checkOwnership)
-    async hasOwnershipOfOne(eo: EntityOwnershipUserCheck) {
+
+    @MessagePattern(EOChannelConsts.checkOwnershipDetailed)
+    async hasOwnershipDetailed(eo: EntityOwnershipUserCheck) {
         this.validateOwnershipParameters(eo);
         return this.cacheman.getOrCallAsync(
-            `eo-hasOwnership ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${eo.capability}`,
-            () => this.eoService.checkUserOrGroup(eo),
+            `eo-hasOwnershipDetailed ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${eo.capability}`,
+            () => this.eoService.findInsertedUserCapability(eo, true),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
+    }
+
+    @MessagePattern(EOChannelConsts.checkOwnership)
+    async hasOwnershipOfOne(eo: EntityOwnershipUserCheck) {
+        return ((await this.hasOwnershipDetailed(eo)) != null);
     }
 
     private validateOwnershipParameters(eo: EntityOwnershipUserCheck | EntityOwnershipUserSearch) {
@@ -69,7 +71,7 @@ export class EntityOwnershipController {
     @MessagePattern(EOChannelConsts.searchOwnershipUser)
     async searchOwnershipUser(eo: EntityOwnershipUserSearch) {
         return this.cacheman.getOrCallAsync(
-            `eo-searchOwnershipUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${eo.capability} `,
+            `eo-searchOwnershipUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${eo.capabilityAtLeastOne?.join(",")} `,
             () => this.eoService.searchByUser(eo),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );

@@ -41,6 +41,7 @@ import { UserRegisterService } from './services/user-register.service';
 import { UserRegisterController } from './web/user-registration.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CacheManagerModule, CacheManagerService } from '@ubs-platform/cache-manager';
+import { EntityOwnershipGroup, EntityOwnershipGroupSchema } from './domain/entity-ownership-group.schema';
 
 @Module({
     controllers: [
@@ -70,6 +71,7 @@ import { CacheManagerModule, CacheManagerService } from '@ubs-platform/cache-man
             { name: EmailChangeRequest.name, schema: EmailChangeRequestSchema },
             { name: PwResetRequest.name, schema: PwResetRequestSchema },
             { name: UserCandiate.name, schema: UserCandiateSchema },
+            { name: EntityOwnershipGroup.name, schema: EntityOwnershipGroupSchema },
         ]),
         ...BackendJwtUtilsExportModule,
         ClientsModule.register([
