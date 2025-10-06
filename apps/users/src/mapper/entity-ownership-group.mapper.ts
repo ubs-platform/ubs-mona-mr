@@ -31,6 +31,7 @@ export class EntityOwnershipGroupMapper {
             userCapabilities: eog.userCapabilities.map((a) => ({
                 userId: a.userId,
                 capability: a.capability,
+                groupCapability: a.groupCapability,
             })),
         } as EntityOwnershipGroupDTO;
     }

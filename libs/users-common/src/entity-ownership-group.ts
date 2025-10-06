@@ -1,10 +1,11 @@
 export class EntityOwnershipGroupDTO {
     groupName: string;
     description?: string;
-    userCapabilities: UserCapabilityDTO[];
+    userCapabilities: EOGUserCapabilityDTO[];
 }
 
-export class UserCapabilityDTO {
+export class EOGUserCapabilityDTO {
     userId: string;
     capability?: string;
+    groupCapability: "OWNER" | "VIEWER" | "ADJUST_MEMBERS" | "ONLY_EDIT_MEMBER_CAPABILITIES";
 }

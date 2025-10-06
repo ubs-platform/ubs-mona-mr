@@ -3,6 +3,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 export class UserCapability {
     userId?: string;
     capability?: string;
+    groupCapability: "OWNER" | "VIEWER" | "ADJUST_MEMBERS" | "ONLY_EDIT_MEMBER_CAPABILITIES";;
     /**
      * Group capability defines the ability of the EntityOwnershipGroup as a whole.
      */

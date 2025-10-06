@@ -6,7 +6,7 @@ import { UserService } from "@ubs-platform/users-microservice-helper";
 import { Model } from "mongoose";
 import { EntityOwnershipGroup } from "../domain/entity-ownership-group.schema";
 import { EntityOwnershipGroupMapper } from "../mapper/entity-ownership-group.mapper";
-import { EntityOwnershipGroupDTO } from "libs/users-common/src/entity-ownership-group";
+import { EntityOwnershipGroupDTO, EOGUserCapabilityDTO } from "libs/users-common/src/entity-ownership-group";
 
 @Injectable()
 export class EntityOwnershipGroupService {
@@ -33,7 +33,7 @@ export class EntityOwnershipGroupService {
 
     async addUserCapability(
         groupId: string,
-        userCapability: UserCapabilityDTO,
+        userCapability: EOGUserCapabilityDTO,
     ): Promise<void> {
         const group = await this.getById(groupId);
         if (!group) {
