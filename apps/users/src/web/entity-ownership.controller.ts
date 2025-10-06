@@ -24,13 +24,13 @@ export class EntityOwnershipController {
         this.cacheman.invalidateRegex(/eo-*/);
     }
 
-    // @EventPattern(EOChannelConsts.insertUserCapability)
-    // async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO) {
-    //     console.info(oe);
+    @EventPattern(EOChannelConsts.insertUserCapability)
+    async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO) {
+        console.info(oe);
 
-    //     await this.eoService.insertUserCapability(oe);
-    //     this.cacheman.invalidateRegex(/eo-*/);
-    // }
+        await this.eoService.insertUserCapability(oe);
+        this.cacheman.invalidateRegex(/eo-*/);
+    }
 
     @MessagePattern(EOChannelConsts.checkOwnership)
     async hasOwnershipDetailed(eo: EntityOwnershipUserCheck) {
@@ -42,10 +42,10 @@ export class EntityOwnershipController {
         );
     }
 
-    @MessagePattern(EOChannelConsts.checkOwnership)
-    async hasOwnershipOfOne(eo: EntityOwnershipUserCheck) {
-        return ((await this.hasOwnershipDetailed(eo)) != null);
-    }
+    // @MessagePattern(EOChannelConsts.checkOwnership)
+    // async hasOwnershipOfOne(eo: EntityOwnershipUserCheck) {
+    //     return ((await this.hasOwnershipDetailed(eo)) != null);
+    // }
 
     private validateOwnershipParameters(eo: EntityOwnershipUserCheck | EntityOwnershipUserSearch) {
         if (!eo.userId && !eo.entityOwnershipGroupId) {
