@@ -11,3 +11,4 @@ export * from './password-change-dto';
 export * from './user-full-dto';
 export * from './error-informations';
 export * from './entity-ownership-dto';
+export * from "./entity-ownership-group"

@@ -4,6 +4,7 @@ import { BackendJwtUtilsExportModule } from './backend-jwt-utils-exports.module'
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserService } from './service/user.service';
 import { EntityOwnershipService } from './service/entity-ownership.service';
+import { EntityOwnershipGroupClientService } from './service/entity-ownership-group-client.service';
 import { E5NestClient, E5NestServer, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 // import { JwtStrategy } from './strategies/jwt.strategy';
 export const INTERNAL_COMMUNICATION = {
@@ -14,7 +15,7 @@ export const INTERNAL_COMMUNICATION = {
 @Module({
     controllers: [],
     providers: [JwtStrategy, UserService, EntityOwnershipService],
-    exports: [UserService, EntityOwnershipService],
+    exports: [UserService, EntityOwnershipService, EntityOwnershipGroupClientService],
     imports: [
         ...BackendJwtUtilsExportModule,
 

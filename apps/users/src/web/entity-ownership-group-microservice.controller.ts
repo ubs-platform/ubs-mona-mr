@@ -47,6 +47,15 @@ export class EntityOwnershipGroupMicroserviceController {
         );
     }
 
+    @MessagePattern(EOGroupEventConsts.searchByUserId)
+    async searchByUserId(searchParams: {userId: string, capacity?:string}): Promise<EntityOwnershipGroupDTO[]> {
+        return this.cacheman.getOrCallAsync(
+            `eog-searchByUserId ${searchParams.userId}`,
+            () => this.eogService.searchByUserId(searchParams.userId, searchParams.capacity),
+            { livetime: 1000, livetimeExtending: 'ON_GET' },
+        );
+    }
+
     // @EventPattern(EOChannelConsts.insertOwnership)
     // async insertOwnership(oe: EntityOwnershipDTO) {
     //     await this.eoService.insert(oe);
