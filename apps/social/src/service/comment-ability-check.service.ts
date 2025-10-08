@@ -62,7 +62,7 @@ export class CommentAbilityCheckService {
                     socialComment,
                     currentUser,
                 );
-                allow = e ?? false;
+                allow = e as any ?? false as any;
             }
 
             return { allow };

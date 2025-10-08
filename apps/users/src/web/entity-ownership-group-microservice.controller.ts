@@ -8,7 +8,7 @@ import {
     EntityOwnershipUserCheck,
     EntityOwnershipUserSearch,
 } from '@ubs-platform/users-common';
-import { EOChannelConsts } from '@ubs-platform/users-consts';
+import { EOChannelConsts, EOGroupEventConsts } from '@ubs-platform/users-consts';
 import { CacheManagerService } from '@ubs-platform/cache-manager';
 import { EntityOwnershipGroupService } from '../services/entity-ownership-group.service';
 import { EntityOwnershipGroupDTO } from 'libs/users-common/src/entity-ownership-group';
@@ -20,25 +20,25 @@ export class EntityOwnershipGroupMicroserviceController {
         private cacheman: CacheManagerService,
     ) { }
 
-    @EventPattern("EOG_CREATE")
+    @EventPattern(EOGroupEventConsts.createGroup)
     async insertOwnershipGroup(eog: EntityOwnershipGroupDTO) {
         await this.eogService.createGroup(eog);
         this.cacheman.invalidateRegex(/eog-*/);
     }
 
-    @EventPattern("EOG_ADD_USER_CAPABILITY")
+    @EventPattern(EOGroupEventConsts.addUserCapability)
     async addUserCapability(data: { groupId: string, userCapability: any }) {
         await this.eogService.addUserCapability(data.groupId, data.userCapability);
         this.cacheman.invalidateRegex(/eog-*/);
     }
 
-    @EventPattern("EOG_REMOVE_USER_CAPABILITY")
+    @EventPattern(EOGroupEventConsts.removeUserCapability)
     async removeUserCapability(data: { groupId: string, userId: string, capability: string }) {
         await this.eogService.removeUserCapability(data.groupId, data.userId, data.capability);
         this.cacheman.invalidateRegex(/eog-*/);
     }
 
-    @MessagePattern("EOG_GET_BY_ID")
+    @MessagePattern(EOGroupEventConsts.getById)
     async getById(id: string) {
         return this.cacheman.getOrCallAsync(
             `eog-getById ${id}`,
