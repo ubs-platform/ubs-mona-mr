@@ -1,12 +1,16 @@
-import { Injectable, Logger } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Optional } from "@ubs-platform/crud-base-common/utils";
-import { UserCapabilityDTO } from "@ubs-platform/users-common";
-import { UserService } from "@ubs-platform/users-microservice-helper";
-import { Model } from "mongoose";
-import { EntityOwnershipGroup } from "../domain/entity-ownership-group.schema";
-import { EntityOwnershipGroupMapper } from "../mapper/entity-ownership-group.mapper";
-import { EntityOwnershipGroupDTO, EOGUserCapabilityDTO } from "libs/users-common/src/entity-ownership-group";
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Optional } from '@ubs-platform/crud-base-common/utils';
+import { UserCapabilityDTO } from '@ubs-platform/users-common';
+import { UserService } from '@ubs-platform/users-microservice-helper';
+import { Model } from 'mongoose';
+import { EntityOwnershipGroup } from '../domain/entity-ownership-group.schema';
+import { EntityOwnershipGroupMapper } from '../mapper/entity-ownership-group.mapper';
+import {
+    EntityOwnershipGroupCreateDTO,
+    EntityOwnershipGroupDTO,
+    EOGUserCapabilityDTO,
+} from 'libs/users-common/src/entity-ownership-group';
 
 @Injectable()
 export class EntityOwnershipGroupService {
@@ -18,13 +22,27 @@ export class EntityOwnershipGroupService {
         @InjectModel(EntityOwnershipGroup.name)
         private eogModel: Model<EntityOwnershipGroup>,
         private mapper: EntityOwnershipGroupMapper,
-    ) { }
+    ) {}
 
-    async createGroup(eogDto: EntityOwnershipGroupDTO): Promise<EntityOwnershipGroup> {
+    async createGroup(
+        eogDto: EntityOwnershipGroupCreateDTO,
+    ): Promise<EntityOwnershipGroup> {
         this.logger.debug('EOG CREATE', eogDto.groupName);
         const entity = this.mapper.toEntity(eogDto);
+        entity.userCapabilities.push({
+            userId: eogDto.initialUserId,
+            groupCapability: 'OWNER',
+            capability: eogDto.initialUserEntityCapability,
+        } as EOGUserCapabilityDTO);
         await entity.save();
         return entity;
+    }
+
+    async findGroupsUserIn(userId: string): Promise<EntityOwnershipGroupDTO[]> {
+        return this.eogModel
+            .find({ 'userCapabilities.userId': userId })
+            .exec()
+            .then((entities) => entities.map((e) => this.mapper.toDto(e)));
     }
 
     async getById(id: string): Promise<Optional<EntityOwnershipGroup>> {
@@ -40,8 +58,18 @@ export class EntityOwnershipGroupService {
             throw new Error('EntityOwnershipGroup not found');
         }
 
-        if (group.userCapabilities?.some(uc => uc.userId === userCapability.userId && uc.capability === userCapability.capability)) {
-            this.logger.debug('UserCapability already exists in group', groupId, userCapability);
+        if (
+            group.userCapabilities?.some(
+                (uc) =>
+                    uc.userId === userCapability.userId &&
+                    uc.capability === userCapability.capability,
+            )
+        ) {
+            this.logger.debug(
+                'UserCapability already exists in group',
+                groupId,
+                userCapability,
+            );
             return;
         }
 
@@ -60,7 +88,9 @@ export class EntityOwnershipGroupService {
             throw new Error('EntityOwnershipGroup not found');
         }
 
-        group.userCapabilities = group.userCapabilities?.filter(uc => !(uc.userId === userId && uc.capability === capability));
+        group.userCapabilities = group.userCapabilities?.filter(
+            (uc) => !(uc.userId === userId && uc.capability === capability),
+        );
         await (group as any).save();
     }
 }
