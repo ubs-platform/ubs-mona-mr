@@ -11,7 +11,7 @@ import {
 import { EOChannelConsts } from '@ubs-platform/users-consts';
 import { CacheManagerService } from '@ubs-platform/cache-manager';
 import { EntityOwnershipGroupService } from '../services/entity-ownership-group.service';
-import { EntityOwnershipGroupDTO } from 'libs/users-common/src/entity-ownership-group';
+import { EntityOwnershipGroupCreateDTO, EntityOwnershipGroupDTO } from 'libs/users-common/src/entity-ownership-group';
 
 @Controller('entity-ownership-group')
 export class EntityOwnershipGroupMicroserviceController {
@@ -21,7 +21,7 @@ export class EntityOwnershipGroupMicroserviceController {
     ) { }
 
     @EventPattern("EOG_CREATE")
-    async insertOwnershipGroup(eog: EntityOwnershipGroupDTO) {
+    async insertOwnershipGroup(eog: EntityOwnershipGroupCreateDTO) {
         await this.eogService.createGroup(eog);
         this.cacheman.invalidateRegex(/eog-*/);
     }
