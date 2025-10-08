@@ -14,7 +14,7 @@ export const INTERNAL_COMMUNICATION = {
 
 @Module({
     controllers: [],
-    providers: [JwtStrategy, UserService, EntityOwnershipService],
+    providers: [JwtStrategy, UserService, EntityOwnershipService, EntityOwnershipGroupClientService],
     exports: [UserService, EntityOwnershipService, EntityOwnershipGroupClientService],
     imports: [
         ...BackendJwtUtilsExportModule,
