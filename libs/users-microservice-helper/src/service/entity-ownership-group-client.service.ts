@@ -8,9 +8,9 @@ import {
     EntityOwnershipUserSearch,
     UserCapabilityDTO,
     EntityOwnershipGroupCreateDTO,
+    EntityOwnershipGroupDTO,
 } from '@ubs-platform/users-common';
 import { EOChannelConsts, EOGroupEventConsts } from '@ubs-platform/users-consts';
-import { EntityOwnershipGroupDocument } from 'apps/users/src/domain/entity-ownership-group.schema';
 import { Observable } from 'rxjs';
 
 @Injectable()
@@ -32,12 +32,12 @@ export class EntityOwnershipGroupClientService {
         return this.kafkaClient.send<void>(EOGroupEventConsts.removeUserCapability, { groupId, userId, capability });
     }
 
-    getById(id: string): Observable<EntityOwnershipGroupDocument> {
-        return this.kafkaClient.send<EntityOwnershipGroupDocument>(EOGroupEventConsts.getById, id);
+    getById(id: string): Observable<EntityOwnershipGroupDTO> {
+        return this.kafkaClient.send<EntityOwnershipGroupDTO>(EOGroupEventConsts.getById, id);
     }
 
-    searchByUserId(userId: string, capacity?: string): Observable<EntityOwnershipGroupDocument[]> {
-        return this.kafkaClient.send<EntityOwnershipGroupDocument[]>(EOGroupEventConsts.searchByUserId, {userId, capacity});
+    searchByUserId(userId: string, capacity?: string): Observable<EntityOwnershipGroupDTO[]> {
+        return this.kafkaClient.send<EntityOwnershipGroupDTO[]>(EOGroupEventConsts.searchByUserId, {userId, capacity});
     }
 
 }

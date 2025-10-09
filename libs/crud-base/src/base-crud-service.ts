@@ -58,8 +58,8 @@ export abstract class BaseCrudService<
 
     async create(input: INPUT): Promise<OUTPUT> {
         let newModel = new this.m();
-
         await this.moveIntoModel(newModel, input);
+        this.beforeCreateOrEdit(newModel, "CREATE");
 
         await (newModel as HydratedDocument<MODEL, {}, unknown>).save();
         const out = await this.toOutput(newModel);
@@ -75,6 +75,8 @@ export abstract class BaseCrudService<
             input,
         );
 
+        this.beforeCreateOrEdit(newModel, "EDIT");
+
         await (newModel as HydratedDocument<MODEL, {}, unknown>).save();
 
         return this.toOutput(newModel as MODEL);
@@ -87,6 +89,8 @@ export abstract class BaseCrudService<
     }
 
     async afterCreate(m: OUTPUT) {}
+
+    async beforeCreateOrEdit(i: MODEL, mode : "EDIT" | "CREATE") {}
 }
 
 // return BaseCrudService;
