@@ -11,12 +11,17 @@ import {
     UseGuards,
 } from '@nestjs/common';
 
-import { JwtAuthGuard } from '@ubs-platform/users-microservice-helper';
+import {
+    CurrentUser,
+    JwtAuthGuard,
+    UserIntercept,
+} from '@ubs-platform/users-microservice-helper';
 
 import { Roles, RolesGuard } from '@ubs-platform/users-roles';
 import { BaseCrudService } from '@ubs-platform/crud-base';
 import { BaseCrudKlass } from './base-crud-klass';
 import { SearchRequest } from '@ubs-platform/crud-base-common';
+import { UserAuthBackendDTO } from '@ubs-platform/users-common';
 
 export type RoleAuthorizationConfigKey =
     | 'EDIT'
@@ -104,39 +109,63 @@ export const BaseCrudControllerGenerator = <
         // @Roles(generateGuardAndRolesEtc('GETALL')[1])
         @RoleConfig('GETALL')
         @Get()
-        async fetchAll(@Query() s?: SEARCH) {
-            return await service.fetchAll(s);
+        @UseGuards(UserIntercept)
+        async fetchAll(
+            @Query() s?: SEARCH,
+            @CurrentUser() user?: UserAuthBackendDTO,
+        ) {
+            return await service.fetchAll(s, user);
         }
         @RoleConfig('GETALL')
         @Get('_search')
-        async search(@Query() s: SEARCH & SearchRequest) {
-            return await service.searchPagination(s);
+        @UseGuards(UserIntercept)
+        async search(
+            @Query() s: SEARCH & SearchRequest,
+            @CurrentUser() user?: UserAuthBackendDTO,
+        ) {
+            return await service.searchPagination(s, user);
         }
         @Get('/:id')
         @RoleConfig('GETID')
-        async fetchOne(@Param() { id }: { id: any }) {
-            return await service.fetchOne(id);
+        @UseGuards(UserIntercept)
+        async fetchOne(
+            @Param() { id }: { id: any },
+            @CurrentUser() user?: UserAuthBackendDTO,
+        ) {
+            return await service.fetchOne(id, user);
         }
 
         @RoleConfig('ADD')
         @Post()
-        async add(@Body() body: INPUT) {
-            return await service.create(body);
+        @UseGuards(UserIntercept)
+        async add(
+            @Body() body: INPUT,
+            @CurrentUser() user?: UserAuthBackendDTO,
+        ) {
+            return await service.create(body, user);
         }
 
         @RoleConfig('EDIT')
         @Put()
-        async edit(@Body() body: INPUT) {
+        @UseGuards(UserIntercept)
+        async edit(
+            @Body() body: INPUT,
+            @CurrentUser() user?: UserAuthBackendDTO,
+        ) {
             if (body._id == null) {
                 throw new NotFoundException();
             }
-            return await service.edit(body);
+            return await service.edit(body, user);
         }
 
         @Delete(':id')
         @RoleConfig('REMOVE')
-        async remove(@Param() { id }: { id: any }) {
-            return await service.remove(id);
+        @UseGuards(UserIntercept)
+        async remove(
+            @Param() { id }: { id: any },
+            @CurrentUser() user?: UserAuthBackendDTO,
+        ) {
+            return await service.remove(id, user);
         }
     }
 

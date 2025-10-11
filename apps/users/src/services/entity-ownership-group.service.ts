@@ -14,7 +14,6 @@ import {
 
 @Injectable()
 export class EntityOwnershipGroupService {
-
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
         timestamp: true,
     });
@@ -23,7 +22,7 @@ export class EntityOwnershipGroupService {
         @InjectModel(EntityOwnershipGroup.name)
         private eogModel: Model<EntityOwnershipGroup>,
         private mapper: EntityOwnershipGroupMapper,
-    ) { }
+    ) {}
 
     async createGroup(
         eogDto: EntityOwnershipGroupCreateDTO,
@@ -32,7 +31,7 @@ export class EntityOwnershipGroupService {
         const entity = this.mapper.toEntity(eogDto);
         entity.userCapabilities.push({
             userId: eogDto.initialUserId,
-            groupCapability: 'OWNER',
+            groupCapability: eogDto.initialUserGroupCapability || 'OWNER',
             capability: eogDto.initialUserEntityCapability,
         } as EOGUserCapabilityDTO);
         await entity.save();
@@ -50,9 +49,15 @@ export class EntityOwnershipGroupService {
         return this.eogModel.findById(id).exec();
     }
 
-    searchByUserId(userId: string, capacity: string | undefined): Promise<EntityOwnershipGroupDTO[]> {
+    searchByUserId(
+        userId: string,
+        capacity: string | undefined,
+    ): Promise<EntityOwnershipGroupDTO[]> {
         return this.eogModel
-            .find({ 'userCapabilities.userId': userId, 'userCapabilities.capability': capacity })
+            .find({
+                'userCapabilities.userId': userId,
+                'userCapabilities.capability': capacity,
+            })
             .exec()
             .then((entities) => entities.map((e) => this.mapper.toDto(e)));
     }

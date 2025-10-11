@@ -4,6 +4,10 @@ export class EntityOwnershipGroupCreateDTO {
     userCapabilities: EOGUserCapabilityDTO[];
     initialUserId: string;
     initialUserEntityCapability: string;
+    /**
+     * Default: OWNER
+     */
+    initialUserGroupCapability?: 'OWNER' | 'VIEWER' | 'ADJUST_MEMBERS' | 'ONLY_EDIT_MEMBER_CAPABILITIES';
 }
 
 export class EntityOwnershipGroupDTO {

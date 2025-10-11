@@ -4,6 +4,7 @@ import { SearchRequest, SearchResult } from '@ubs-platform/crud-base-common';
 import { FilterQuery, HydratedDocument, Model, ObjectId } from 'mongoose';
 import { BaseCrudKlass } from './base-crud-klass';
 import { SearchUtil } from './util/search.util';
+import { UserAuthBackendDTO } from '@ubs-platform/users-common';
 
 export abstract class BaseCrudService<
     MODEL,
@@ -19,7 +20,7 @@ export abstract class BaseCrudService<
     abstract moveIntoModel(model: MODEL, i: INPUT): Promise<MODEL> | MODEL;
     abstract searchParams(s?: Partial<SEARCH>): FilterQuery<MODEL>;
 
-    async convertAndReturnTheList(list: MODEL[]) {
+    async convertAndReturnTheList(list: MODEL[], user?: UserAuthBackendDTO) {
         const outputList: OUTPUT[] = [];
         for (let index = 0; index < list.length; index++) {
             const item = list[index];
@@ -30,6 +31,7 @@ export abstract class BaseCrudService<
 
     async searchPagination(
         searchAndPagination?: SEARCH & SearchRequest,
+        user?: UserAuthBackendDTO,
     ): Promise<SearchResult<OUTPUT>> {
         const page = searchAndPagination?.page || 0,
             size = searchAndPagination?.size || 10;
@@ -47,27 +49,33 @@ export abstract class BaseCrudService<
         ).mapAsync((a) => this.toOutput(a));
     }
 
-    async fetchAll(s?: Partial<SEARCH>): Promise<OUTPUT[]> {
+    async fetchAll(
+        s?: Partial<SEARCH>,
+        user?: UserAuthBackendDTO,
+    ): Promise<OUTPUT[]> {
         const list = await this.m.find(this.searchParams(s)).exec();
-        return await this.convertAndReturnTheList(list);
+        return await this.convertAndReturnTheList(list, user);
     }
 
-    async fetchOne(id: string | ObjectId): Promise<OUTPUT> {
+    async fetchOne(
+        id: string | ObjectId,
+        user?: UserAuthBackendDTO,
+    ): Promise<OUTPUT> {
         return this.toOutput((await this.m.findById(id)) as MODEL);
     }
 
-    async create(input: INPUT): Promise<OUTPUT> {
+    async create(input: INPUT, user?: UserAuthBackendDTO): Promise<OUTPUT> {
         let newModel = new this.m();
         await this.moveIntoModel(newModel, input);
-        this.beforeCreateOrEdit(newModel, "CREATE");
+        await this.beforeCreateOrEdit(newModel, 'CREATE', user);
 
         await (newModel as HydratedDocument<MODEL, {}, unknown>).save();
         const out = await this.toOutput(newModel);
-        await this.afterCreate(out);
+        await this.afterCreate(out, user);
         return out;
     }
 
-    async edit(input: INPUT): Promise<OUTPUT> {
+    async edit(input: INPUT, user?: UserAuthBackendDTO): Promise<OUTPUT> {
         const newModelFirst = await this.m.findById(input._id);
 
         const newModel = await this.moveIntoModel(
@@ -75,22 +83,29 @@ export abstract class BaseCrudService<
             input,
         );
 
-        this.beforeCreateOrEdit(newModel, "EDIT");
+        await this.beforeCreateOrEdit(newModel, 'EDIT', user);
 
         await (newModel as HydratedDocument<MODEL, {}, unknown>).save();
 
         return this.toOutput(newModel as MODEL);
     }
 
-    async remove(id: string | ObjectId): Promise<OUTPUT> {
+    async remove(
+        id: string | ObjectId,
+        user?: UserAuthBackendDTO,
+    ): Promise<OUTPUT> {
         let ac = await this.m.findById(id)!;
         await ac!.deleteOne();
         return this.toOutput(ac as MODEL);
     }
 
-    async afterCreate(m: OUTPUT) {}
+    async afterCreate(m: OUTPUT, user?: UserAuthBackendDTO) {}
 
-    async beforeCreateOrEdit(i: MODEL, mode : "EDIT" | "CREATE") {}
+    async beforeCreateOrEdit(
+        i: MODEL,
+        mode: 'EDIT' | 'CREATE',
+        user?: UserAuthBackendDTO,
+    ) {}
 }
 
 // return BaseCrudService;
