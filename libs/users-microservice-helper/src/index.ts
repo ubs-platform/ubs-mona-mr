@@ -6,3 +6,4 @@ export * from './current-user-decorator';
 export * from './service/user.service';
 export * from './service/entity-ownership.service';
 export * from './user-kafka-events';
+export * from './service/entity-ownership-group-client.service';
