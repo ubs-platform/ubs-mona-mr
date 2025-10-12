@@ -42,6 +42,9 @@ import { UserRegisterController } from './web/user-registration.controller';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CacheManagerModule, CacheManagerService } from '@ubs-platform/cache-manager';
 import { EntityOwnershipGroup, EntityOwnershipGroupSchema } from './domain/entity-ownership-group.schema';
+import { EntityOwnershipGroupMicroserviceController } from './web/entity-ownership-group-microservice.controller';
+import { EntityOwnershipGroupService } from './services/entity-ownership-group.service';
+import { EntityOwnershipGroupMapper } from './mapper/entity-ownership-group.mapper';
 
 @Module({
     controllers: [
@@ -52,6 +55,7 @@ import { EntityOwnershipGroup, EntityOwnershipGroupSchema } from './domain/entit
         EntityOwnershipController,
         UserMicroserviceController,
         UserRegisterController,
+        EntityOwnershipGroupMicroserviceController
     ],
 
     imports: [
@@ -90,6 +94,8 @@ import { EntityOwnershipGroup, EntityOwnershipGroupSchema } from './domain/entit
         EmailService,
         EntityOwnershipService,
         EntityOwnershipMapper,
+        EntityOwnershipGroupService,
+        EntityOwnershipGroupMapper
     ],
     exports: [],
 })

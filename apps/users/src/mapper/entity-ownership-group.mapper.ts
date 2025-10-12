@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { EntityOwnershipGroup } from "../domain/entity-ownership-group.schema";
-import { EntityOwnershipGroupDTO } from "libs/users-common/src/entity-ownership-group";
+import { EntityOwnershipGroupCreateDTO, EntityOwnershipGroupDTO } from "libs/users-common/src/entity-ownership-group";
 
 @Injectable()
 export class EntityOwnershipGroupMapper {
@@ -12,8 +12,23 @@ export class EntityOwnershipGroupMapper {
         private eogModel: Model<EntityOwnershipGroup>,
     ) { }
 
+    toEntityCreate(eogDto: EntityOwnershipGroupCreateDTO) {
+        return new this.eogModel({
+            groupName: eogDto.groupName,
+            description: eogDto.description,
+            userCapabilities: [
+                {
+                    userId: eogDto.initialUserId,
+                    capability: eogDto.initialUserEntityCapability,
+                    groupCapability: eogDto.initialUserGroupCapability || 'OWNER',
+                }
+            ]
+        });
+    }
+
     toEntity(eogDto: EntityOwnershipGroupDTO) {
         return new this.eogModel({
+            _id: eogDto.id,
             groupName: eogDto.groupName,
             description: eogDto.description,
             userCapabilities: eogDto.userCapabilities.map((a) => ({

@@ -22,20 +22,15 @@ export class EntityOwnershipGroupService {
         @InjectModel(EntityOwnershipGroup.name)
         private eogModel: Model<EntityOwnershipGroup>,
         private mapper: EntityOwnershipGroupMapper,
-    ) {}
+    ) { }
 
     async createGroup(
         eogDto: EntityOwnershipGroupCreateDTO,
     ): Promise<EntityOwnershipGroup> {
         this.logger.debug('EOG CREATE', eogDto.groupName);
-        const entity = this.mapper.toEntity(eogDto);
-        entity.userCapabilities.push({
-            userId: eogDto.initialUserId,
-            groupCapability: eogDto.initialUserGroupCapability || 'OWNER',
-            capability: eogDto.initialUserEntityCapability,
-        } as EOGUserCapabilityDTO);
+        const entity = this.mapper.toEntityCreate(eogDto);
         await entity.save();
-        return entity;
+        return this.mapper.toDto(entity);
     }
 
     async findGroupsUserIn(userId: string): Promise<EntityOwnershipGroupDTO[]> {
@@ -65,7 +60,7 @@ export class EntityOwnershipGroupService {
     async addUserCapability(
         groupId: string,
         userCapability: EOGUserCapabilityDTO,
-    ): Promise<void> {
+    ): Promise<EntityOwnershipGroupDTO> {
         const group = await this.getById(groupId);
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
@@ -83,12 +78,14 @@ export class EntityOwnershipGroupService {
                 groupId,
                 userCapability,
             );
-            return;
+            return this.mapper.toDto(group);
+
         }
 
         group.userCapabilities = group.userCapabilities || [];
         group.userCapabilities.push(userCapability);
         await (group as any).save();
+        return this.mapper.toDto(group);
     }
 
     async removeUserCapability(

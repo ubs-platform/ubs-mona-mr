@@ -1,7 +1,6 @@
 export class EntityOwnershipGroupCreateDTO {
     groupName: string;
     description?: string;
-    userCapabilities: EOGUserCapabilityDTO[];
     initialUserId: string;
     initialUserEntityCapability: string;
     /**
@@ -11,6 +10,7 @@ export class EntityOwnershipGroupCreateDTO {
 }
 
 export class EntityOwnershipGroupDTO {
+    id?: string;
     groupName: string;
     description?: string;
     userCapabilities: EOGUserCapabilityDTO[];

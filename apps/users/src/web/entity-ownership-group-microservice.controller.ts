@@ -22,20 +22,20 @@ export class EntityOwnershipGroupMicroserviceController {
 
     @EventPattern(EOGroupEventConsts.createGroup)
     async insertOwnershipGroup(eog: EntityOwnershipGroupCreateDTO) {
-        await this.eogService.createGroup(eog);
         this.cacheman.invalidateRegex(/eog-*/);
+        return await this.eogService.createGroup(eog);
     }
 
     @EventPattern(EOGroupEventConsts.addUserCapability)
     async addUserCapability(data: { groupId: string, userCapability: any }) {
-        await this.eogService.addUserCapability(data.groupId, data.userCapability);
         this.cacheman.invalidateRegex(/eog-*/);
+        return await this.eogService.addUserCapability(data.groupId, data.userCapability);
     }
 
     @EventPattern(EOGroupEventConsts.removeUserCapability)
     async removeUserCapability(data: { groupId: string, userId: string, capability: string }) {
-        await this.eogService.removeUserCapability(data.groupId, data.userId, data.capability);
         this.cacheman.invalidateRegex(/eog-*/);
+        return await this.eogService.removeUserCapability(data.groupId, data.userId, data.capability);
     }
 
     @MessagePattern(EOGroupEventConsts.getById)
@@ -48,7 +48,7 @@ export class EntityOwnershipGroupMicroserviceController {
     }
 
     @MessagePattern(EOGroupEventConsts.searchByUserId)
-    async searchByUserId(searchParams: {userId: string, capacity?:string}): Promise<EntityOwnershipGroupDTO[]> {
+    async searchByUserId(searchParams: { userId: string, capacity?: string }): Promise<EntityOwnershipGroupDTO[]> {
         return this.cacheman.getOrCallAsync(
             `eog-searchByUserId ${searchParams.userId}`,
             () => this.eogService.searchByUserId(searchParams.userId, searchParams.capacity),
