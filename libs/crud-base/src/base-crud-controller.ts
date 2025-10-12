@@ -22,6 +22,7 @@ import { BaseCrudService } from '@ubs-platform/crud-base';
 import { BaseCrudKlass } from './base-crud-klass';
 import { SearchRequest } from '@ubs-platform/crud-base-common';
 import { UserAuthBackendDTO } from '@ubs-platform/users-common';
+import { Optional } from '@ubs-platform/crud-base-common/utils';
 
 export type RoleAuthorizationConfigKey =
     | 'EDIT'
@@ -114,7 +115,8 @@ export const BaseCrudControllerGenerator = <
             @Query() s?: SEARCH,
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
-            return await service.fetchAll(s, user);
+            const manipulatedSearch = this.manipulateSearch(user, s);
+            return await service.fetchAll(manipulatedSearch, user);
         }
         @RoleConfig('GETALL')
         @Get('_search')
@@ -123,7 +125,8 @@ export const BaseCrudControllerGenerator = <
             @Query() s: SEARCH & SearchRequest,
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
-            return await service.searchPagination(s, user);
+            const manipulatedSearch = this.manipulateSearch(user, s);
+            return await service.searchPagination(manipulatedSearch, user);
         }
         @Get('/:id')
         @RoleConfig('GETID')
@@ -142,6 +145,8 @@ export const BaseCrudControllerGenerator = <
             @Body() body: INPUT,
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
+            this.checkUser("ADD", user, null, body);
+
             return await service.create(body, user);
         }
 
@@ -155,6 +160,9 @@ export const BaseCrudControllerGenerator = <
             if (body._id == null) {
                 throw new NotFoundException();
             }
+            this.checkUser("EDIT", user, null, body);
+
+            // this.checkUser(user, nu)
             return await service.edit(body, user);
         }
 
@@ -165,7 +173,20 @@ export const BaseCrudControllerGenerator = <
             @Param() { id }: { id: any },
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
+            this.checkUser("REMOVE", user, { id }, null);
+            // if (id == null) {
+            //     throw new NotFoundException();
+            // this.checkUser(user, { id } as any, "REMOVE", undefined);
             return await service.remove(id, user);
+        }
+
+        checkUser(operation: "ADD" | "EDIT" | "REMOVE" | "GETALL" | "GETID", user: Optional<UserAuthBackendDTO>, queriesAndPaths: Optional<{ [key: string]: any }>, body: Optional<INPUT>) {
+            // Implement your user checking logic here
+        }
+
+        manipulateSearch(user: Optional<UserAuthBackendDTO>, queriesAndPaths: Optional<SEARCH>) : any {
+            // Implement your user checking logic here
+            return queriesAndPaths;
         }
     }
 

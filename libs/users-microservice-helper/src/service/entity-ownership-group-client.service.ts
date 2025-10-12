@@ -20,6 +20,10 @@ export class EntityOwnershipGroupClientService {
         private kafkaClient: ClientProxy | ClientKafka | ClientRMQ,
     ) { }
 
+    findByUserIds(userIds: string[]): Observable<EntityOwnershipGroupDTO[]> {
+        return this.kafkaClient.send<EntityOwnershipGroupDTO[]>(EOGroupEventConsts.getByUserIds, userIds);
+    }
+
     insert(eog: EntityOwnershipGroupCreateDTO): Observable<EntityOwnershipGroupDTO> {
         return this.kafkaClient.send<EntityOwnershipGroupDTO>(EOGroupEventConsts.createGroup, eog);
     }

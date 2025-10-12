@@ -20,6 +20,11 @@ export class EntityOwnershipGroupMicroserviceController {
         private cacheman: CacheManagerService,
     ) { }
 
+    @EventPattern(EOGroupEventConsts.getByUserIds)
+    async getByUserIds(userIds: string[]): Promise<EntityOwnershipGroupDTO[]> {
+        return await this.eogService.findGroupsUserIn(userIds);
+    }
+
     @EventPattern(EOGroupEventConsts.createGroup)
     async insertOwnershipGroup(eog: EntityOwnershipGroupCreateDTO) {
         this.cacheman.invalidateRegex(/eog-*/);

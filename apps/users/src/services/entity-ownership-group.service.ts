@@ -33,9 +33,9 @@ export class EntityOwnershipGroupService {
         return this.mapper.toDto(entity);
     }
 
-    async findGroupsUserIn(userId: string): Promise<EntityOwnershipGroupDTO[]> {
+    async findGroupsUserIn(userIds: string[]): Promise<EntityOwnershipGroupDTO[]> {
         return this.eogModel
-            .find({ 'userCapabilities.userId': userId })
+            .find({ 'userCapabilities.userId': { $in: userIds } })
             .exec()
             .then((entities) => entities.map((e) => this.mapper.toDto(e)));
     }
