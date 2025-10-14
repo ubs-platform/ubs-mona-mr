@@ -14,7 +14,6 @@ import {
 
 @Injectable()
 export class EntityOwnershipGroupService {
-
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
         timestamp: true,
     });
@@ -24,6 +23,22 @@ export class EntityOwnershipGroupService {
         private eogModel: Model<EntityOwnershipGroup>,
         private mapper: EntityOwnershipGroupMapper,
     ) {}
+
+    async fetchUsersInGroup(id: string): Promise<EOGUserCapabilityDTO[]> {
+        const found = await this.eogModel.findById(id).exec();
+
+        if (!found) {
+            throw new Error('EntityOwnershipGroup not found');
+        }
+
+        return found.userCapabilities.map((a) => {
+            return {
+                userId: a.userId!,
+                capability: a.capability,
+                groupCapability: a.groupCapability,
+            };
+        });
+    }
 
     async createGroup(
         eogDto: EntityOwnershipGroupCreateDTO,
@@ -37,18 +52,20 @@ export class EntityOwnershipGroupService {
     async hasUserGroupCapability(
         entityOwnershipGroupId: string,
         currentUserId: string,
-        groupCapabilitiesAtLeastOne: GroupCapability[]
+        groupCapabilitiesAtLeastOne: GroupCapability[],
     ): Promise<boolean> {
         const group = await this.getById(entityOwnershipGroupId);
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
         }
 
-        return group.userCapabilities?.some(
-            (uc) =>
-                uc.userId === currentUserId &&
-                groupCapabilitiesAtLeastOne.includes(uc.groupCapability),
-        ) || false;
+        return (
+            group.userCapabilities?.some(
+                (uc) =>
+                    uc.userId === currentUserId &&
+                    groupCapabilitiesAtLeastOne.includes(uc.groupCapability),
+            ) || false
+        );
     }
 
     async findGroupsUserIn(
@@ -136,7 +153,8 @@ export class EntityOwnershipGroupService {
         }
 
         group.userCapabilities[index].capability = userCapability.capability;
-        group.userCapabilities[index].groupCapability = userCapability.groupCapability;
+        group.userCapabilities[index].groupCapability =
+            userCapability.groupCapability;
         await (group as any).save();
         return this.mapper.toDto(group);
     }

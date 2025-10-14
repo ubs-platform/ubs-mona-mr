@@ -2,6 +2,7 @@ import {
     Body,
     Controller,
     Delete,
+    Get,
     Injectable,
     Param,
     Post,
@@ -38,6 +39,13 @@ export class EntityOwnershipGroupController {
                 `User ${currentUserId} does not have capability ${groupCapabilitiesAtLeastOne} in entity ownership group ${entityOwnershipGroupId}`,
             );
         }
+    }
+
+    @Get('{id}/users')
+    async fetchUsersInGroup(
+        @Param('id') id: string,
+    ): Promise<EOGUserCapabilityDTO[]> {
+        return await this.eogService.fetchUsersInGroup(id);
     }
 
     @UseGuards(JwtAuthLocalGuard)

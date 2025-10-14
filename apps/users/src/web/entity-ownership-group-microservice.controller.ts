@@ -40,7 +40,7 @@ export class EntityOwnershipGroupMicroserviceController {
     @EventPattern(EOGroupEventConsts.removeUserCapability)
     async removeUserCapability(data: { groupId: string, userId: string, capability: string }) {
         this.cacheman.invalidateRegex(/eog-*/);
-        return await this.eogService.removeUserCapability(data.groupId, data.userId, data.capability);
+        return await this.eogService.removeUserCapability(data.groupId, data.userId);
     }
 
     @MessagePattern(EOGroupEventConsts.getById)
