@@ -37,6 +37,15 @@
         "tsConfigPath": "libs/crud-base-common/tsconfig.lib.json"
       }
     },
+    "dev-monolith": {
+      "type": "application",
+      "root": "apps/dev-monolith",
+      "entryFile": "main",
+      "sourceRoot": "apps/dev-monolith/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/dev-monolith/tsconfig.app.json"
+      }
+    },
     "dynamic-queue": {
       "type": "library",
       "root": "libs/dynamic-queue",

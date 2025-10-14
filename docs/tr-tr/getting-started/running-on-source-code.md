@@ -14,6 +14,10 @@ Uygulama isimleri "apps" klasörü altındaki klasörlere bakabilirsiniz. Şu an
 
 - **Notify** - Email için gerekli şablonları tutar ve bu şablonlardan email hazırlayarak gönderir. Kafka ve Rest API kullanır. 
 
+
+- **Dev Monolith** - Bütün mikroservislerin bir arada tek port üstünde çalışmasını sağlar
+
+
 Bu uygulamaları herbiri ayrı terminalde şu şekilde çalıştırılabilir:
 
 ```

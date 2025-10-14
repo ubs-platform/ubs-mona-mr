@@ -2,7 +2,7 @@
   "exclude": [
     "./tools",
     "./infrastructure",
-    "./dist",
+    "./dist"
   ],
   "compilerOptions": {
     "module": "commonjs",
