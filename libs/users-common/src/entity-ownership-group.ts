@@ -1,3 +1,9 @@
+export type GroupCapability =
+    | 'OWNER'
+    | 'VIEWER'
+    | 'ADJUST_MEMBERS'
+    | 'ONLY_EDIT_MEMBER_CAPABILITIES';
+
 export class EntityOwnershipGroupCreateDTO {
     groupName: string;
     description?: string;

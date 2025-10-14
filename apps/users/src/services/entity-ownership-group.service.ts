@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
-import { UserCapabilityDTO } from '@ubs-platform/users-common';
 import { UserService } from '@ubs-platform/users-microservice-helper';
 import { Model } from 'mongoose';
 import { EntityOwnershipGroup } from '../domain/entity-ownership-group.schema';
@@ -10,10 +9,12 @@ import {
     EntityOwnershipGroupCreateDTO,
     EntityOwnershipGroupDTO,
     EOGUserCapabilityDTO,
+    GroupCapability,
 } from 'libs/users-common/src/entity-ownership-group';
 
 @Injectable()
 export class EntityOwnershipGroupService {
+
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
         timestamp: true,
     });
@@ -22,7 +23,7 @@ export class EntityOwnershipGroupService {
         @InjectModel(EntityOwnershipGroup.name)
         private eogModel: Model<EntityOwnershipGroup>,
         private mapper: EntityOwnershipGroupMapper,
-    ) { }
+    ) {}
 
     async createGroup(
         eogDto: EntityOwnershipGroupCreateDTO,
@@ -33,7 +34,26 @@ export class EntityOwnershipGroupService {
         return this.mapper.toDto(entity);
     }
 
-    async findGroupsUserIn(userIds: string[]): Promise<EntityOwnershipGroupDTO[]> {
+    async hasUserGroupCapability(
+        entityOwnershipGroupId: string,
+        currentUserId: string,
+        groupCapabilitiesAtLeastOne: GroupCapability[]
+    ): Promise<boolean> {
+        const group = await this.getById(entityOwnershipGroupId);
+        if (!group) {
+            throw new Error('EntityOwnershipGroup not found');
+        }
+
+        return group.userCapabilities?.some(
+            (uc) =>
+                uc.userId === currentUserId &&
+                groupCapabilitiesAtLeastOne.includes(uc.groupCapability),
+        ) || false;
+    }
+
+    async findGroupsUserIn(
+        userIds: string[],
+    ): Promise<EntityOwnershipGroupDTO[]> {
         return this.eogModel
             .find({ 'userCapabilities.userId': { $in: userIds } })
             .exec()
@@ -79,7 +99,6 @@ export class EntityOwnershipGroupService {
                 userCapability,
             );
             return this.mapper.toDto(group);
-
         }
 
         group.userCapabilities = group.userCapabilities || [];
@@ -88,19 +107,37 @@ export class EntityOwnershipGroupService {
         return this.mapper.toDto(group);
     }
 
-    async removeUserCapability(
-        groupId: string,
-        userId: string,
-        capability: string,
-    ): Promise<void> {
+    async removeUserCapability(groupId: string, userId: string): Promise<void> {
         const group = await this.getById(groupId);
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
         }
 
         group.userCapabilities = group.userCapabilities?.filter(
-            (uc) => !(uc.userId === userId && uc.capability === capability),
+            (uc) => !(uc.userId === userId),
         );
         await (group as any).save();
+    }
+
+    async updateUserCapability(
+        groupId: string,
+        userCapability: EOGUserCapabilityDTO,
+    ): Promise<EntityOwnershipGroupDTO> {
+        const group = await this.getById(groupId);
+        if (!group) {
+            throw new Error('EntityOwnershipGroup not found');
+        }
+
+        const index = group.userCapabilities?.findIndex(
+            (uc) => uc.userId === userCapability.userId,
+        );
+        if (index === undefined || index < 0) {
+            throw new Error('UserCapability not found in group');
+        }
+
+        group.userCapabilities[index].capability = userCapability.capability;
+        group.userCapabilities[index].groupCapability = userCapability.groupCapability;
+        await (group as any).save();
+        return this.mapper.toDto(group);
     }
 }
