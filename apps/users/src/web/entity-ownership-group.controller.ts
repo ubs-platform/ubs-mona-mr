@@ -41,7 +41,7 @@ export class EntityOwnershipGroupController {
         }
     }
 
-    @Get('{id}/users')
+    @Get(':id/users')
     async fetchUsersInGroup(
         @Param('id') id: string,
     ): Promise<EOGUserCapabilityDTO[]> {
@@ -49,7 +49,7 @@ export class EntityOwnershipGroupController {
     }
 
     @UseGuards(JwtAuthLocalGuard)
-    @Post('{id}/capability')
+    @Post(':id/capability')
     async addUserToEntityOwnership(
         @Param('id') id: string,
         @Body() body: EOGUserCapabilityDTO,
@@ -63,7 +63,7 @@ export class EntityOwnershipGroupController {
     }
 
     @UseGuards(JwtAuthLocalGuard)
-    @Delete('{id}/capability/{userId}')
+    @Delete(':id/capability/{userId}')
     async removeUserFromEntityOwnership(
         @Param('id') id: string,
         @Param('userId') userId: string,
