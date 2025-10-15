@@ -3,6 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { EntityOwnershipGroup } from "../domain/entity-ownership-group.schema";
 import { EntityOwnershipGroupCreateDTO, EntityOwnershipGroupDTO } from "libs/users-common/src/entity-ownership-group";
+import { UserService } from "../services/user.service";
 
 @Injectable()
 export class EntityOwnershipGroupMapper {
@@ -10,6 +11,7 @@ export class EntityOwnershipGroupMapper {
     constructor(
         @InjectModel(EntityOwnershipGroup.name)
         private eogModel: Model<EntityOwnershipGroup>,
+        private userService: UserService,
     ) { }
 
     toEntityCreate(eogDto: EntityOwnershipGroupCreateDTO) {

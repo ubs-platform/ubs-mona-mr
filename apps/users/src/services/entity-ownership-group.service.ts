@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
-import { UserService } from '@ubs-platform/users-microservice-helper';
 import { Model } from 'mongoose';
 import { EntityOwnershipGroup } from '../domain/entity-ownership-group.schema';
 import { EntityOwnershipGroupMapper } from '../mapper/entity-ownership-group.mapper';
@@ -11,6 +10,7 @@ import {
     EOGUserCapabilityDTO,
     GroupCapability,
 } from 'libs/users-common/src/entity-ownership-group';
+import { UserService } from './user.service';
 
 @Injectable()
 export class EntityOwnershipGroupService {
@@ -22,6 +22,7 @@ export class EntityOwnershipGroupService {
         @InjectModel(EntityOwnershipGroup.name)
         private eogModel: Model<EntityOwnershipGroup>,
         private mapper: EntityOwnershipGroupMapper,
+        private userService: UserService,
     ) {}
 
     async fetchUsersInGroup(id: string): Promise<EOGUserCapabilityDTO[]> {
