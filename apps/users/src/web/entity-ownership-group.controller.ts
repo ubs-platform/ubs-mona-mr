@@ -63,7 +63,7 @@ export class EntityOwnershipGroupController {
     }
 
     @UseGuards(JwtAuthLocalGuard)
-    @Delete(':id/capability/{userId}')
+    @Delete(':id/capability/:userId')
     async removeUserFromEntityOwnership(
         @Param('id') id: string,
         @Param('userId') userId: string,
