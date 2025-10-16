@@ -24,6 +24,7 @@ export class EntityOwnershipGroupDTO {
 
 export class EOGUserCapabilityDTO {
     userId: string;
+    userFullName?: string;
     capability?: string;
     groupCapability:
         | 'OWNER'

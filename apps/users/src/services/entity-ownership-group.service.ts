@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
-import { UserService } from '@ubs-platform/users-microservice-helper';
+import { UserService } from './user.service';
 import { Model } from 'mongoose';
 import { EntityOwnershipGroup } from '../domain/entity-ownership-group.schema';
 import { EntityOwnershipGroupMapper } from '../mapper/entity-ownership-group.mapper';
@@ -22,6 +22,7 @@ export class EntityOwnershipGroupService {
         @InjectModel(EntityOwnershipGroup.name)
         private eogModel: Model<EntityOwnershipGroup>,
         private mapper: EntityOwnershipGroupMapper,
+        private userServiceLocal: UserService
     ) {}
 
     async fetchUsersInGroup(id: string): Promise<EOGUserCapabilityDTO[]> {
@@ -36,6 +37,7 @@ export class EntityOwnershipGroupService {
                 userId: a.userId!,
                 capability: a.capability,
                 groupCapability: a.groupCapability,
+                userFullName: a.userFullName,
             };
         });
     }
@@ -44,7 +46,7 @@ export class EntityOwnershipGroupService {
         eogDto: EntityOwnershipGroupCreateDTO,
     ): Promise<EntityOwnershipGroup> {
         this.logger.debug('EOG CREATE', eogDto.groupName);
-        const entity = this.mapper.toEntityCreate(eogDto);
+        const entity = await this.mapper.toEntityCreate(eogDto);
         await entity.save();
         return this.mapper.toDto(entity);
     }
@@ -102,6 +104,9 @@ export class EntityOwnershipGroupService {
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
         }
+
+        const user = await this.userServiceLocal.findById(userCapability.userId);
+        userCapability.userFullName = user?.name + ' ' + user?.surname;
 
         if (
             group.userCapabilities?.some(

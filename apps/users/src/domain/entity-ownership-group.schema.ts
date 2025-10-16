@@ -5,6 +5,8 @@ export class UserCapability {
     userId?: string;
     capability?: string;
     groupCapability: GroupCapability;
+    userFullName?: string;
+
     /**
      * Group capability defines the ability of the EntityOwnershipGroup as a whole.
      */
