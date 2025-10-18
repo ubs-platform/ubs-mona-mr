@@ -11,6 +11,9 @@ import {
     GroupCapability,
 } from 'libs/users-common/src/entity-ownership-group';
 import { UserService } from './user.service';
+import { EntityOwnershipGroupInvitation } from '../domain/entity-ownership-group-invitation.schema';
+import { UserAuthBackendDTO } from '@ubs-platform/users-common';
+import { EmailService } from './email.service';
 
 @Injectable()
 export class EntityOwnershipGroupService {
@@ -21,9 +24,12 @@ export class EntityOwnershipGroupService {
     constructor(
         @InjectModel(EntityOwnershipGroup.name)
         private eogModel: Model<EntityOwnershipGroup>,
+        @InjectModel(EntityOwnershipGroupInvitation.name)
+        private eogInvitationModel: Model<EntityOwnershipGroupInvitation>,
         private mapper: EntityOwnershipGroupMapper,
-        private userServiceLocal: UserService
-    ) {}
+        private userServiceLocal: UserService,
+        private emailService: EmailService
+    ) { }
 
     async fetchUsersInGroup(id: string): Promise<EOGUserCapabilityDTO[]> {
         const found = await this.eogModel.findById(id).exec();
@@ -127,6 +133,49 @@ export class EntityOwnershipGroupService {
         group.userCapabilities.push(userCapability);
         await (group as any).save();
         return this.mapper.toDto(group);
+    }
+
+    async addUserCapabilityInvite(
+        groupId: string,
+        userCapability: EOGUserCapabilityDTO,
+        currentUser: UserAuthBackendDTO
+    ): Promise<void> {
+        const group = await this.getById(groupId);
+        if (!group) {
+            throw new Error('EntityOwnershipGroup not found');
+        }
+
+        const user = await this.userServiceLocal.findById(userCapability.userId);
+        userCapability.userFullName = user?.name + ' ' + user?.surname;
+
+        if (
+            group.userCapabilities?.some(
+                (uc) =>
+                    uc.userId === userCapability.userId &&
+                    uc.capability === userCapability.capability,
+            )
+        ) {
+            this.logger.debug(
+                'UserCapability already exists in group',
+                groupId,
+                userCapability,
+            );
+            // return this.mapper.toDto(group);
+        }
+
+        const invitation = new this.eogInvitationModel({
+            invitedUserName: user?.name + ' ' + user?.surname,
+            invitedUserId: userCapability.userId,
+            invitedByUserId: currentUser.id,
+            invitedByUserName: currentUser.name + ' ' + currentUser.surname,
+            entityOwnershipGroupId: groupId,
+            groupCapability: userCapability.groupCapability,
+            invitationKey: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+        });
+
+        await invitation.save();
+
+
     }
 
     async removeUserCapability(groupId: string, userId: string): Promise<void> {

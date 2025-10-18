@@ -46,6 +46,7 @@ import { EntityOwnershipGroupMicroserviceController } from './web/entity-ownersh
 import { EntityOwnershipGroupService } from './services/entity-ownership-group.service';
 import { EntityOwnershipGroupMapper } from './mapper/entity-ownership-group.mapper';
 import { EntityOwnershipGroupController } from './web/entity-ownership-group.controller';
+import { EntityOwnershipGroupInvitation, EntityOwnershipGroupInvitationSchema } from './domain/entity-ownership-group-invitation.schema';
 
 @Module({
     controllers: [
@@ -78,6 +79,7 @@ import { EntityOwnershipGroupController } from './web/entity-ownership-group.con
             { name: PwResetRequest.name, schema: PwResetRequestSchema },
             { name: UserCandiate.name, schema: UserCandiateSchema },
             { name: EntityOwnershipGroup.name, schema: EntityOwnershipGroupSchema },
+            { name: EntityOwnershipGroupInvitation.name, schema: EntityOwnershipGroupInvitationSchema },
         ]),
         ...BackendJwtUtilsExportModule,
         ClientsModule.register([
