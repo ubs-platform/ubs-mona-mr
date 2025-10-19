@@ -208,6 +208,35 @@ export class EntityOwnershipGroupService {
         });
     }
 
+    async addUserCapabilityAcceptInvite(
+        invitationKey: string,
+        currentUser: UserAuthBackendDTO
+    ): Promise<void> {
+        const invite = await this.eogInvitationModel.findOne({ invitationKey });
+        if (!invite) {
+            throw new Error('Invitation not found');
+        }
+
+        if (invite.invitedUserId !== currentUser.id) {
+            throw new Error('Invitation does not belong to the current user');
+        }
+
+        const group = await this.getById(invite.entityOwnershipGroupId);
+        if (!group) {
+            throw new Error('EntityOwnershipGroup not found');
+        }
+
+        const userCapability: EOGUserCapabilityDTO = {
+            userId: invite.invitedUserId,
+            groupCapability: invite.groupCapability,
+        };
+
+        await this.addUserCapability(group._id!, userCapability);
+
+        // Davet kullanıldıktan sonra silinir
+        await this.eogInvitationModel.deleteOne({ _id: invite._id }).exec();
+    }   
+
     async removeUserCapability(groupId: string, userId: string): Promise<void> {
         const group = await this.getById(groupId);
         if (!group) {
