@@ -8,6 +8,7 @@ import {
     EntityOwnershipGroupCreateDTO,
     EntityOwnershipGroupDTO,
     EOGUserCapabilityDTO,
+    EOGUserCapabilityInviteDTO,
     GroupCapability,
 } from 'libs/users-common/src/entity-ownership-group';
 import { UserService } from './user.service';
@@ -66,7 +67,6 @@ export class EntityOwnershipGroupService {
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
         }
-
         return (
             group.userCapabilities?.some(
                 (uc) =>
@@ -137,45 +137,75 @@ export class EntityOwnershipGroupService {
 
     async addUserCapabilityInvite(
         groupId: string,
-        userCapability: EOGUserCapabilityDTO,
+        userCapability: EOGUserCapabilityInviteDTO,
         currentUser: UserAuthBackendDTO
     ): Promise<void> {
+
+
+
         const group = await this.getById(groupId);
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
         }
 
-        const user = await this.userServiceLocal.findById(userCapability.userId);
-        userCapability.userFullName = user?.name + ' ' + user?.surname;
+        const userInvited = await this.userServiceLocal.findUserByLogin({
+            login: userCapability.userLogin,
+            password: '',
+        });
+        if (!userInvited) {
+            throw new Error('Invited user not found');
+        }
 
+        const invitedByName = `${currentUser.name} ${currentUser.surname}`;
+        const groupName = group.groupName;
+        const emailTemplate = 'lotus-publisher-team-invitation';
+        const emailSubject = 'ubs-user-email-change-title';
+        const invitationKey = Math.random().toString(36).substring(2, 15) +
+            Math.random().toString(36).substring(2, 15);
+
+        // Eğer kullanıcı zaten grupta aynı capability ile varsa davet oluşturmaya gerek yok
         if (
             group.userCapabilities?.some(
                 (uc) =>
-                    uc.userId === userCapability.userId &&
-                    uc.capability === userCapability.capability,
+                    uc.userId === userInvited.id &&
+                    uc.capability === userCapability.capability
             )
         ) {
             this.logger.debug(
                 'UserCapability already exists in group',
                 groupId,
-                userCapability,
+                userCapability
             );
-            // return this.mapper.toDto(group);
+            return;
         }
 
-        const invitation = new this.eogInvitationModel({
-            invitedUserName: user?.name + ' ' + user?.surname,
-            invitedUserId: userCapability.userId,
-            invitedByUserId: currentUser.id,
-            invitedByUserName: currentUser.name + ' ' + currentUser.surname,
-            entityOwnershipGroupId: groupId,
-            groupCapability: userCapability.groupCapability,
-            invitationKey: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+        let existingInvite = await this.eogInvitationModel
+            .findOne({
+                entityOwnershipGroupId: groupId,
+                invitedUserName: userCapability.userLogin,
+            })
+            .exec();
+
+        if (!existingInvite) {
+            existingInvite = new this.eogInvitationModel({
+                invitedUserName: `${userInvited.name} ${userInvited.surname}`,
+                invitedUserId: userInvited.id,
+                invitedByUserId: currentUser.id,
+                invitedByUserName: invitedByName,
+                entityOwnershipGroupId: groupId,
+                groupCapability: userCapability.groupCapability,
+                invitationKey,
+            });
+        }
+
+        existingInvite.invitationKey = invitationKey;
+        await existingInvite.save();
+
+        await this.emailService.sendEmail(userInvited, emailSubject, emailTemplate, {
+            invitationKey: existingInvite.invitationKey,
+            groupName,
+            invitedBy: invitedByName,
         });
-
-        await invitation.save();
-
-
     }
 
     async removeUserCapability(groupId: string, userId: string): Promise<void> {

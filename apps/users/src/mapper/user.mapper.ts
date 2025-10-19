@@ -177,7 +177,7 @@ export class UserMapper {
             surname: ub.surname,
             primaryEmail: this.lowerCased(ub.primaryEmail),
             active: ub.active,
-            id: ub._id,
+            id: ub._id.toString(),
             suspended: ub.suspended,
             localeCode: ub.localeCode,
             suspendReason: ub.suspendReason,

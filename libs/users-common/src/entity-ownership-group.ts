@@ -31,4 +31,17 @@ export class EOGUserCapabilityDTO {
         | 'VIEWER'
         | 'ADJUST_MEMBERS'
         | 'ONLY_EDIT_MEMBER_CAPABILITIES';
+    userCapabilityTemplateName?: string;
+}
+
+
+export class EOGUserCapabilityInviteDTO {
+    userLogin: string;
+    capability: string;
+    groupCapability:
+        | 'OWNER'
+        | 'VIEWER'
+        | 'ADJUST_MEMBERS'
+        | 'ONLY_EDIT_MEMBER_CAPABILITIES';
+    userCapabilityTemplateName?: string;
 }

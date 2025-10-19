@@ -13,14 +13,14 @@ export class EmailService {
 
     sendEmail(
         user: UserDTO | UserFullDto | User,
-        titleTemplateName: string,
+        subjectGlobalVariable: string,
         messageTemplateName: string,
         otherVariables: {},
     ) {
         this.eventClient.emit('email-reset', {
             to: user.primaryEmail,
             language: user.localeCode,
-            subject: `{{global:${titleTemplateName}}}`,
+            subject: `{{global:${subjectGlobalVariable}}}`,
             templateName: messageTemplateName,
             specialVariables: {
                 ...otherVariables,

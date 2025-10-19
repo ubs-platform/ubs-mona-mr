@@ -11,7 +11,9 @@ import {
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import {
     EOGUserCapabilityDTO,
+    EOGUserCapabilityInviteDTO,
     GroupCapability,
+    UserAuthBackendDTO,
     UserCapabilityDTO,
 } from '@ubs-platform/users-common';
 import { EntityOwnershipGroupService } from '../services/entity-ownership-group.service';
@@ -49,17 +51,17 @@ export class EntityOwnershipGroupController {
     }
 
     @UseGuards(JwtAuthLocalGuard)
-    @Post(':id/capability')
+    @Post(':id/capability/invite')
     async addUserToEntityOwnership(
         @Param('id') id: string,
-        @Body() body: EOGUserCapabilityDTO,
-        @CurrentUser() currentUser: UserCapabilityDTO,
+        @Body() body: EOGUserCapabilityInviteDTO,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        await this.assertHasUserGroupCapability(id, currentUser.userId, [
+        await this.assertHasUserGroupCapability(id, currentUser.id, [
             'OWNER',
             'ADJUST_MEMBERS',
         ]);
-        return await this.eogService.addUserCapability(id, body);
+        return await this.eogService.addUserCapabilityInvite(id, body, currentUser);
     }
 
     @UseGuards(JwtAuthLocalGuard)
@@ -67,9 +69,9 @@ export class EntityOwnershipGroupController {
     async removeUserFromEntityOwnership(
         @Param('id') id: string,
         @Param('userId') userId: string,
-        @CurrentUser() currentUser: UserCapabilityDTO,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        await this.assertHasUserGroupCapability(id, currentUser.userId, [
+        await this.assertHasUserGroupCapability(id, currentUser.id, [
             'OWNER',
             'ADJUST_MEMBERS',
         ]);
