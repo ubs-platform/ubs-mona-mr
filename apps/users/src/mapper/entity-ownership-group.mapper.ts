@@ -5,7 +5,7 @@ import { EntityOwnershipGroup } from '../domain/entity-ownership-group.schema';
 import {
     EntityOwnershipGroupCreateDTO,
     EntityOwnershipGroupDTO,
-} from 'libs/users-common/src/entity-ownership-group';
+} from '@ubs-platform/users-common';
 import { UserService } from '../services/user.service';
 
 @Injectable()
