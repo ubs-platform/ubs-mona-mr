@@ -61,7 +61,23 @@ export class EntityOwnershipGroupController {
             'OWNER',
             'ADJUST_MEMBERS',
         ]);
-        return await this.eogService.addUserCapabilityInvite(id, body, currentUser);
+        return await this.eogService.addUserCapabilityInvite(
+            id,
+            body,
+            currentUser,
+        );
+    }
+
+    @UseGuards(JwtAuthLocalGuard)
+    @Post('accept-invite/:inviteId')
+    async addUserDirectlyToEntityOwnership(
+        @Param('inviteId') inviteId: string,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
+    ) {
+        return await this.eogService.addUserCapabilityAcceptInvite(
+            inviteId,
+            currentUser,
+        );
     }
 
     @UseGuards(JwtAuthLocalGuard)
