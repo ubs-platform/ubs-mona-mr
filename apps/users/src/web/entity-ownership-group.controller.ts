@@ -11,6 +11,7 @@ import {
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import {
     EOGUserCapabilityDTO,
+    EOGUserCapabilityInvitationDTO,
     EOGUserCapabilityInviteDTO,
     GroupCapability,
     UserAuthBackendDTO,
@@ -24,8 +25,9 @@ export class EntityOwnershipGroupController {
     /**
      *
      */
-    constructor(private eogService: EntityOwnershipGroupService) {}
+    constructor(private eogService: EntityOwnershipGroupService) { }
 
+    
     async assertHasUserGroupCapability(
         entityOwnershipGroupId: string,
         currentUserId: string,
@@ -51,7 +53,55 @@ export class EntityOwnershipGroupController {
     }
 
     @UseGuards(JwtAuthLocalGuard)
-    @Post(':id/capability/invite')
+    @Get(':id/invitation')
+    async fetchUserCapabilityInvitations(
+        @Param('id') id: string,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
+    ): Promise<EOGUserCapabilityInvitationDTO[]> {
+        await this.assertHasUserGroupCapability(id, currentUser.id, [
+            'OWNER',
+            'ADJUST_MEMBERS',
+        ]);
+        return await this.eogService.fetchUserCapabilityInvitations(id);
+    }
+
+
+    @UseGuards(JwtAuthLocalGuard)
+    @Delete(':id/capability/:userId')
+    async removeUserFromEntityOwnership(
+        @Param('id') id: string,
+        @Param('userId') userId: string,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
+    ) {
+        await this.assertHasUserGroupCapability(id, currentUser.id, [
+            'OWNER',
+            'ADJUST_MEMBERS',
+        ]);
+
+        return await this.eogService.removeUserCapability(id, userId);
+    }
+
+
+    @UseGuards(JwtAuthLocalGuard)
+    @Delete(':id/invitation/:invitationId')
+    async removeUserFromEntityOwnershipInvitation(
+        @Param('id') id: string,
+        @Param('invitationId') invitationId: string,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
+    ) {
+        
+        await this.assertHasUserGroupCapability(id, currentUser.id, [
+            'OWNER',
+            'ADJUST_MEMBERS',
+        ]);
+
+        return await this.eogService.removeInvitation(invitationId);
+    }
+
+
+
+    @UseGuards(JwtAuthLocalGuard)
+    @Post(':id/invitation')
     async addUserToEntityOwnership(
         @Param('id') id: string,
         @Body() body: EOGUserCapabilityInviteDTO,
@@ -69,29 +119,15 @@ export class EntityOwnershipGroupController {
     }
 
     @UseGuards(JwtAuthLocalGuard)
-    @Post('accept-invite/:inviteId')
-    async addUserDirectlyToEntityOwnership(
+    @Post(':id/invitation/:inviteId')
+    async acceptDirectlyToEntityOwnership(
+        @Param('id') id: string,
         @Param('inviteId') inviteId: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        return await this.eogService.addUserCapabilityAcceptInvite(
+        return await this.eogService.addUserCapabilityAcceptInvite(id,
             inviteId,
             currentUser,
         );
-    }
-
-    @UseGuards(JwtAuthLocalGuard)
-    @Delete(':id/capability/:userId')
-    async removeUserFromEntityOwnership(
-        @Param('id') id: string,
-        @Param('userId') userId: string,
-        @CurrentUser() currentUser: UserAuthBackendDTO,
-    ) {
-        await this.assertHasUserGroupCapability(id, currentUser.id, [
-            'OWNER',
-            'ADJUST_MEMBERS',
-        ]);
-
-        return await this.eogService.removeUserCapability(id, userId);
     }
 }

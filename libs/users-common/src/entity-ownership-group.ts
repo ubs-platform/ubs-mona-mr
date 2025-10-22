@@ -45,3 +45,21 @@ export class EOGUserCapabilityInviteDTO {
         | 'ONLY_EDIT_MEMBER_CAPABILITIES';
     userCapabilityTemplateName?: string;
 }
+
+
+export class EOGUserCapabilityInvitationDTO {
+    inivitationId: string;
+    invitedByUserId: string;
+    invitedByUserName: string;
+    userName: string;
+    userId: string;
+    invitationId: string;
+    capability: string;
+    groupCapability:
+        | 'OWNER'
+        | 'VIEWER'
+        | 'ADJUST_MEMBERS'
+        | 'ONLY_EDIT_MEMBER_CAPABILITIES';
+}
+
+

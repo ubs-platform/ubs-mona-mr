@@ -8,16 +8,18 @@ import {
     EntityOwnershipGroupCreateDTO,
     EntityOwnershipGroupDTO,
     EOGUserCapabilityDTO,
+    EOGUserCapabilityInvitationDTO,
     EOGUserCapabilityInviteDTO,
     GroupCapability,
 } from 'libs/users-common/src/entity-ownership-group';
 import { UserService } from './user.service';
 import { EntityOwnershipGroupInvitation } from '../domain/entity-ownership-group-invitation.schema';
-import { UserAuthBackendDTO } from '@ubs-platform/users-common';
+import { UserAuthBackendDTO, UserCapabilityDTO } from '@ubs-platform/users-common';
 import { EmailService } from './email.service';
 
 @Injectable()
 export class EntityOwnershipGroupService {
+
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
         timestamp: true,
     });
@@ -194,6 +196,7 @@ export class EntityOwnershipGroupService {
                 invitedByUserName: invitedByName,
                 entityOwnershipGroupId: groupId,
                 groupCapability: userCapability.groupCapability,
+                entityCapability: userCapability.capability,
                 invitationKey,
             });
         }
@@ -209,10 +212,11 @@ export class EntityOwnershipGroupService {
     }
 
     async addUserCapabilityAcceptInvite(
+        eogId: string,
         invitationKey: string,
         currentUser: UserAuthBackendDTO
     ): Promise<void> {
-        const invite = await this.eogInvitationModel.findOne({ invitationKey });
+        const invite = await this.eogInvitationModel.findOne({ _id: eogId, invitationKey });
         if (!invite) {
             throw new Error('Invitation not found');
         }
@@ -235,7 +239,7 @@ export class EntityOwnershipGroupService {
 
         // Davet kullanıldıktan sonra silinir
         await this.eogInvitationModel.deleteOne({ _id: invite._id }).exec();
-    }   
+    }
 
     async removeUserCapability(groupId: string, userId: string): Promise<void> {
         const group = await this.getById(groupId);
@@ -270,5 +274,27 @@ export class EntityOwnershipGroupService {
             userCapability.groupCapability;
         await (group as any).save();
         return this.mapper.toDto(group);
+    }
+
+    async removeInvitation(invitationId: string) {
+        await this.eogInvitationModel
+            .findByIdAndDelete(invitationId)
+    }
+
+    async fetchUserCapabilityInvitations(id: string): Promise<EOGUserCapabilityInvitationDTO[]> {
+        return this.eogInvitationModel
+            .find({ entityOwnershipGroupId: id })
+            .exec()
+            .then((invitations) =>
+                invitations.map((invite) => ({
+                    capability: invite.entityCapability,
+                    userId: invite.invitedUserId,
+                    groupCapability: invite.groupCapability,
+                    userName: invite.invitedUserName,
+                    invitedByUserId: invite.invitedByUserId,
+                    invitedByUserName: invite.invitedByUserName,
+                    invitationId: invite.id,
+                } as EOGUserCapabilityInvitationDTO))
+            );
     }
 }

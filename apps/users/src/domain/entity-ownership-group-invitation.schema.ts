@@ -23,6 +23,10 @@ export class EntityOwnershipGroupInvitation {
     @Prop({ type: String, required: true })
     groupCapability: GroupCapability;
 
+
+    @Prop({ type: String, required: true })
+    entityCapability: GroupCapability;
+
     @Prop({ type: Date, default: Date.now, required: true })
     createdAt: Date;
 
