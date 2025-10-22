@@ -281,6 +281,23 @@ export class EntityOwnershipGroupService {
             .findByIdAndDelete(invitationId)
     }
 
+    async fetchCurrentUserInvitations(currentUserId: string): Promise<EOGUserCapabilityInvitationDTO[]> {
+        return this.eogInvitationModel
+            .find({ invitedUserId: currentUserId })
+            .exec()
+            .then((invitations) =>
+                invitations.map((invite) => ({
+                    capability: invite.entityCapability,
+                    userId: invite.invitedUserId,
+                    groupCapability: invite.groupCapability,
+                    userName: invite.invitedUserName,
+                    invitedByUserId: invite.invitedByUserId,
+                    invitedByUserName: invite.invitedByUserName,
+                    invitationId: invite.id,
+                } as EOGUserCapabilityInvitationDTO))
+            );
+    }
+
     async fetchUserCapabilityInvitations(id: string): Promise<EOGUserCapabilityInvitationDTO[]> {
         return this.eogInvitationModel
             .find({ entityOwnershipGroupId: id })

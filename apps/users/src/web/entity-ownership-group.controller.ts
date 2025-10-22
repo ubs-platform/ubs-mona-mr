@@ -27,7 +27,7 @@ export class EntityOwnershipGroupController {
      */
     constructor(private eogService: EntityOwnershipGroupService) { }
 
-    
+
     async assertHasUserGroupCapability(
         entityOwnershipGroupId: string,
         currentUserId: string,
@@ -89,7 +89,7 @@ export class EntityOwnershipGroupController {
         @Param('invitationId') invitationId: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        
+
         await this.assertHasUserGroupCapability(id, currentUser.id, [
             'OWNER',
             'ADJUST_MEMBERS',
@@ -129,5 +129,13 @@ export class EntityOwnershipGroupController {
             inviteId,
             currentUser,
         );
+    }
+
+    @UseGuards(JwtAuthLocalGuard)
+    @Get('invitation/_currentuser')
+    async fetchMyInvitations(
+        @CurrentUser() currentUser: UserAuthBackendDTO,
+    ) {
+        return await this.eogService.fetchCurrentUserInvitations(currentUser.id);
     }
 }
