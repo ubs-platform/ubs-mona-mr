@@ -32,6 +32,13 @@ export class EntityOwnershipGroupInvitation {
 
     @Prop(String)
     invitationKey: string;
+    
+    @Prop(String)
+    eogName: string;
+    
+    @Prop(String)
+    eogDescription: string;
+
 
 }
 

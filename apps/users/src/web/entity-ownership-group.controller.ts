@@ -119,14 +119,12 @@ export class EntityOwnershipGroupController {
     }
 
     @UseGuards(JwtAuthLocalGuard)
-    @Post(':id/invitation/:inviteId')
+    @Post('/invitation/:inviteId')
     async acceptDirectlyToEntityOwnership(
-        @Param('id') id: string,
         @Param('inviteId') inviteId: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        return await this.eogService.addUserCapabilityAcceptInvite(id,
-            inviteId,
+        return await this.eogService.addUserCapabilityAcceptInvite(inviteId,
             currentUser,
         );
     }

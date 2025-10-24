@@ -55,6 +55,8 @@ export class EOGUserCapabilityInviteDTO {
 
 
 export class EOGUserCapabilityInvitationDTO {
+    eogName: string;
+    eogDescription: string;
     inivitationId: string;
     invitedByUserId: string;
     invitedByUserName: string;

@@ -35,7 +35,7 @@ export class EntityOwnershipGroupService {
         private mapper: EntityOwnershipGroupMapper,
         private userServiceLocal: UserService,
         private emailService: EmailService,
-    ) {}
+    ) { }
 
     async editMeta(data: EntityOwnershipGroupMetaDTO) {
         const a = await this.eogModel
@@ -152,6 +152,42 @@ export class EntityOwnershipGroupService {
         return this.mapper.toDto(group);
     }
 
+
+    async removeUserCapability(groupId: string, userId: string): Promise<void> {
+        const group = await this.getById(groupId);
+        if (!group) {
+            throw new Error('EntityOwnershipGroup not found');
+        }
+
+        group.userCapabilities = group.userCapabilities?.filter(
+            (uc) => !(uc.userId === userId),
+        );
+        await (group as any).save();
+    }
+
+    async updateUserCapability(
+        groupId: string,
+        userCapability: EOGUserCapabilityDTO,
+    ): Promise<EntityOwnershipGroupDTO> {
+        const group = await this.getById(groupId);
+        if (!group) {
+            throw new Error('EntityOwnershipGroup not found');
+        }
+
+        const index = group.userCapabilities?.findIndex(
+            (uc) => uc.userId === userCapability.userId,
+        );
+        if (index === undefined || index < 0) {
+            throw new Error('UserCapability not found in group');
+        }
+
+        group.userCapabilities[index].capability = userCapability.capability;
+        group.userCapabilities[index].groupCapability =
+            userCapability.groupCapability;
+        await (group as any).save();
+        return this.mapper.toDto(group);
+    }
+
     async addUserCapabilityInvite(
         groupId: string,
         userCapability: EOGUserCapabilityInviteDTO,
@@ -211,6 +247,8 @@ export class EntityOwnershipGroupService {
                 groupCapability: userCapability.groupCapability,
                 entityCapability: userCapability.capability,
                 invitationKey,
+                eogName: group.groupName,
+                eogDescription: group.description
             });
         }
 
@@ -230,12 +268,10 @@ export class EntityOwnershipGroupService {
     }
 
     async addUserCapabilityAcceptInvite(
-        eogId: string,
         invitationKey: string,
         currentUser: UserAuthBackendDTO,
     ): Promise<void> {
         const invite = await this.eogInvitationModel.findOne({
-            _id: eogId,
             invitationKey,
         });
         if (!invite) {
@@ -262,41 +298,6 @@ export class EntityOwnershipGroupService {
         await this.eogInvitationModel.deleteOne({ _id: invite._id }).exec();
     }
 
-    async removeUserCapability(groupId: string, userId: string): Promise<void> {
-        const group = await this.getById(groupId);
-        if (!group) {
-            throw new Error('EntityOwnershipGroup not found');
-        }
-
-        group.userCapabilities = group.userCapabilities?.filter(
-            (uc) => !(uc.userId === userId),
-        );
-        await (group as any).save();
-    }
-
-    async updateUserCapability(
-        groupId: string,
-        userCapability: EOGUserCapabilityDTO,
-    ): Promise<EntityOwnershipGroupDTO> {
-        const group = await this.getById(groupId);
-        if (!group) {
-            throw new Error('EntityOwnershipGroup not found');
-        }
-
-        const index = group.userCapabilities?.findIndex(
-            (uc) => uc.userId === userCapability.userId,
-        );
-        if (index === undefined || index < 0) {
-            throw new Error('UserCapability not found in group');
-        }
-
-        group.userCapabilities[index].capability = userCapability.capability;
-        group.userCapabilities[index].groupCapability =
-            userCapability.groupCapability;
-        await (group as any).save();
-        return this.mapper.toDto(group);
-    }
-
     async removeInvitation(invitationId: string) {
         await this.eogInvitationModel.findByIdAndDelete(invitationId);
     }
@@ -318,6 +319,8 @@ export class EntityOwnershipGroupService {
                             invitedByUserId: invite.invitedByUserId,
                             invitedByUserName: invite.invitedByUserName,
                             invitationId: invite.id,
+                            eogName: invite.eogName,
+                            eogDescription: invite.eogDescription,
                         }) as EOGUserCapabilityInvitationDTO,
                 ),
             );
@@ -340,6 +343,8 @@ export class EntityOwnershipGroupService {
                             invitedByUserId: invite.invitedByUserId,
                             invitedByUserName: invite.invitedByUserName,
                             invitationId: invite.id,
+                            eogName: invite.eogName,
+                            eogDescription: invite.eogDescription,
                         }) as EOGUserCapabilityInvitationDTO,
                 ),
             );
