@@ -21,6 +21,13 @@ export class EntityOwnershipGroupDTO {
     description?: string;
     userCapabilities: EOGUserCapabilityDTO[];
 }
+export class EntityOwnershipGroupMetaDTO {
+    id?: string;
+    groupName: string;
+    description?: string;
+    userCapabilities: EOGUserCapabilityDTO[];
+}
+
 
 export class EOGUserCapabilityDTO {
     userId: string;

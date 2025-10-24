@@ -5,4 +5,5 @@ export class EOGroupEventConsts {
     public static getById = 'EOG_GET_BY_ID';
     public static getByUserIds = 'EOG_GET_BY_USER_IDS';
     public static searchByUserId = 'EOG_SEARCH_BY_USER_ID';
+    public static editMeta = 'EOG_EDIT_META';
 }

@@ -7,6 +7,7 @@ import {
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
     EntityOwnershipUserSearch,
+    EntityOwnershipGroupMetaDTO
 } from '@ubs-platform/users-common';
 import { EOChannelConsts, EOGroupEventConsts } from '@ubs-platform/users-consts';
 import { CacheManagerService } from '@ubs-platform/cache-manager';
@@ -52,11 +53,18 @@ export class EntityOwnershipGroupMicroserviceController {
         );
     }
 
+    @MessagePattern(EOGroupEventConsts.editMeta)
+    async editMeta(data: EntityOwnershipGroupMetaDTO) {
+        this.cacheman.invalidateRegex(/eog-*/);
+        return await this.eogService.editMeta(data);
+    }
+
+
     @MessagePattern(EOGroupEventConsts.searchByUserId)
-    async searchByUserId(searchParams: { userId: string, capacity?: string }): Promise<EntityOwnershipGroupDTO[]> {
+    async searchByUserId(searchParams: { userId: string, capability?: string }): Promise<EntityOwnershipGroupDTO[]> {
         return this.cacheman.getOrCallAsync(
             `eog-searchByUserId ${searchParams.userId}`,
-            () => this.eogService.searchByUserId(searchParams.userId, searchParams.capacity),
+            () => this.eogService.searchByUserId(searchParams.userId, searchParams.capability),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
     }

@@ -9,6 +9,7 @@ import {
     UserCapabilityDTO,
     EntityOwnershipGroupCreateDTO,
     EntityOwnershipGroupDTO,
+    EntityOwnershipGroupMetaDTO,
 } from '@ubs-platform/users-common';
 import { EOChannelConsts, EOGroupEventConsts } from '@ubs-platform/users-consts';
 import { Observable } from 'rxjs';
@@ -43,5 +44,11 @@ export class EntityOwnershipGroupClientService {
     searchByUserId(userId: string, capacity?: string): Observable<EntityOwnershipGroupDTO[]> {
         return this.kafkaClient.send<EntityOwnershipGroupDTO[]>(EOGroupEventConsts.searchByUserId, {userId, capacity});
     }
+
+    editMeta(data: EntityOwnershipGroupMetaDTO): Observable<EntityOwnershipGroupDTO> {
+        return this.kafkaClient.send<EntityOwnershipGroupDTO>(EOGroupEventConsts.editMeta, data);
+    }
+
+    
 
 }

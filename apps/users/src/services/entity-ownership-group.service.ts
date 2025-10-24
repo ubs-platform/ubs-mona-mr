@@ -7,6 +7,7 @@ import { EntityOwnershipGroupMapper } from '../mapper/entity-ownership-group.map
 import {
     EntityOwnershipGroupCreateDTO,
     EntityOwnershipGroupDTO,
+    EntityOwnershipGroupMetaDTO,
     EOGUserCapabilityDTO,
     EOGUserCapabilityInvitationDTO,
     EOGUserCapabilityInviteDTO,
@@ -14,12 +15,14 @@ import {
 } from 'libs/users-common/src/entity-ownership-group';
 import { UserService } from './user.service';
 import { EntityOwnershipGroupInvitation } from '../domain/entity-ownership-group-invitation.schema';
-import { UserAuthBackendDTO, UserCapabilityDTO } from '@ubs-platform/users-common';
+import {
+    UserAuthBackendDTO,
+    UserCapabilityDTO,
+} from '@ubs-platform/users-common';
 import { EmailService } from './email.service';
 
 @Injectable()
 export class EntityOwnershipGroupService {
-
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
         timestamp: true,
     });
@@ -31,8 +34,18 @@ export class EntityOwnershipGroupService {
         private eogInvitationModel: Model<EntityOwnershipGroupInvitation>,
         private mapper: EntityOwnershipGroupMapper,
         private userServiceLocal: UserService,
-        private emailService: EmailService
-    ) { }
+        private emailService: EmailService,
+    ) {}
+
+    async editMeta(data: EntityOwnershipGroupMetaDTO) {
+        const a = await this.eogModel
+            .findByIdAndUpdate(data.id, data, { new: true })
+            .exec();
+        if (!a) {
+            throw new Error('EntityOwnershipGroup not found');
+        }
+        return this.mapper.toDto(a);
+    }
 
     async fetchUsersInGroup(id: string): Promise<EOGUserCapabilityDTO[]> {
         const found = await this.eogModel.findById(id).exec();
@@ -113,7 +126,9 @@ export class EntityOwnershipGroupService {
             throw new Error('EntityOwnershipGroup not found');
         }
 
-        const user = await this.userServiceLocal.findById(userCapability.userId);
+        const user = await this.userServiceLocal.findById(
+            userCapability.userId,
+        );
         userCapability.userFullName = user?.name + ' ' + user?.surname;
 
         if (
@@ -140,11 +155,8 @@ export class EntityOwnershipGroupService {
     async addUserCapabilityInvite(
         groupId: string,
         userCapability: EOGUserCapabilityInviteDTO,
-        currentUser: UserAuthBackendDTO
+        currentUser: UserAuthBackendDTO,
     ): Promise<void> {
-
-
-
         const group = await this.getById(groupId);
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
@@ -162,7 +174,8 @@ export class EntityOwnershipGroupService {
         const groupName = group.groupName;
         const emailTemplate = 'lotus-publisher-team-invitation';
         const emailSubject = 'ubs-user-email-change-title';
-        const invitationKey = Math.random().toString(36).substring(2, 15) +
+        const invitationKey =
+            Math.random().toString(36).substring(2, 15) +
             Math.random().toString(36).substring(2, 15);
 
         // Eğer kullanıcı zaten grupta aynı capability ile varsa davet oluşturmaya gerek yok
@@ -170,13 +183,13 @@ export class EntityOwnershipGroupService {
             group.userCapabilities?.some(
                 (uc) =>
                     uc.userId === userInvited.id &&
-                    uc.capability === userCapability.capability
+                    uc.capability === userCapability.capability,
             )
         ) {
             this.logger.debug(
                 'UserCapability already exists in group',
                 groupId,
-                userCapability
+                userCapability,
             );
             return;
         }
@@ -204,19 +217,27 @@ export class EntityOwnershipGroupService {
         existingInvite.invitationKey = invitationKey;
         await existingInvite.save();
 
-        await this.emailService.sendEmail(userInvited, emailSubject, emailTemplate, {
-            invitationKey: existingInvite.invitationKey,
-            groupName,
-            invitedBy: invitedByName,
-        });
+        await this.emailService.sendEmail(
+            userInvited,
+            emailSubject,
+            emailTemplate,
+            {
+                invitationKey: existingInvite.invitationKey,
+                groupName,
+                invitedBy: invitedByName,
+            },
+        );
     }
 
     async addUserCapabilityAcceptInvite(
         eogId: string,
         invitationKey: string,
-        currentUser: UserAuthBackendDTO
+        currentUser: UserAuthBackendDTO,
     ): Promise<void> {
-        const invite = await this.eogInvitationModel.findOne({ _id: eogId, invitationKey });
+        const invite = await this.eogInvitationModel.findOne({
+            _id: eogId,
+            invitationKey,
+        });
         if (!invite) {
             throw new Error('Invitation not found');
         }
@@ -277,41 +298,50 @@ export class EntityOwnershipGroupService {
     }
 
     async removeInvitation(invitationId: string) {
-        await this.eogInvitationModel
-            .findByIdAndDelete(invitationId)
+        await this.eogInvitationModel.findByIdAndDelete(invitationId);
     }
 
-    async fetchCurrentUserInvitations(currentUserId: string): Promise<EOGUserCapabilityInvitationDTO[]> {
+    async fetchCurrentUserInvitations(
+        currentUserId: string,
+    ): Promise<EOGUserCapabilityInvitationDTO[]> {
         return this.eogInvitationModel
             .find({ invitedUserId: currentUserId })
             .exec()
             .then((invitations) =>
-                invitations.map((invite) => ({
-                    capability: invite.entityCapability,
-                    userId: invite.invitedUserId,
-                    groupCapability: invite.groupCapability,
-                    userName: invite.invitedUserName,
-                    invitedByUserId: invite.invitedByUserId,
-                    invitedByUserName: invite.invitedByUserName,
-                    invitationId: invite.id,
-                } as EOGUserCapabilityInvitationDTO))
+                invitations.map(
+                    (invite) =>
+                        ({
+                            capability: invite.entityCapability,
+                            userId: invite.invitedUserId,
+                            groupCapability: invite.groupCapability,
+                            userName: invite.invitedUserName,
+                            invitedByUserId: invite.invitedByUserId,
+                            invitedByUserName: invite.invitedByUserName,
+                            invitationId: invite.id,
+                        }) as EOGUserCapabilityInvitationDTO,
+                ),
             );
     }
 
-    async fetchUserCapabilityInvitations(id: string): Promise<EOGUserCapabilityInvitationDTO[]> {
+    async fetchUserCapabilityInvitations(
+        id: string,
+    ): Promise<EOGUserCapabilityInvitationDTO[]> {
         return this.eogInvitationModel
             .find({ entityOwnershipGroupId: id })
             .exec()
             .then((invitations) =>
-                invitations.map((invite) => ({
-                    capability: invite.entityCapability,
-                    userId: invite.invitedUserId,
-                    groupCapability: invite.groupCapability,
-                    userName: invite.invitedUserName,
-                    invitedByUserId: invite.invitedByUserId,
-                    invitedByUserName: invite.invitedByUserName,
-                    invitationId: invite.id,
-                } as EOGUserCapabilityInvitationDTO))
+                invitations.map(
+                    (invite) =>
+                        ({
+                            capability: invite.entityCapability,
+                            userId: invite.invitedUserId,
+                            groupCapability: invite.groupCapability,
+                            userName: invite.invitedUserName,
+                            invitedByUserId: invite.invitedByUserId,
+                            invitedByUserName: invite.invitedByUserName,
+                            invitationId: invite.id,
+                        }) as EOGUserCapabilityInvitationDTO,
+                ),
             );
     }
 }
