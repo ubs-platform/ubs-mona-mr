@@ -25,8 +25,7 @@ export class EntityOwnershipGroupController {
     /**
      *
      */
-    constructor(private eogService: EntityOwnershipGroupService) { }
-
+    constructor(private eogService: EntityOwnershipGroupService) {}
 
     async assertHasUserGroupCapability(
         entityOwnershipGroupId: string,
@@ -65,7 +64,6 @@ export class EntityOwnershipGroupController {
         return await this.eogService.fetchUserCapabilityInvitations(id);
     }
 
-
     @UseGuards(JwtAuthLocalGuard)
     @Delete(':id/capability/:userId')
     async removeUserFromEntityOwnership(
@@ -81,7 +79,6 @@ export class EntityOwnershipGroupController {
         return await this.eogService.removeUserCapability(id, userId);
     }
 
-
     @UseGuards(JwtAuthLocalGuard)
     @Delete(':id/invitation/:invitationId')
     async removeUserFromEntityOwnershipInvitation(
@@ -89,16 +86,13 @@ export class EntityOwnershipGroupController {
         @Param('invitationId') invitationId: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-
         await this.assertHasUserGroupCapability(id, currentUser.id, [
             'OWNER',
             'ADJUST_MEMBERS',
         ]);
 
-        return await this.eogService.removeInvitation(invitationId);
+        return await this.eogService.removeInvitationAdmin(invitationId);
     }
-
-
 
     @UseGuards(JwtAuthLocalGuard)
     @Post(':id/invitation')
@@ -118,22 +112,37 @@ export class EntityOwnershipGroupController {
         );
     }
 
+    // Region: Invitation Acceptance for invited users
+
+    @UseGuards(JwtAuthLocalGuard)
+    @Delete('/invitation/:inviteId')
+    async refuseInvitationCurrentUser(
+        @Param('inviteId') inviteId: string,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
+    ) {
+        return await this.eogService.refuseUserCapabilityInvite(
+            inviteId,
+            currentUser,
+        );
+    }
+
     @UseGuards(JwtAuthLocalGuard)
     @Post('/invitation/:inviteId')
     async acceptDirectlyToEntityOwnership(
         @Param('inviteId') inviteId: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        return await this.eogService.addUserCapabilityAcceptInvite(inviteId,
+        return await this.eogService.addUserCapabilityAcceptInvite(
+            inviteId,
             currentUser,
         );
     }
 
     @UseGuards(JwtAuthLocalGuard)
     @Get('invitation/_currentuser')
-    async fetchMyInvitations(
-        @CurrentUser() currentUser: UserAuthBackendDTO,
-    ) {
-        return await this.eogService.fetchCurrentUserInvitations(currentUser.id);
+    async fetchMyInvitations(@CurrentUser() currentUser: UserAuthBackendDTO) {
+        return await this.eogService.fetchCurrentUserInvitations(
+            currentUser.id,
+        );
     }
 }

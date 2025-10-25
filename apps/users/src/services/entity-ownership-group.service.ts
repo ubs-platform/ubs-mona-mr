@@ -296,8 +296,18 @@ export class EntityOwnershipGroupService {
         await this.eogInvitationModel.deleteOne({ _id: invite._id }).exec();
     }
 
-    async removeInvitation(invitationId: string) {
+    async removeInvitationAdmin(invitationId: string) {
         await this.eogInvitationModel.findByIdAndDelete(invitationId);
+    }
+
+    async refuseUserCapabilityInvite(
+        inviteId: string,
+        currentUser: UserAuthBackendDTO,
+    ) {
+        await this.eogInvitationModel.findOneAndDelete({
+            _id: inviteId,
+            invitedUserId: currentUser.id,
+        });
     }
 
     async fetchCurrentUserInvitations(
