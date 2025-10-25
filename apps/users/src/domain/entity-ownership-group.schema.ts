@@ -1,12 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { GroupCapability } from '@ubs-platform/users-common';
+import { EntityOwnershipGroupEntityCapability } from './entity-ownership-group-entity-capability';
 
 export class UserCapability {
     userId?: string;
-    capability?: string;
+    // capability?: string;
     groupCapability: GroupCapability;
     userFullName?: string;
-
+    entityCapabilities: EntityOwnershipGroupEntityCapability[];
     /**
      * Group capability defines the ability of the EntityOwnershipGroup as a whole.
      */

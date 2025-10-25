@@ -12,6 +12,7 @@ import {
     EOGUserCapabilityDTO,
     EOGUserCapabilityInvitationDTO,
     EOGUserCapabilityInviteDTO,
+    EOGUserEntityCapabilityDTO,
     GroupCapability,
 } from 'libs/users-common/src/entity-ownership-group';
 import { UserService } from './user.service';
@@ -36,7 +37,7 @@ export class EntityOwnershipGroupService {
         private mapper: EntityOwnershipGroupMapper,
         private userServiceLocal: UserService,
         private emailService: EmailService,
-    ) {}
+    ) { }
 
     async editMeta(data: EntityOwnershipGroupMetaDTO) {
         const a = await this.eogModel
@@ -60,10 +61,14 @@ export class EntityOwnershipGroupService {
         });
     }
 
-    private capabilityToDto(a: UserCapability): { userId: string; capability: string | undefined; groupCapability: GroupCapability; userFullName: string | undefined; } {
+    private capabilityToDto(a: UserCapability): EOGUserCapabilityDTO {
         return {
             userId: a.userId!,
-            capability: a.capability,
+            entityCapabilities: a.entityCapabilities.map(ec => ({
+                entityGroup: ec.entityGroup,
+                entityName: ec.entityName,
+                capability: ec.capability,
+            })),
             groupCapability: a.groupCapability,
             userFullName: a.userFullName,
         };
@@ -137,8 +142,7 @@ export class EntityOwnershipGroupService {
         if (
             group.userCapabilities?.some(
                 (uc) =>
-                    uc.userId === userCapability.userId &&
-                    uc.capability === userCapability.capability,
+                    uc.userId === userCapability.userId
             )
         ) {
             this.logger.debug(
@@ -183,7 +187,7 @@ export class EntityOwnershipGroupService {
             throw new Error('UserCapability not found in group');
         }
 
-        group.userCapabilities[index].capability = userCapability.capability;
+        group.userCapabilities[index].entityCapabilities = userCapability.entityCapabilities;
         group.userCapabilities[index].groupCapability =
             userCapability.groupCapability;
         await (group as any).save();
@@ -216,12 +220,10 @@ export class EntityOwnershipGroupService {
         //     Math.random().toString(36).substring(2, 15) +
         //     Math.random().toString(36).substring(2, 15);
 
-        // Eğer kullanıcı zaten grupta aynı capability ile varsa davet oluşturmaya gerek yok
         if (
             group.userCapabilities?.some(
                 (uc) =>
-                    uc.userId === userInvited.id &&
-                    uc.capability === userCapability.capability,
+                    uc.userId === userInvited.id
             )
         ) {
             this.logger.debug(
@@ -238,7 +240,7 @@ export class EntityOwnershipGroupService {
                 invitedUserName: userCapability.userLogin,
             })
             .exec();
-
+        const eogCapabilities = userCapability.entityCapabilities;
         if (!existingInvite) {
             existingInvite = new this.eogInvitationModel({
                 invitedUserName: `${userInvited.name} ${userInvited.surname}`,
@@ -247,7 +249,7 @@ export class EntityOwnershipGroupService {
                 invitedByUserName: invitedByName,
                 entityOwnershipGroupId: groupId,
                 groupCapability: userCapability.groupCapability,
-                entityCapability: userCapability.capability,
+                entityCapabilities: this.eogCapabilitiesToEntity(eogCapabilities),
                 eogName: group.groupName,
                 eogId: group._id,
                 eogDescription: group.description,
@@ -265,6 +267,14 @@ export class EntityOwnershipGroupService {
                 invitedBy: invitedByName,
             },
         );
+    }
+
+    private eogCapabilitiesToEntity(eogCapabilities: EOGUserEntityCapabilityDTO[]): EOGUserEntityCapabilityDTO[] {
+        return eogCapabilities.map(ec => ({
+            entityGroup: ec.entityGroup,
+            entityName: ec.entityName,
+            capability: ec.capability,
+        }));
     }
 
     async addUserCapabilityAcceptInvite(
@@ -289,7 +299,12 @@ export class EntityOwnershipGroupService {
 
         const userCapability: EOGUserCapabilityDTO = {
             userId: invite.invitedUserId,
-            capability: invite.entityCapability,
+            // capability: invite.entityCapability,
+            entityCapabilities: invite.entityCapabilities.map(ec => ({
+                entityGroup: ec.entityGroup,
+                entityName: ec.entityName,
+                capability: ec.capability,
+            })),
             userFullName: invite.invitedUserName,
             groupCapability: invite.groupCapability,
         };
@@ -329,7 +344,8 @@ export class EntityOwnershipGroupService {
         invite: EntityOwnershipGroupInvitation,
     ): EOGUserCapabilityInvitationDTO {
         return {
-            capability: invite.entityCapability,
+            // capability: invite.entityCapability,
+            entityCapabilities: this.eogEntityCapabilitiesToDto(invite),
             userId: invite.invitedUserId,
             groupCapability: invite.groupCapability,
             userName: invite.invitedUserName,
@@ -341,6 +357,14 @@ export class EntityOwnershipGroupService {
             eogDescription: invite.eogDescription,
             inivitationId: invite._id,
         } as EOGUserCapabilityInvitationDTO;
+    }
+
+    private eogEntityCapabilitiesToDto(invite: EntityOwnershipGroupInvitation): EOGUserEntityCapabilityDTO[] {
+        return invite.entityCapabilities.map(ec => ({
+            entityGroup: ec.entityGroup,
+            entityName: ec.entityName,
+            capability: ec.capability,
+        }));
     }
 
     async fetchUserCapabilityInvitations(

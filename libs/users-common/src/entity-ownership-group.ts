@@ -28,11 +28,15 @@ export class EntityOwnershipGroupMetaDTO {
     userCapabilities: EOGUserCapabilityDTO[];
 }
 
-
+export class EOGUserEntityCapabilityDTO {
+    entityGroup: string;
+    entityName: string;
+    capability: string;
+}
 export class EOGUserCapabilityDTO {
     userId: string;
     userFullName?: string;
-    capability?: string;
+    entityCapabilities: EOGUserEntityCapabilityDTO[];
     groupCapability:
         | 'OWNER'
         | 'VIEWER'
@@ -44,7 +48,7 @@ export class EOGUserCapabilityDTO {
 
 export class EOGUserCapabilityInviteDTO {
     userLogin: string;
-    capability: string;
+    entityCapabilities: EOGUserEntityCapabilityDTO[];
     groupCapability:
         | 'OWNER'
         | 'VIEWER'
@@ -63,7 +67,8 @@ export class EOGUserCapabilityInvitationDTO {
     userName: string;
     userId: string;
     invitationId: string;
-    capability: string;
+    // capability: string;
+    entityCapabilities: EOGUserEntityCapabilityDTO[];
     groupCapability:
         | 'OWNER'
         | 'VIEWER'

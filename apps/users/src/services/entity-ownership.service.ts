@@ -131,9 +131,16 @@ export class EntityOwnershipService {
                 _id: entityOwnership.entityOwnershipGroupId
             });
             if (ownerShipGroup && ownerShipGroup.userCapabilities.length) {
-                found = ownerShipGroup.userCapabilities.find(
-                    (uc) => uc.userId === eouc.userId && (!eouc.capability || uc.capability === eouc.capability),
+                const foundPre = ownerShipGroup.userCapabilities.find(
+                    (uc) => uc.userId === eouc.userId,
                 );
+                if (foundPre?.entityCapabilities.find(
+                    (entityCapability) => eouc.entityGroup == entityCapability.entityGroup &&
+                        eouc.entityName == entityCapability.entityName &&
+                        (!eouc.capability || entityCapability.capability === eouc.capability)
+                )) {
+                    found = foundPre;
+                }
                 if (!roleOverrides) {
                     roleOverrides = ownerShipGroup.overriderRoles;
                 }
@@ -179,7 +186,7 @@ export class EntityOwnershipService {
                 : {}),
         });
 
-        
+
         const entityOwnerships = await this.eoModel.find({
             entityGroup: eo.entityGroup,
             entityName: eo.entityName,
@@ -190,12 +197,12 @@ export class EntityOwnershipService {
                 },
                 ...(eogsByUser.length
                     ? [
-                          {
-                              entityOwnershipGroupId: {
-                                  $in: eogsByUser.map((eog) => eog._id),
-                              },
-                          },
-                      ]
+                        {
+                            entityOwnershipGroupId: {
+                                $in: eogsByUser.map((eog) => eog._id),
+                            },
+                        },
+                    ]
                     : []),
             ],
 
