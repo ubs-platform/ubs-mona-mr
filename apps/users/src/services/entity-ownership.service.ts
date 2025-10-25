@@ -107,6 +107,7 @@ export class EntityOwnershipService {
         eouc: EntityOwnershipUserCheck,
         checkRoleOverride: boolean,
     ): Promise<Optional<UserCapabilityDTO>> {
+        debugger
         this.logger.debug({ cap: eouc.capability });
         const entityOwnership = await this.eoModel.findOne({
             entityGroup: eouc.entityGroup,

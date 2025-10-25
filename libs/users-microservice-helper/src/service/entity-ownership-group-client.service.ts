@@ -10,8 +10,12 @@ import {
     EntityOwnershipGroupCreateDTO,
     EntityOwnershipGroupDTO,
     EntityOwnershipGroupMetaDTO,
+    EOGCheckUserGroupCapabilityDTO,
 } from '@ubs-platform/users-common';
-import { EOChannelConsts, EOGroupEventConsts } from '@ubs-platform/users-consts';
+import {
+    EOChannelConsts,
+    EOGroupEventConsts,
+} from '@ubs-platform/users-consts';
 import { Observable } from 'rxjs';
 
 @Injectable()
@@ -19,36 +23,75 @@ export class EntityOwnershipGroupClientService {
     constructor(
         @Inject('KAFKA_CLIENT')
         private kafkaClient: ClientProxy | ClientKafka | ClientRMQ,
-    ) { }
+    ) {}
 
     findByUserIds(userIds: string[]): Observable<EntityOwnershipGroupDTO[]> {
-        return this.kafkaClient.send<EntityOwnershipGroupDTO[]>(EOGroupEventConsts.getByUserIds, userIds);
+        return this.kafkaClient.send<EntityOwnershipGroupDTO[]>(
+            EOGroupEventConsts.getByUserIds,
+            userIds,
+        );
     }
 
-    insert(eog: EntityOwnershipGroupCreateDTO): Observable<EntityOwnershipGroupDTO> {
-        return this.kafkaClient.send<EntityOwnershipGroupDTO>(EOGroupEventConsts.createGroup, eog);
+    checkUserCapability(data: EOGCheckUserGroupCapabilityDTO) {
+        return this.kafkaClient.send(
+            EOGroupEventConsts.checkUserCapability,
+            data,
+        );
     }
 
-    addUserCapability(groupId: string, userCapability: UserCapabilityDTO): Observable<EntityOwnershipGroupDTO> {
-        return this.kafkaClient.send<EntityOwnershipGroupDTO>(EOGroupEventConsts.addUserCapability, { groupId, userCapability });
+    insert(
+        eog: EntityOwnershipGroupCreateDTO,
+    ): Observable<EntityOwnershipGroupDTO> {
+        return this.kafkaClient.send<EntityOwnershipGroupDTO>(
+            EOGroupEventConsts.createGroup,
+            eog,
+        );
     }
 
-    removeUserCapability(groupId: string, userId: string, capability: string): Observable<EntityOwnershipGroupDTO> {
-        return this.kafkaClient.send<EntityOwnershipGroupDTO>(EOGroupEventConsts.removeUserCapability, { groupId, userId, capability });
+    addUserCapability(
+        groupId: string,
+        userCapability: UserCapabilityDTO,
+    ): Observable<EntityOwnershipGroupDTO> {
+        return this.kafkaClient.send<EntityOwnershipGroupDTO>(
+            EOGroupEventConsts.addUserCapability,
+            { groupId, userCapability },
+        );
+    }
+
+    removeUserCapability(
+        groupId: string,
+        userId: string,
+        capability: string,
+    ): Observable<EntityOwnershipGroupDTO> {
+        return this.kafkaClient.send<EntityOwnershipGroupDTO>(
+            EOGroupEventConsts.removeUserCapability,
+            { groupId, userId, capability },
+        );
     }
 
     getById(id: string): Observable<EntityOwnershipGroupDTO> {
-        return this.kafkaClient.send<EntityOwnershipGroupDTO>(EOGroupEventConsts.getById, id);
+        return this.kafkaClient.send<EntityOwnershipGroupDTO>(
+            EOGroupEventConsts.getById,
+            id,
+        );
     }
 
-    searchByUserId(userId: string, capacity?: string): Observable<EntityOwnershipGroupDTO[]> {
-        return this.kafkaClient.send<EntityOwnershipGroupDTO[]>(EOGroupEventConsts.searchByUserId, {userId, capacity});
+    searchByUserId(
+        userId: string,
+        capacity?: string,
+    ): Observable<EntityOwnershipGroupDTO[]> {
+        return this.kafkaClient.send<EntityOwnershipGroupDTO[]>(
+            EOGroupEventConsts.searchByUserId,
+            { userId, capacity },
+        );
     }
 
-    editMeta(data: EntityOwnershipGroupMetaDTO): Observable<EntityOwnershipGroupDTO> {
-        return this.kafkaClient.send<EntityOwnershipGroupDTO>(EOGroupEventConsts.editMeta, data);
+    editMeta(
+        data: EntityOwnershipGroupMetaDTO,
+    ): Observable<EntityOwnershipGroupDTO> {
+        return this.kafkaClient.send<EntityOwnershipGroupDTO>(
+            EOGroupEventConsts.editMeta,
+            data,
+        );
     }
-
-    
-
 }

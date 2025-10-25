@@ -2,12 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
 import { Document, Model, Types } from 'mongoose';
-import { EntityOwnershipGroup } from '../domain/entity-ownership-group.schema';
+import { EntityOwnershipGroup, UserCapability } from '../domain/entity-ownership-group.schema';
 import { EntityOwnershipGroupMapper } from '../mapper/entity-ownership-group.mapper';
 import {
     EntityOwnershipGroupCreateDTO,
     EntityOwnershipGroupDTO,
     EntityOwnershipGroupMetaDTO,
+    EOGCheckUserGroupCapabilityDTO,
     EOGUserCapabilityDTO,
     EOGUserCapabilityInvitationDTO,
     EOGUserCapabilityInviteDTO,
@@ -55,13 +56,17 @@ export class EntityOwnershipGroupService {
         }
 
         return found.userCapabilities.map((a) => {
-            return {
-                userId: a.userId!,
-                capability: a.capability,
-                groupCapability: a.groupCapability,
-                userFullName: a.userFullName,
-            };
+            return this.capabilityToDto(a);
         });
+    }
+
+    private capabilityToDto(a: UserCapability): { userId: string; capability: string | undefined; groupCapability: GroupCapability; userFullName: string | undefined; } {
+        return {
+            userId: a.userId!,
+            capability: a.capability,
+            groupCapability: a.groupCapability,
+            userFullName: a.userFullName,
+        };
     }
 
     async createGroup(
@@ -74,19 +79,17 @@ export class EntityOwnershipGroupService {
     }
 
     async hasUserGroupCapability(
-        entityOwnershipGroupId: string,
-        currentUserId: string,
-        groupCapabilitiesAtLeastOne: GroupCapability[],
+        eogCheckCap: EOGCheckUserGroupCapabilityDTO
     ): Promise<boolean> {
-        const group = await this.getById(entityOwnershipGroupId);
+        const group = await this.getById(eogCheckCap.entityOwnershipGroupId);
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
         }
         return (
             group.userCapabilities?.some(
                 (uc) =>
-                    uc.userId === currentUserId &&
-                    groupCapabilitiesAtLeastOne.includes(uc.groupCapability),
+                    uc.userId === eogCheckCap.userId &&
+                    eogCheckCap.groupCapabilitiesAtLeastOne.includes(uc.groupCapability),
             ) || false
         );
     }
@@ -246,6 +249,7 @@ export class EntityOwnershipGroupService {
                 groupCapability: userCapability.groupCapability,
                 entityCapability: userCapability.capability,
                 eogName: group.groupName,
+                eogId: group._id,
                 eogDescription: group.description,
             });
         }
@@ -333,6 +337,7 @@ export class EntityOwnershipGroupService {
             invitedByUserName: invite.invitedByUserName,
             invitationId: invite._id,
             eogName: invite.eogName,
+            eogId: invite.eogId,
             eogDescription: invite.eogDescription,
         } as EOGUserCapabilityInvitationDTO;
     }

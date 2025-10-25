@@ -145,7 +145,7 @@ export const BaseCrudControllerGenerator = <
             @Body() body: INPUT,
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
-            this.checkUser("ADD", user, null, body);
+            await this.checkUser('ADD', user, null, body);
 
             return await service.create(body, user);
         }
@@ -160,7 +160,7 @@ export const BaseCrudControllerGenerator = <
             if (body._id == null) {
                 throw new NotFoundException();
             }
-            this.checkUser("EDIT", user, null, body);
+            await this.checkUser('EDIT', user, null, body);
 
             // this.checkUser(user, nu)
             return await service.edit(body, user);
@@ -173,18 +173,26 @@ export const BaseCrudControllerGenerator = <
             @Param() { id }: { id: any },
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
-            this.checkUser("REMOVE", user, { id }, null);
+            await this.checkUser('REMOVE', user, { id }, null);
             // if (id == null) {
             //     throw new NotFoundException();
             // this.checkUser(user, { id } as any, "REMOVE", undefined);
             return await service.remove(id, user);
         }
 
-        checkUser(operation: "ADD" | "EDIT" | "REMOVE" | "GETALL" | "GETID", user: Optional<UserAuthBackendDTO>, queriesAndPaths: Optional<{ [key: string]: any }>, body: Optional<INPUT>) {
+        async checkUser(
+            operation: 'ADD' | 'EDIT' | 'REMOVE' | 'GETALL' | 'GETID',
+            user: Optional<UserAuthBackendDTO>,
+            queriesAndPaths: Optional<{ [key: string]: any }>,
+            body: Optional<INPUT>,
+        ) {
             // Implement your user checking logic here
         }
 
-        manipulateSearch(user: Optional<UserAuthBackendDTO>, queriesAndPaths: Optional<SEARCH>) : any {
+        manipulateSearch(
+            user: Optional<UserAuthBackendDTO>,
+            queriesAndPaths: Optional<SEARCH>,
+        ): any {
             // Implement your user checking logic here
             return queriesAndPaths;
         }

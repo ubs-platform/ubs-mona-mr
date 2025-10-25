@@ -57,7 +57,7 @@ export class EOGUserCapabilityInviteDTO {
 export class EOGUserCapabilityInvitationDTO {
     eogName: string;
     eogDescription: string;
-    inivitationId: string;
+    eogId: string;
     invitedByUserId: string;
     invitedByUserName: string;
     userName: string;
@@ -69,6 +69,12 @@ export class EOGUserCapabilityInvitationDTO {
         | 'VIEWER'
         | 'ADJUST_MEMBERS'
         | 'ONLY_EDIT_MEMBER_CAPABILITIES';
+}
+
+export class EOGCheckUserGroupCapabilityDTO {
+    entityOwnershipGroupId: string;
+    userId: string;
+    groupCapabilitiesAtLeastOne: GroupCapability[];
 }
 
 
