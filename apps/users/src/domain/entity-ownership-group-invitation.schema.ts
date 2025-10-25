@@ -5,26 +5,25 @@ import { GroupCapability } from '@ubs-platform/users-common';
 export class EntityOwnershipGroupInvitation {
     _id?: any;
 
-    @Prop({ type: String, required: true })
+    @Prop(String)
     invitedUserName: string;
 
-    @Prop({ type: String, required: true })
+    @Prop(String)
     invitedUserId: string;
 
-    @Prop({ type: String, required: true })
+    @Prop(String)
     invitedByUserId: string;
 
-    @Prop({ type: String, required: true })
+    @Prop(String)
     invitedByUserName: string;
 
-    @Prop({ type: String, required: true })
+    @Prop(String)
     entityOwnershipGroupId: string;
 
-    @Prop({ type: String, required: true })
+    @Prop(String)
     groupCapability: GroupCapability;
 
-
-    @Prop({ type: String, required: true })
+    @Prop(String)
     entityCapability: GroupCapability;
 
     @Prop({ type: Date, default: Date.now, required: true })

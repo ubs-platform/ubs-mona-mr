@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
-import { Model } from 'mongoose';
+import { Document, Model, Types } from 'mongoose';
 import { EntityOwnershipGroup } from '../domain/entity-ownership-group.schema';
 import { EntityOwnershipGroupMapper } from '../mapper/entity-ownership-group.mapper';
 import {
@@ -35,7 +35,7 @@ export class EntityOwnershipGroupService {
         private mapper: EntityOwnershipGroupMapper,
         private userServiceLocal: UserService,
         private emailService: EmailService,
-    ) { }
+    ) {}
 
     async editMeta(data: EntityOwnershipGroupMetaDTO) {
         const a = await this.eogModel
@@ -152,7 +152,6 @@ export class EntityOwnershipGroupService {
         return this.mapper.toDto(group);
     }
 
-
     async removeUserCapability(groupId: string, userId: string): Promise<void> {
         const group = await this.getById(groupId);
         if (!group) {
@@ -247,7 +246,7 @@ export class EntityOwnershipGroupService {
                 groupCapability: userCapability.groupCapability,
                 entityCapability: userCapability.capability,
                 eogName: group.groupName,
-                eogDescription: group.description
+                eogDescription: group.description,
             });
         }
 
@@ -286,6 +285,8 @@ export class EntityOwnershipGroupService {
 
         const userCapability: EOGUserCapabilityDTO = {
             userId: invite.invitedUserId,
+            capability: invite.entityCapability,
+            userFullName: invite.invitedUserName,
             groupCapability: invite.groupCapability,
         };
 
@@ -306,21 +307,24 @@ export class EntityOwnershipGroupService {
             .find({ invitedUserId: currentUserId })
             .exec()
             .then((invitations) =>
-                invitations.map(
-                    (invite) =>
-                        ({
-                            capability: invite.entityCapability,
-                            userId: invite.invitedUserId,
-                            groupCapability: invite.groupCapability,
-                            userName: invite.invitedUserName,
-                            invitedByUserId: invite.invitedByUserId,
-                            invitedByUserName: invite.invitedByUserName,
-                            invitationId: invite.id,
-                            eogName: invite.eogName,
-                            eogDescription: invite.eogDescription,
-                        }) as EOGUserCapabilityInvitationDTO,
-                ),
+                invitations.map((invite) => this.invitationToDto(invite)),
             );
+    }
+
+    private invitationToDto(
+        invite: EntityOwnershipGroupInvitation,
+    ): EOGUserCapabilityInvitationDTO {
+        return {
+            capability: invite.entityCapability,
+            userId: invite.invitedUserId,
+            groupCapability: invite.groupCapability,
+            userName: invite.invitedUserName,
+            invitedByUserId: invite.invitedByUserId,
+            invitedByUserName: invite.invitedByUserName,
+            invitationId: invite._id,
+            eogName: invite.eogName,
+            eogDescription: invite.eogDescription,
+        } as EOGUserCapabilityInvitationDTO;
     }
 
     async fetchUserCapabilityInvitations(
@@ -330,20 +334,7 @@ export class EntityOwnershipGroupService {
             .find({ entityOwnershipGroupId: id })
             .exec()
             .then((invitations) =>
-                invitations.map(
-                    (invite) =>
-                        ({
-                            capability: invite.entityCapability,
-                            userId: invite.invitedUserId,
-                            groupCapability: invite.groupCapability,
-                            userName: invite.invitedUserName,
-                            invitedByUserId: invite.invitedByUserId,
-                            invitedByUserName: invite.invitedByUserName,
-                            invitationId: invite.id,
-                            eogName: invite.eogName,
-                            eogDescription: invite.eogDescription,
-                        }) as EOGUserCapabilityInvitationDTO,
-                ),
+                invitations.map((invite) => this.invitationToDto(invite)),
             );
     }
 }
