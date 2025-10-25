@@ -210,9 +210,9 @@ export class EntityOwnershipGroupService {
         const groupName = group.groupName;
         const emailTemplate = 'lotus-publisher-team-invitation';
         const emailSubject = 'ubs-user-email-change-title';
-        const invitationKey =
-            Math.random().toString(36).substring(2, 15) +
-            Math.random().toString(36).substring(2, 15);
+        // const invitationKey =
+        //     Math.random().toString(36).substring(2, 15) +
+        //     Math.random().toString(36).substring(2, 15);
 
         // Eğer kullanıcı zaten grupta aynı capability ile varsa davet oluşturmaya gerek yok
         if (
@@ -246,13 +246,11 @@ export class EntityOwnershipGroupService {
                 entityOwnershipGroupId: groupId,
                 groupCapability: userCapability.groupCapability,
                 entityCapability: userCapability.capability,
-                invitationKey,
                 eogName: group.groupName,
                 eogDescription: group.description
             });
         }
 
-        existingInvite.invitationKey = invitationKey;
         await existingInvite.save();
 
         await this.emailService.sendEmail(
@@ -260,7 +258,6 @@ export class EntityOwnershipGroupService {
             emailSubject,
             emailTemplate,
             {
-                invitationKey: existingInvite.invitationKey,
                 groupName,
                 invitedBy: invitedByName,
             },
@@ -268,11 +265,11 @@ export class EntityOwnershipGroupService {
     }
 
     async addUserCapabilityAcceptInvite(
-        invitationKey: string,
+        inviteId: string,
         currentUser: UserAuthBackendDTO,
     ): Promise<void> {
         const invite = await this.eogInvitationModel.findOne({
-            invitationKey,
+            _id: inviteId,
         });
         if (!invite) {
             throw new Error('Invitation not found');

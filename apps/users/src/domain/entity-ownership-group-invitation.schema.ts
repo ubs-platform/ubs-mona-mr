@@ -29,9 +29,6 @@ export class EntityOwnershipGroupInvitation {
 
     @Prop({ type: Date, default: Date.now, required: true })
     createdAt: Date;
-
-    @Prop(String)
-    invitationKey: string;
     
     @Prop(String)
     eogName: string;
