@@ -172,11 +172,33 @@ export class EntityOwnershipService {
     }
 
     async searchByUser(eo: EntityOwnershipUserSearch) {
+        const eogsByUser = await this.eogModel.find({
+            'userCapabilities.userId': eo.userId,
+            ...(eo.capabilityAtLeastOne
+                ? { 'userCapabilities.capability': { $in: eo.capabilityAtLeastOne } }
+                : {}),
+        });
+
+        
         const entityOwnerships = await this.eoModel.find({
             entityGroup: eo.entityGroup,
             entityName: eo.entityName,
-            'userCapabilities.userId': eo.userId,
-            ...(eo.capabilityAtLeastOne ? { 'userCapabilities.capability': { $in: eo.capabilityAtLeastOne } } : {}),
+            $or: [
+                {
+                    'userCapabilities.userId': eo.userId,
+                    ...(eo.capabilityAtLeastOne ? { 'userCapabilities.capability': { $in: eo.capabilityAtLeastOne } } : {}),
+                },
+                ...(eogsByUser.length
+                    ? [
+                          {
+                              entityOwnershipGroupId: {
+                                  $in: eogsByUser.map((eog) => eog._id),
+                              },
+                          },
+                      ]
+                    : []),
+            ],
+
             // ...(eo.capability ? { capability: eo.capability } : {}),
         });
         return entityOwnerships.map((a) => this.mapper.toDto(a));
