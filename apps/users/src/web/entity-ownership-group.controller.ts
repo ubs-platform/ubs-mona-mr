@@ -35,7 +35,6 @@ export class EntityOwnershipGroupController {
         const hasCap = await this.eogService.hasUserGroupCapability(
             eogCheckCap
         );
-        debugger
         if (!hasCap) {
             throw new UnauthorizedException(
                 `User ${eogCheckCap.userId} does not have capability ${eogCheckCap.groupCapabilitiesAtLeastOne} in entity ownership group ${eogCheckCap.entityOwnershipGroupId}`,

@@ -339,6 +339,7 @@ export class EntityOwnershipGroupService {
             eogName: invite.eogName,
             eogId: invite.eogId,
             eogDescription: invite.eogDescription,
+            inivitationId: invite._id,
         } as EOGUserCapabilityInvitationDTO;
     }
 

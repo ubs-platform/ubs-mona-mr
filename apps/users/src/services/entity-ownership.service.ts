@@ -107,14 +107,13 @@ export class EntityOwnershipService {
         eouc: EntityOwnershipUserCheck,
         checkRoleOverride: boolean,
     ): Promise<Optional<UserCapabilityDTO>> {
-        debugger
         this.logger.debug({ cap: eouc.capability });
         const entityOwnership = await this.eoModel.findOne({
             entityGroup: eouc.entityGroup,
             entityId: eouc.entityId,
             entityName: eouc.entityName,
-            "userCapabilities.userId": eouc.userId,
-            ...(eouc.capability ? { 'userCapabilities.capability': eouc.capability } : {}),
+            // "userCapabilities.userId": eouc.userId,
+            // ...(eouc.capability ? { 'userCapabilities.capability': eouc.capability } : {}),
         });
         let found;
         let roleOverrides: Optional<string[]> = null;
@@ -129,7 +128,7 @@ export class EntityOwnershipService {
         // if not found, checking inside entityOwnershipGroup's userCapabilities
         if (!found && entityOwnership && entityOwnership.entityOwnershipGroupId) {
             const ownerShipGroup = await this.eogModel.findOne({
-                id: entityOwnership.entityOwnershipGroupId
+                _id: entityOwnership.entityOwnershipGroupId
             });
             if (ownerShipGroup && ownerShipGroup.userCapabilities.length) {
                 found = ownerShipGroup.userCapabilities.find(
@@ -142,7 +141,7 @@ export class EntityOwnershipService {
         }
         // if not found, checking overriderRoles with user roles
         if (!found && roleOverrides?.length && eouc.userId && checkRoleOverride) {
-            let user: Optional<UserAuthBackendDTO>  = await this.userService.findUserAuthBackend(eouc.userId);
+            let user: Optional<UserAuthBackendDTO> = await this.userService.findUserAuthBackend(eouc.userId);
 
             // Admin overrides all
             if (user && user.roles?.includes('ADMIN')) {
