@@ -25,7 +25,7 @@ export class EntityOwnershipGroupMapper {
                 {
                     userId: eogDto.initialUserId,
                     userFullName: user?.name + ' ' + user?.surname,
-                    capability: eogDto.initialUserEntityCapability,
+                    entityCapabilities: eogDto.initialUserEntityCapabilities,
                     groupCapability:
                         eogDto.initialUserGroupCapability || 'OWNER',
                 },
@@ -54,7 +54,7 @@ export class EntityOwnershipGroupMapper {
             description: eog.description,
             userCapabilities: eog.userCapabilities.map((a) => ({
                 userId: a.userId,
-                capability: a.capability,
+                entityCapabilities: a.entityCapabilities,
                 groupCapability: a.groupCapability,
                 userFullName: a.userFullName,
             })),

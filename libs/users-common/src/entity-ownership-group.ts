@@ -8,7 +8,7 @@ export class EntityOwnershipGroupCreateDTO {
     groupName: string;
     description?: string;
     initialUserId: string;
-    initialUserEntityCapability: string;
+    initialUserEntityCapabilities: EOGUserEntityCapabilityDTO[];
     /**
      * Default: OWNER
      */

@@ -62,6 +62,7 @@ export class EntityOwnershipGroupService {
     }
 
     private capabilityToDto(a: UserCapability): EOGUserCapabilityDTO {
+        debugger;
         return {
             userId: a.userId!,
             entityCapabilities: a.entityCapabilities.map(ec => ({
