@@ -62,10 +62,9 @@ export class EntityOwnershipGroupService {
     }
 
     private capabilityToDto(a: UserCapability): EOGUserCapabilityDTO {
-        debugger;
         return {
             userId: a.userId!,
-            entityCapabilities: a.entityCapabilities.map(ec => ({
+            entityCapabilities: a.entityCapabilities?.map(ec => ({
                 entityGroup: ec.entityGroup,
                 entityName: ec.entityName,
                 capability: ec.capability,
@@ -301,7 +300,7 @@ export class EntityOwnershipGroupService {
         const userCapability: EOGUserCapabilityDTO = {
             userId: invite.invitedUserId,
             // capability: invite.entityCapability,
-            entityCapabilities: invite.entityCapabilities.map(ec => ({
+            entityCapabilities: invite.entityCapabilities?.map(ec => ({
                 entityGroup: ec.entityGroup,
                 entityName: ec.entityName,
                 capability: ec.capability,

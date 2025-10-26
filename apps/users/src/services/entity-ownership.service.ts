@@ -104,14 +104,14 @@ export class EntityOwnershipService {
     }
 
     public async findInsertedUserCapability(
-        eouc: EntityOwnershipUserCheck,
+        entityOwnershipUserCheck: EntityOwnershipUserCheck,
         checkRoleOverride: boolean,
     ): Promise<Optional<UserCapabilityDTO>> {
-        this.logger.debug({ cap: eouc.capability });
+        this.logger.debug({ cap: entityOwnershipUserCheck.capability });
         const entityOwnership = await this.eoModel.findOne({
-            entityGroup: eouc.entityGroup,
-            entityId: eouc.entityId,
-            entityName: eouc.entityName,
+            entityGroup: entityOwnershipUserCheck.entityGroup,
+            entityId: entityOwnershipUserCheck.entityId,
+            entityName: entityOwnershipUserCheck.entityName,
             // "userCapabilities.userId": eouc.userId,
             // ...(eouc.capability ? { 'userCapabilities.capability': eouc.capability } : {}),
         });
@@ -121,25 +121,49 @@ export class EntityOwnershipService {
         // checking inside entityOwnership's userCapabilities
         if (entityOwnership && entityOwnership.userCapabilities.length) {
             found = entityOwnership.userCapabilities.find(
-                (uc) => uc.userId === eouc.userId && (!eouc.capability || uc.capability === eouc.capability),
+                (uc) => uc.userId === entityOwnershipUserCheck.userId && (!entityOwnershipUserCheck.capability || uc.capability === entityOwnershipUserCheck.capability),
             );
             roleOverrides = entityOwnership.overriderRoles;
         }
         // if not found, checking inside entityOwnershipGroup's userCapabilities
         if (!found && entityOwnership && entityOwnership.entityOwnershipGroupId) {
             const ownerShipGroup = await this.eogModel.findOne({
-                _id: entityOwnership.entityOwnershipGroupId
+                _id: entityOwnership.entityOwnershipGroupId,
+                userCapabilities: {
+                    $elemMatch: {
+                        userId: entityOwnershipUserCheck.userId,
+                        entityCapabilities: {
+                            $elemMatch: {
+                                entityGroup: entityOwnershipUserCheck.entityGroup,
+                                entityName: entityOwnershipUserCheck.entityName,
+                                ...(entityOwnershipUserCheck.capability
+                                    ? {
+                                        'capability':
+                                            entityOwnershipUserCheck.capability,
+                                    }
+                                    : {}),
+                            },
+
+                        },
+                    }
+                }
             });
+            console.debug('Found EOG:', ownerShipGroup);
             if (ownerShipGroup && ownerShipGroup.userCapabilities.length) {
                 const foundPre = ownerShipGroup.userCapabilities.find(
-                    (uc) => uc.userId === eouc.userId,
+                    (uc) => uc.userId === entityOwnershipUserCheck.userId,
                 );
-                if (foundPre?.entityCapabilities.find(
-                    (entityCapability) => eouc.entityGroup == entityCapability.entityGroup &&
-                        eouc.entityName == entityCapability.entityName &&
-                        (!eouc.capability || entityCapability.capability === eouc.capability)
-                )) {
-                    found = foundPre;
+                console.debug('Found EOG User Capability:', foundPre);
+                const entityCapabilityMatch = foundPre?.entityCapabilities.find(
+                    (entityCapability) => entityOwnershipUserCheck.entityGroup == entityCapability.entityGroup &&
+                        entityOwnershipUserCheck.entityName == entityCapability.entityName &&
+                        (!entityOwnershipUserCheck.capability || entityCapability.capability === entityOwnershipUserCheck.capability)
+                )
+                if (entityCapabilityMatch) {
+                    found = {
+                        userId: foundPre!.userId,
+                        capability: entityCapabilityMatch.capability,
+                    };
                 }
                 if (!roleOverrides) {
                     roleOverrides = ownerShipGroup.overriderRoles;
@@ -147,14 +171,14 @@ export class EntityOwnershipService {
             }
         }
         // if not found, checking overriderRoles with user roles
-        if (!found && roleOverrides?.length && eouc.userId && checkRoleOverride) {
-            let user: Optional<UserAuthBackendDTO> = await this.userService.findUserAuthBackend(eouc.userId);
+        if (!found && roleOverrides?.length && entityOwnershipUserCheck.userId && checkRoleOverride) {
+            let user: Optional<UserAuthBackendDTO> = await this.userService.findUserAuthBackend(entityOwnershipUserCheck.userId);
 
             // Admin overrides all
             if (user && user.roles?.includes('ADMIN')) {
                 return {
                     userId: user.id,
-                    capability: eouc.capability?.toString(),
+                    capability: entityOwnershipUserCheck.capability?.toString(),
                 };
             }
             // Check other roles
@@ -165,7 +189,7 @@ export class EntityOwnershipService {
                     if (role) {
                         found = {
                             userId: user.id,
-                            capability: eouc.capability?.toString(),
+                            capability: entityOwnershipUserCheck.capability?.toString(),
                         };
                     }
                 }
@@ -182,10 +206,18 @@ export class EntityOwnershipService {
         const eogsByUser = await this.eogModel.find({
             'userCapabilities.userId': eo.userId,
             ...(eo.capabilityAtLeastOne
-                ? { 'userCapabilities.capability': { $in: eo.capabilityAtLeastOne } }
+                ? {
+                    'userCapabilities.entityCapabilities': {
+                        $elemMatch: {
+                            capability: { $in: eo.capabilityAtLeastOne },
+                            entityGroup: eo.entityGroup,
+                            entityName: eo.entityName
+                        }
+                    }
+                }
                 : {}),
         });
-
+        console.info('EOGs by user:', eogsByUser.length);
 
         const entityOwnerships = await this.eoModel.find({
             entityGroup: eo.entityGroup,

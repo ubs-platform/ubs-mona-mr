@@ -8,6 +8,7 @@ import {
 } from '@nestjs/platform-fastify';
 import { LoadbalancedProxy } from '@ubs-platform/loadbalanced-proxy';
 import { UsersModule } from 'apps/users/src/users.module';
+import fastifyMultipart from '@fastify/multipart';
 
 const INTERNAL_COMMUNICATION = {
     port: parseInt(process.env['U_USERS_MONA_INTERNAL_COM_PORT'] || '0'),
@@ -20,6 +21,7 @@ async function bootstrap() {
             DevMonolithModule,
             new FastifyAdapter({
                 ignoreTrailingSlash: true,
+                
             }),
         );
         // const app = await NestFactory.create(UsersModule);
@@ -30,6 +32,7 @@ async function bootstrap() {
         app.connectMicroservice(
             MicroserviceSetupUtil.setupServer('ubs-dev-monolith'),
         );
+        app.register(fastifyMultipart);
 
         // app.connectMicroservice({
         //     transport: Transport.TCP,
