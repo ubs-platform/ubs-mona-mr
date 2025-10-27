@@ -47,12 +47,12 @@ export class EntityOwnershipService {
     private findUserCapabilityInEntity(
         entityOwnership: EntityOwnership,
         userId: string,
-        capability?: string
+        capabilitiesAtLeastOne?: string[]
     ): Optional<UserCapabilityDTO> {
         if (!entityOwnership?.userCapabilities?.length) return null;
 
         const found = entityOwnership.userCapabilities.find(
-            (uc) => uc.userId === userId && (!capability || uc.capability === capability)
+            (uc) => uc.userId === userId && (!capabilitiesAtLeastOne?.length || (uc.capability && capabilitiesAtLeastOne.includes(uc.capability)))
         );
 
         return found ? { userId: found.userId!, capability: found.capability! } : null;
@@ -74,7 +74,7 @@ export class EntityOwnershipService {
                         $elemMatch: {
                             entityGroup: userCheck.entityGroup,
                             entityName: userCheck.entityName,
-                            ...(userCheck.capability ? { capability: userCheck.capability } : {}),
+                            ...(userCheck.capabilityAtLeastOne?.length ? { capability: { $in: userCheck.capabilityAtLeastOne } } : {}),
                         },
                     },
                 }
@@ -92,7 +92,7 @@ export class EntityOwnershipService {
         const entityCapabilityMatch = userCapability.entityCapabilities.find(
             (ec) => userCheck.entityGroup === ec.entityGroup &&
                 userCheck.entityName === ec.entityName &&
-                (!userCheck.capability || ec.capability === userCheck.capability)
+                (!userCheck.capabilityAtLeastOne?.length || userCheck.capabilityAtLeastOne.includes(ec.capability))
         );
 
         return entityCapabilityMatch ? {
@@ -229,7 +229,7 @@ export class EntityOwnershipService {
         entityOwnershipUserCheck: EntityOwnershipUserCheck,
         checkRoleOverride: boolean,
     ): Promise<Optional<UserCapabilityDTO>> {
-        this.logger.debug({ cap: entityOwnershipUserCheck.capability });
+        this.logger.debug({ cap: entityOwnershipUserCheck.capabilityAtLeastOne?.join(",") });
 
         const entityOwnership = await this.findEntityBySearchKeys({
             entityGroup: entityOwnershipUserCheck.entityGroup,
@@ -243,7 +243,7 @@ export class EntityOwnershipService {
         let found = this.findUserCapabilityInEntity(
             entityOwnership,
             entityOwnershipUserCheck.userId,
-            entityOwnershipUserCheck.capability
+            entityOwnershipUserCheck.capabilityAtLeastOne
         );
 
         // EntityOwnership Group içinde ara
@@ -260,7 +260,7 @@ export class EntityOwnershipService {
                 found = await this.checkRoleOverride(
                     roleOverrides,
                     entityOwnershipUserCheck.userId,
-                    entityOwnershipUserCheck.capability
+                    entityOwnershipUserCheck.capabilityAtLeastOne?.[0]
                 );
             }
         }

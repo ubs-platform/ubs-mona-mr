@@ -102,7 +102,7 @@ export class CommentAbilityCheckService {
                     entityId: saved.mainEntityId,
                     entityName: saved.mainEntityName,
                     userId: user.id,
-                    capability: 'OWNER',
+                    capabilityAtLeastOne: [CAPABILITY_NAME_ENTITY_OWNER, "EDITOR", CAPABILITY_NAME_COMMENT_OWNER],
                 }),
             );
         } else {

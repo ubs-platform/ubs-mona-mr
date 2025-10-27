@@ -38,7 +38,9 @@ export interface EntityOwnershipUserCheck {
     entityGroup: string;
     entityName: string;
     entityId: string;
-    capability?: string;
+    // capability?: string;
+    capabilityAtLeastOne?: string[];
+
     userId: string;
     entityOwnershipGroupId?: string;
 }

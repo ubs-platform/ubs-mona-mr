@@ -36,7 +36,7 @@ export class EntityOwnershipController {
     async hasOwnershipDetailed(eo: EntityOwnershipUserCheck) {
         this.validateOwnershipParameters(eo);
         return this.cacheman.getOrCallAsync(
-            `eo-hasOwnershipDetailed ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${eo.capability}`,
+            `eo-hasOwnershipDetailed ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${eo.capabilityAtLeastOne?.join(",")}`,
             () => this.eoService.findInsertedUserCapability(eo, true),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
