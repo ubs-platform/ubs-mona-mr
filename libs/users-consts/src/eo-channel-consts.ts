@@ -1,5 +1,6 @@
 export class EOChannelConsts {
     public static searchOwnershipUser = 'search-ownership-user';
+    public static searchEntityIdsByUser = 'search-entity-ids-by-user';
     public static checkOwnership = 'check-ownership';
     public static checkOwnershipDetailed = 'check-ownership-detailed';
     public static insertOwnership = 'insert-ownership';

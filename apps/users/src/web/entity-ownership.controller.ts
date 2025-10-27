@@ -76,4 +76,13 @@ export class EntityOwnershipController {
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
     }
+
+    @MessagePattern(EOChannelConsts.searchEntityIdsByUser)
+    async searchEntityIdsByUser(eo: EntityOwnershipUserSearch) {
+        return this.cacheman.getOrCallAsync(
+            `eo-searchEntityIdsByUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${eo.capabilityAtLeastOne?.join(",")} `,
+            () => this.eoService.searchEntityIdsByUser(eo),
+            { livetime: 1000, livetimeExtending: 'ON_GET' },
+        );
+    }
 }

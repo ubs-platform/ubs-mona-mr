@@ -16,7 +16,7 @@ export class EntityOwnershipService implements OnModuleInit {
     constructor(
         @Inject('KAFKA_CLIENT')
         private kafkaClient: ClientProxy | ClientKafka | ClientRMQ,
-    ) {}
+    ) { }
 
     onModuleInit() {
         // Object.entries(EOChannelConsts).forEach(([key, val]) => {
@@ -69,9 +69,20 @@ export class EntityOwnershipService implements OnModuleInit {
         return this.kafkaClient.send(EOChannelConsts.searchOwnershipUser, eo);
     }
 
+
+
+    searchOwnershipEntityIdsByUser(
+        eo: EntityOwnershipUserSearch,
+    ): Observable<string[]> {
+        return this.kafkaClient.send(EOChannelConsts.searchEntityIdsByUser, eo);
+    }
+
+
     async deleteOwnership(oe: EntityOwnershipSearch) {
         this.kafkaClient.emit(EOChannelConsts.deleteOwnership, oe);
     }
+
+
 
     // async findUserAuth(userId: any): Promise<UserDTO> {
     //   console.debug('Fetching user');

@@ -5,40 +5,40 @@ export class UserCapabilityDTO {
 
 export interface EntityOwnershipDTO {
     userCapabilities: UserCapabilityDTO[];
-    entityGroup: String;
-    entityName: String;
-    entityId: String;
-    overriderRoles: String[];
+    entityGroup: string;
+    entityName: string;
+    entityId: string;
+    overriderRoles: string[];
 }
 
 export interface EntityOwnershipInsertCapabiltyDTO {
-    entityGroup: String;
-    entityName: String;
-    entityId: String;
+    entityGroup: string;
+    entityName: string;
+    entityId: string;
     userId: string;
     capability: string;
 }
 
 
 export interface EntityOwnershipUserSearch {
-    entityGroup: String;
-    entityName: String;
+    entityGroup: string;
+    entityName: string;
     userId: string;
     entityOwnershipGroupId?: string;
     capabilityAtLeastOne?: string[];
 }
 
 export interface EntityOwnershipSearch {
-    entityGroup: String;
-    entityName: String;
-    entityId: String;
+    entityGroup: string;
+    entityName: string;
+    entityId: string;
 }
 
 export interface EntityOwnershipUserCheck {
-    entityGroup: String;
-    entityName: String;
-    entityId: String;
-    capability?: String;
+    entityGroup: string;
+    entityName: string;
+    entityId: string;
+    capability?: string;
     userId: string;
     entityOwnershipGroupId?: string;
 }
