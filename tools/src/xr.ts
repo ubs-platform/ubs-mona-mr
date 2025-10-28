@@ -12,7 +12,7 @@ console.info(
 ▐▛▚▞▜▌▐▌ ▐▌▐▛▚▖▐▌▐▌ ▐▌ ▝▚▞▘ ▐▌ ▐▌
 ▐▌  ▐▌▐▌ ▐▌▐▌ ▝▜▌▐▛▀▜▌  ▐▌  ▐▛▀▚▖
 ▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌▐▌ ▐▌▗▞▘▝▚▖▐▌ ▐▌
-MonaXr for Mona5            H.C.G`,
+MonaXr for Mona5    H. Can Gündüz`,
 );
 
 export interface IAction {
