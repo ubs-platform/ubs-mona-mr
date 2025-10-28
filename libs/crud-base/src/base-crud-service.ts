@@ -18,7 +18,7 @@ export abstract class BaseCrudService<
 
     abstract toOutput(m: MODEL): Promise<OUTPUT> | OUTPUT;
     abstract moveIntoModel(model: MODEL, i: INPUT): Promise<MODEL> | MODEL;
-    abstract searchParams(s?: Partial<SEARCH>): FilterQuery<MODEL>;
+    abstract searchParams(s?: Partial<SEARCH>): Promise<FilterQuery<MODEL>>;
 
     async convertAndReturnTheList(list: MODEL[], user?: UserAuthBackendDTO) {
         const outputList: OUTPUT[] = [];
@@ -36,7 +36,7 @@ export abstract class BaseCrudService<
         const page = searchAndPagination?.page || 0,
             size = searchAndPagination?.size || 10;
 
-        let s = this.searchParams(searchAndPagination); //{ ...searchAndPagination, page: undefined, size: undefined };
+        let s = await this.searchParams(searchAndPagination); //{ ...searchAndPagination, page: undefined, size: undefined };
         let sort;
         if (searchAndPagination?.sortBy && searchAndPagination.sortRotation) {
             sort = {};
@@ -53,7 +53,7 @@ export abstract class BaseCrudService<
         s?: Partial<SEARCH>,
         user?: UserAuthBackendDTO,
     ): Promise<OUTPUT[]> {
-        const list = await this.m.find(this.searchParams(s)).exec();
+        const list = await this.m.find(await this.searchParams(s)).exec();
         return await this.convertAndReturnTheList(list, user);
     }
 
