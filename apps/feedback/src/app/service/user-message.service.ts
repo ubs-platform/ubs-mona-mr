@@ -93,7 +93,7 @@ export class UserMessageService extends BaseCrudService<
         }
         return model;
     }
-    searchParams(s: IUserMessageSearch): FilterQuery<UserMessage> {
+    async searchParams(s: IUserMessageSearch): Promise<FilterQuery<UserMessage>> {
         const c = {} as FilterQuery<UserMessage>;
         if (s._id) {
             c._id = s._id;

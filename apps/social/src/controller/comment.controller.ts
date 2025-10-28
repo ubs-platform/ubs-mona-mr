@@ -7,6 +7,7 @@ import {
     Post,
     Put,
     Query,
+    UnauthorizedException,
     UseGuards,
 } from '@nestjs/common';
 import {
@@ -118,6 +119,12 @@ export class CommentController {
         return await this.commntMetaService.fetchStatus(comment);
     }
 
+    private async checkOwnerOfEntity(comment: CommentMetaSearchDTO, currentUser: UserAuthBackendDTO) {
+        if (!await this.commentAbility.isUserOwnerOfRealEntity(comment as any, currentUser)) {
+            throw new UnauthorizedException('No Permission');
+        }
+    }
+
     @Get('block-user')
     @UseGuards(UserIntercept)
     async fetchBlockedUsers(@Query() comment: CommentMetaSearchDTO) {
@@ -145,7 +152,9 @@ export class CommentController {
         await this.commentService.deleteComment(id, currentUser);
     }
     @Put('status')
-    async setCommentingStatus(@Body() comment: NewCommentingStatus) {
+    @UseGuards(JwtAuthGuard)
+    async setCommentingStatus(@Body() comment: NewCommentingStatus, @CurrentUser() currentUser) {
+        await this.checkOwnerOfEntity(comment, currentUser);
         console.info('status');
         await this.commntMetaService.setStatus(comment, comment.newStatus);
     }

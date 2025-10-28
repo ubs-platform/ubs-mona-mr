@@ -24,7 +24,7 @@ export class EmailTemplateService extends BaseCrudService<
     ) {
         super(model);
     }
-    searchParams(s: EmailTemplateSearch): FilterQuery<EmailTemplate> {
+    async searchParams(s: EmailTemplateSearch): Promise<FilterQuery<EmailTemplate>> {
         const searchQueries: FilterQuery<EmailTemplate> = {};
         if (s) {
             if (s.htmlContentContains != null) {
