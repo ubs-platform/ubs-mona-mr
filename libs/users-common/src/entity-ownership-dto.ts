@@ -9,6 +9,7 @@ export interface EntityOwnershipDTO {
     entityName: string;
     entityId: string;
     overriderRoles: string[];
+    entityOwnershipGroupId: string;
 }
 
 export interface EntityOwnershipInsertCapabiltyDTO {

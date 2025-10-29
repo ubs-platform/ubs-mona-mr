@@ -3,6 +3,7 @@ import { EntityOwnership } from '../domain/entity-ownership.schema';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import e from 'express';
 @Injectable()
 export class EntityOwnershipMapper {
     constructor(
@@ -19,6 +20,7 @@ export class EntityOwnershipMapper {
                 userId: a.userId,
                 capability: a.capability,
             })),
+            entityOwnershipGroupId: entityOwnership.entityOwnershipGroupId,
         } as EntityOwnershipDTO;
     }
 
@@ -28,6 +30,7 @@ export class EntityOwnershipMapper {
             entityId: entityOwnership.entityId,
             entityName: entityOwnership.entityName,
             overriderRoles: entityOwnership.overriderRoles,
+            entityOwnershipGroupId: entityOwnership.entityOwnershipGroupId,
             userCapabilities: entityOwnership.userCapabilities.map((a) => {
                 return {
                     userId: a.userId,
@@ -49,6 +52,7 @@ export class EntityOwnershipMapper {
         // existingEntity.entityId = entityOwnership.entityId;
         // existingEntity.entityName = entityOwnership.entityName;
         // existingEntity.overriderRoles = entityOwnership.overriderRoles;
+        existingEntity.entityOwnershipGroupId = entityOwnership.entityOwnershipGroupId;
         existingEntity.userCapabilities = entityOwnership.userCapabilities;
         return existingEntity;
     }
