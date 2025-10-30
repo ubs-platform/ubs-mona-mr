@@ -19,6 +19,7 @@ import {
     EntityOwnershipGroupCreateDTO,
     EntityOwnershipGroupDTO,
     EOGCheckUserGroupCapabilityDTO,
+    EOGUserCapabilityDTO,
 } from 'libs/users-common/src/entity-ownership-group';
 
 @Controller('entity-ownership-group')
@@ -33,6 +34,13 @@ export class EntityOwnershipGroupMicroserviceController {
         return await this.eogService.findGroupsUserIn(userIds);
     }
 
+    @EventPattern(EOGroupEventConsts.fetchMembers)
+    async fetchMembers(
+        groupId: string,
+    ): Promise<EOGUserCapabilityDTO[]> {
+        return await this.eogService.fetchUsersInGroup(groupId);
+    }
+    
     @EventPattern(EOGroupEventConsts.createGroup)
     async insertOwnershipGroup(eog: EntityOwnershipGroupCreateDTO) {
         this.cacheman.invalidateRegex(/eog-*/);

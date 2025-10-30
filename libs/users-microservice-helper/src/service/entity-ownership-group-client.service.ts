@@ -23,7 +23,7 @@ export class EntityOwnershipGroupClientService {
     constructor(
         @Inject('KAFKA_CLIENT')
         private kafkaClient: ClientProxy | ClientKafka | ClientRMQ,
-    ) {}
+    ) { }
 
     findByUserIds(userIds: string[]): Observable<EntityOwnershipGroupDTO[]> {
         return this.kafkaClient.send<EntityOwnershipGroupDTO[]>(
@@ -83,6 +83,15 @@ export class EntityOwnershipGroupClientService {
         return this.kafkaClient.send<EntityOwnershipGroupDTO[]>(
             EOGroupEventConsts.searchByUserId,
             { userId, capacity },
+        );
+    }
+
+    fetchMembers(
+        groupId: string,
+    ): Observable<EntityOwnershipInsertCapabiltyDTO[]> {
+        return this.kafkaClient.send<EntityOwnershipInsertCapabiltyDTO[]>(
+            EOGroupEventConsts.fetchMembers,
+            groupId,
         );
     }
 

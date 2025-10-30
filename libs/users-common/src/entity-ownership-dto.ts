@@ -3,6 +3,15 @@ export class UserCapabilityDTO {
     capability?: string;
 }
 
+export interface EntityOwnershipRemoveUserCapabilityDTO {
+    userId: string;
+}
+
+export interface EntityOwnershipSetGroupIdDTO {
+    userId: string;
+    groupId: string;
+}
+
 export interface EntityOwnershipDTO {
     userCapabilities: UserCapabilityDTO[];
     entityGroup: string;
