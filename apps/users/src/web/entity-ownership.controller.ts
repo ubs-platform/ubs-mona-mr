@@ -42,10 +42,23 @@ export class EntityOwnershipController {
         );
     }
 
+    @MessagePattern(EOChannelConsts.removeOwnershipUserCapability)
+    async removeOwnershipUserCapability(eo: EntityOwnershipUserCheck) {
+        this.validateOwnershipParametersOnlyUserId(eo);
+        await this.eoService.removeUserCapability(eo);
+        this.cacheman.invalidateRegex(/eo-*/);
+    }
+
     // @MessagePattern(EOChannelConsts.checkOwnership)
     // async hasOwnershipOfOne(eo: EntityOwnershipUserCheck) {
     //     return ((await this.hasOwnershipDetailed(eo)) != null);
     // }
+    private validateOwnershipParametersOnlyUserId(eo: EntityOwnershipUserCheck | EntityOwnershipUserSearch) {
+        if (!eo.userId) {
+            throw new Error('userId must be provided.');
+        }
+    }
+
 
     private validateOwnershipParameters(eo: EntityOwnershipUserCheck | EntityOwnershipUserSearch) {
         if (!eo.userId && !eo.entityOwnershipGroupId) {

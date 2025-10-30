@@ -69,6 +69,12 @@ export class EntityOwnershipService implements OnModuleInit {
         return this.kafkaClient.send(EOChannelConsts.searchOwnershipUser, eo);
     }
 
+    removeOwnershipUserCapability(
+        eo: EntityOwnershipUserCheck,
+    ): Observable<void> {
+        return this.kafkaClient.send(EOChannelConsts.removeOwnershipUserCapability, eo);
+    }
+
 
 
     searchOwnershipEntityIdsByUser(

@@ -20,6 +20,7 @@ import { Optional } from '@ubs-platform/crud-base-common/utils';
 @Injectable()
 export class EntityOwnershipService {
 
+
     private readonly logger = new Logger(EntityOwnershipService.name, {
         timestamp: true,
     });
@@ -32,6 +33,24 @@ export class EntityOwnershipService {
         private userService: UserService,
         private mapper: EntityOwnershipMapper,
     ) { }
+
+    public async removeUserCapability(eo: EntityOwnershipUserCheck) {
+        const searchKeys: EntityOwnershipSearch = {
+            entityGroup: eo.entityGroup,
+            entityId: eo.entityId,
+            entityName: eo.entityName,
+        };
+
+        const updateResult = await this.eoModel.updateOne(searchKeys, {
+            $pull: {
+                userCapabilities: {
+                    userId: eo.userId,
+                },
+            },
+        });
+
+        return updateResult;
+    }
 
     // Ortak kullanılan entity bulma metodu
     private async findEntityBySearchKeys(searchKeys: EntityOwnershipSearch): Promise<EntityOwnership | null> {
