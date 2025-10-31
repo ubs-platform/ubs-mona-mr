@@ -316,20 +316,20 @@ export class Engine5Connection {
     }
 
 
-    // private static globalE5Connections: { [key: string]: Engine5Connection } = {};
+    private static globalE5Connections: { [key: string]: Engine5Connection } = {};
 
-    // public static create(host: string,
-    //     port: string | number,
-    //     instanceGroup?: string,
-    //     instanceId?: string) {
-    //     const key = `${instanceGroup}(${instanceId})@${host}:${port}`
-    //     if (!this.globalE5Connections[key]) {
-    //         const nk = new Engine5Connection(host, port, instanceGroup, instanceId);
-    //         this.globalE5Connections[key] = nk;
-    //     }
+    public static create(host: string,
+        port: string | number,
+        instanceGroup?: string,
+        instanceId?: string) {
+        const key = `${instanceGroup}(${instanceId})@${host}:${port}`
+        if (!this.globalE5Connections[key]) {
+            const nk = new Engine5Connection(host, port, instanceGroup, instanceId);
+            this.globalE5Connections[key] = nk;
+        }
 
-    //     return this.globalE5Connections[key];
+        return this.globalE5Connections[key];
 
-    // }
+    }
 }
 
