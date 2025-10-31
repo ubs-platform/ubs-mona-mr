@@ -69,7 +69,15 @@ export class Engine5Connection {
             this.queue.push(() => {
                 try {
                     const buff = Buffer.from([...encode(p), 4]);
-
+                    if (buff.indexOf(4) != buff.length - 1) {
+                        const wrongIndex = buff.indexOf(4);
+                        console.error(
+                            'Payload contains invalid byte (4) that is used as a delimiter',
+                        );
+                        console.info('Payload:', p);
+                        console.info('Stringified:', buff.toString().substring(0, wrongIndex) + '>>>>' + buff.toString().substring(wrongIndex, wrongIndex + 1) + '<<<<' + buff.toString().substring(wrongIndex + 1));
+                        debugger;
+                    }
                     this.tcpClient.write(buff, (e) => {
                         if (e) fail(e);
                         else ok(this);
@@ -100,7 +108,7 @@ export class Engine5Connection {
         });
     }
 
-    private messageIdGenerate(): string  {
+    private messageIdGenerate(): string {
         return Date.now() + '_' + (Math.random() * 100000).toFixed();
     }
 
@@ -112,13 +120,13 @@ export class Engine5Connection {
         await this.writePayload({
             Command: 'REQUEST',
             Subject: subject,
-            Content: JSON.stringify(data),
+            Content: this.stringifyData(data),
             MessageId: messageId,
         });
         return new Promise((ok, fail) => {
             this.ongoingRequestsToComplete[messageId] = (response: Payload) => {
                 if (response.Content) {
-                    const jsonObj = JSON.parse(response.Content!) as any;
+                    const jsonObj = this.parseData(response.Content!) as any;
                     ok(jsonObj);
                 } else {
                     ok(undefined);
@@ -143,7 +151,7 @@ export class Engine5Connection {
         await this.writePayload({
             Command: 'EVENT',
             Subject: subject,
-            Content: JSON.stringify(data),
+            Content: this.stringifyData(data),
         });
     }
     // async sendEventStr(subject: string, data: string) {
@@ -253,11 +261,11 @@ export class Engine5Connection {
             try {
                 const ac = await this.listeningSubjectCallbacks[
                     decoded.Subject!
-                ][0](JSON.parse(decoded.Content!));
+                ][0](this.parseData(decoded.Content!));
                 // this.ongoingRequestsToComplete[decoded.MessageId!](ac)
                 await this.writePayload({
                     Command: 'RESPONSE',
-                    Content: JSON.stringify(ac),
+                    Content: this.stringifyData(ac),
                     MessageId: this.messageIdGenerate(),
                     Subject: decoded.Subject,
                     ResponseOfMessageId: decoded.MessageId,
@@ -272,6 +280,23 @@ export class Engine5Connection {
         }
     }
 
+    private parseData(dataString: string[]): any {
+        return JSON.parse(dataString.join(""));
+    }
+
+    private stringifyData(ac: any): string[] | undefined {
+        let a = JSON.stringify(ac) as string;
+
+        // her 1000 karakterde bir bölelim
+        const chunkSize = 1000;
+        const chunks : string[] = [];
+        for (let i = 0; i < a.length; i += chunkSize) {
+            chunks.push(a.substring(i, i + chunkSize));
+        }
+        // stringleri bölmek şu anda '4' karakteri sorununa çözüm değil. Ancak ileride farklı bir protokole geçildiğinde sorun olmayacak.
+        return chunks;
+    }
+
     private processReceivedEvent(decoded: Payload) {
         const cbs = this.listeningSubjectCallbacks[decoded.Subject!] || [];
         for (
@@ -280,7 +305,7 @@ export class Engine5Connection {
             callbackIndex++
         ) {
             const callback = cbs[callbackIndex];
-            callback(JSON.parse(decoded.Content as string));
+            callback(this.parseData(decoded.Content!));
         }
     }
 
@@ -291,20 +316,20 @@ export class Engine5Connection {
     }
 
 
-    private static globalE5Connections: { [key: string]: Engine5Connection } = {};
+    // private static globalE5Connections: { [key: string]: Engine5Connection } = {};
 
-    public static create(host: string,
-        port: string | number,
-        instanceGroup?: string,
-        instanceId?: string) {
-        const key = `${instanceGroup}(${instanceId})@${host}:${port}`
-        if (!this.globalE5Connections[key]) {
-            const nk = new Engine5Connection(host, port, instanceGroup, instanceId);
-            this.globalE5Connections[key] = nk;
-        }
+    // public static create(host: string,
+    //     port: string | number,
+    //     instanceGroup?: string,
+    //     instanceId?: string) {
+    //     const key = `${instanceGroup}(${instanceId})@${host}:${port}`
+    //     if (!this.globalE5Connections[key]) {
+    //         const nk = new Engine5Connection(host, port, instanceGroup, instanceId);
+    //         this.globalE5Connections[key] = nk;
+    //     }
 
-        return this.globalE5Connections[key];
+    //     return this.globalE5Connections[key];
 
-    }
+    // }
 }
 

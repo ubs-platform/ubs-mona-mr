@@ -16,7 +16,7 @@ export class E5NestClient {
     connection: Engine5Connection;
     constructor(private connectionInfo: E5NestClientConnectionOptions) {
         const { host, port, instanceId, instanceGroup } = connectionInfo
-        this.connection = Engine5Connection.create(
+        this.connection = new Engine5Connection(
             host,
             port,
             instanceGroup || instanceId || E5NestClient.appGlobalE5InstanceId,

@@ -19,7 +19,7 @@ export type CommandType =
 
 export interface Payload {
   Command: CommandType;
-  Content?: string;
+  Content?: string[];
   Subject?: string;
   InstanceId?: string;
   MessageId?: string;

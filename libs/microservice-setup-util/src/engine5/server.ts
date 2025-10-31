@@ -40,7 +40,7 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
         super();
         if (!instanceId) instanceId = 'nest_server' + randomUUID();
 
-        this.connection = Engine5Connection.create(host, port, instanceGroup, instanceId);
+        this.connection = new Engine5Connection(host, port, instanceGroup, instanceId);
     }
     /**
      * Triggered when you run "app.listen()".
