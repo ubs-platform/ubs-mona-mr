@@ -15,7 +15,7 @@ export class EntityOwnershipMapper {
             entityGroup: entityOwnership.entityGroup,
             entityId: entityOwnership.entityId,
             entityName: entityOwnership.entityName,
-            overriderRoles: entityOwnership.overriderRoles,
+            overriderRoles: entityOwnership.overriderRoles?.map((a) => a),
             userCapabilities: entityOwnership.userCapabilities.map((a) => ({
                 userId: a.userId,
                 capability: a.capability,

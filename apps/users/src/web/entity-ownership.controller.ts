@@ -68,11 +68,12 @@ export class EntityOwnershipController {
 
     @MessagePattern(EOChannelConsts.searchOwnership)
     async searchOwnership(eo: EntityOwnershipSearch) {
-        return this.cacheman.getOrCallAsync(
+        const a = await this.cacheman.getOrCallAsync(
             `eo-searchOwnership ${eo.entityGroup} ${eo.entityId} ${eo.entityName}`,
             () => this.eoService.search(eo),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
+        return a;
     }
 
     @EventPattern(EOChannelConsts.deleteOwnership)
