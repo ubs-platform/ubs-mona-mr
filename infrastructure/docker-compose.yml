@@ -1,6 +1,6 @@
 services:
   engine5:
-    image: hcangunduz/engine5:0.0.6-alpha
+    image: hcangunduz/engine5:0.0.7-alpha
     ports:
       - 3535:3535
 
