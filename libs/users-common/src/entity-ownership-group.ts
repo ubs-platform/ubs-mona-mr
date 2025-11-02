@@ -1,8 +1,4 @@
-export type GroupCapability =
-    | 'OWNER'
-    | 'VIEWER'
-    | 'ADJUST_MEMBERS'
-    | 'ONLY_EDIT_MEMBER_CAPABILITIES';
+export type GroupCapability = 'OWNER' | 'VIEWER' | "EDITOR" | "META_EDIT" | 'ADJUST_MEMBERS' | 'ONLY_EDIT_MEMBER_CAPABILITIES';
 
 export class EntityOwnershipGroupCreateDTO {
     groupName: string;
@@ -12,7 +8,7 @@ export class EntityOwnershipGroupCreateDTO {
     /**
      * Default: OWNER
      */
-    initialUserGroupCapability?: 'OWNER' | 'VIEWER' | 'ADJUST_MEMBERS' | 'ONLY_EDIT_MEMBER_CAPABILITIES';
+    initialUserGroupCapability?: GroupCapability;
 }
 
 export class EntityOwnershipGroupDTO {
@@ -21,8 +17,10 @@ export class EntityOwnershipGroupDTO {
     description?: string;
     userCapabilities: EOGUserCapabilityDTO[];
 }
+
+
 export class EntityOwnershipGroupMetaDTO {
-    id?: string;
+    id: string;
     groupName: string;
     description?: string;
     userCapabilities: EOGUserCapabilityDTO[];
@@ -37,11 +35,7 @@ export class EOGUserCapabilityDTO {
     userId: string;
     userFullName?: string;
     entityCapabilities: EOGUserEntityCapabilityDTO[];
-    groupCapability:
-        | 'OWNER'
-        | 'VIEWER'
-        | 'ADJUST_MEMBERS'
-        | 'ONLY_EDIT_MEMBER_CAPABILITIES';
+    groupCapability: GroupCapability;
     userCapabilityTemplateName?: string;
 }
 
@@ -49,11 +43,7 @@ export class EOGUserCapabilityDTO {
 export class EOGUserCapabilityInviteDTO {
     userLogin: string;
     entityCapabilities: EOGUserEntityCapabilityDTO[];
-    groupCapability:
-        | 'OWNER'
-        | 'VIEWER'
-        | 'ADJUST_MEMBERS'
-        | 'ONLY_EDIT_MEMBER_CAPABILITIES';
+    groupCapability: GroupCapability;
     userCapabilityTemplateName?: string;
 }
 
@@ -69,11 +59,7 @@ export class EOGUserCapabilityInvitationDTO {
     invitationId: string;
     // capability: string;
     entityCapabilities: EOGUserEntityCapabilityDTO[];
-    groupCapability:
-        | 'OWNER'
-        | 'VIEWER'
-        | 'ADJUST_MEMBERS'
-        | 'ONLY_EDIT_MEMBER_CAPABILITIES';
+    groupCapability: GroupCapability;
 }
 
 export class EOGCheckUserGroupCapabilityDTO {

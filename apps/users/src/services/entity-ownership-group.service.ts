@@ -25,6 +25,9 @@ import { EmailService } from './email.service';
 
 @Injectable()
 export class EntityOwnershipGroupService {
+    deleteGroup(id: string) {
+        throw new Error('Method not implemented.');
+    }
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
         timestamp: true,
     });

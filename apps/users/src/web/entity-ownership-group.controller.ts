@@ -6,11 +6,15 @@ import {
     Injectable,
     Param,
     Post,
+    Put,
     UnauthorizedException,
     UseGuards,
 } from '@nestjs/common';
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import {
+    EntityOwnershipGroupCreateDTO,
+    EntityOwnershipGroupDTO,
+    EntityOwnershipGroupMetaDTO,
     EOGCheckUserGroupCapabilityDTO,
     EOGUserCapabilityDTO,
     EOGUserCapabilityInvitationDTO,
@@ -27,124 +31,55 @@ export class EntityOwnershipGroupController {
     /**
      *
      */
-    constructor(private eogService: EntityOwnershipGroupService) {}
+    constructor(private eogService: EntityOwnershipGroupService) { }
 
     async assertHasUserGroupCapability(
-        eogCheckCap: EOGCheckUserGroupCapabilityDTO,
+        currentUser: UserAuthBackendDTO, groupId: string, requiredCapabilities: GroupCapability[]
     ) {
+        if (currentUser.roles.includes('ADMIN')) {
+            return;
+        }
         const hasCap = await this.eogService.hasUserGroupCapability(
-            eogCheckCap
+            { userId: currentUser.id, entityOwnershipGroupId: groupId, groupCapabilitiesAtLeastOne: requiredCapabilities }
         );
         if (!hasCap) {
             throw new UnauthorizedException(
-                `User ${eogCheckCap.userId} does not have capability ${eogCheckCap.groupCapabilitiesAtLeastOne} in entity ownership group ${eogCheckCap.entityOwnershipGroupId}`,
+                `User ${currentUser.id} does not have capability ${requiredCapabilities} in entity ownership group ${groupId}`,
             );
         }
     }
 
-    @Get(':id/users')
-    async fetchUsersInGroup(
-        @Param('id') id: string,
-    ): Promise<EOGUserCapabilityDTO[]> {
-        return await this.eogService.fetchUsersInGroup(id);
+    @UseGuards(JwtAuthLocalGuard)
+    @Post()
+    async createEntityOwnershipGroup(
+        @Body() eogCreate: EntityOwnershipGroupCreateDTO
+    ) {
+        // Only users with global admin role can create EOGs
+        return await this.eogService.createGroup(eogCreate);
     }
 
     @UseGuards(JwtAuthLocalGuard)
-    @Get(':id/invitation')
-    async fetchUserCapabilityInvitations(
-        @Param('id') id: string,
-        @CurrentUser() currentUser: UserAuthBackendDTO,
-    ): Promise<EOGUserCapabilityInvitationDTO[]> {
-        await this.assertHasUserGroupCapability({
-            entityOwnershipGroupId: id,
-            userId: currentUser.id,
-            groupCapabilitiesAtLeastOne: ['OWNER', 'ADJUST_MEMBERS', 'VIEWER'],
-        });
-        return await this.eogService.fetchUserCapabilityInvitations(id);
-    }
-
-    @UseGuards(JwtAuthLocalGuard)
-    @Delete(':id/capability/:userId')
-    async removeUserFromEntityOwnership(
-        @Param('id') id: string,
-        @Param('userId') userId: string,
+    @Put()
+    async editMeta(
+        @Body() eogMetaDto: EntityOwnershipGroupMetaDTO,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        await this.assertHasUserGroupCapability({
-            entityOwnershipGroupId: id,
-            userId: currentUser.id,
-            groupCapabilitiesAtLeastOne: ['OWNER', 'ADJUST_MEMBERS'],
-        });
+        // Only users with global admin role can create EOGs
+        this.assertHasUserGroupCapability(currentUser, eogMetaDto.id, ['OWNER', "EDITOR", "META_EDIT"]);
 
-        return await this.eogService.removeUserCapability(id, userId);
+        return await this.eogService.editMeta(eogMetaDto);
     }
 
+
     @UseGuards(JwtAuthLocalGuard)
-    @Delete(':id/invitation/:invitationId')
-    async removeUserFromEntityOwnershipInvitation(
+    @Delete(':id')
+    async deleteEntityOwnershipGroup(
         @Param('id') id: string,
-        @Param('invitationId') invitationId: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        await this.assertHasUserGroupCapability({
-            entityOwnershipGroupId: id,
-            userId: currentUser.id,
-            groupCapabilitiesAtLeastOne: ['OWNER', 'ADJUST_MEMBERS'],
-        });
+        // Only users with global admin role can delete EOGs
+        this.assertHasUserGroupCapability(currentUser, id, ['OWNER']);
 
-        return await this.eogService.removeInvitationAdmin(invitationId);
-    }
-
-    @UseGuards(JwtAuthLocalGuard)
-    @Post(':id/invitation')
-    async addUserToEntityOwnership(
-        @Param('id') id: string,
-        @Body() body: EOGUserCapabilityInviteDTO,
-        @CurrentUser() currentUser: UserAuthBackendDTO,
-    ) {
-        await this.assertHasUserGroupCapability({
-            entityOwnershipGroupId: id,
-            userId: currentUser.id,
-            groupCapabilitiesAtLeastOne: ['OWNER', 'ADJUST_MEMBERS'],
-        });
-        return await this.eogService.addUserCapabilityInvite(
-            id,
-            body,
-            currentUser,
-        );
-    }
-
-    // Region: Invitation Acceptance for invited users
-
-    @UseGuards(JwtAuthLocalGuard)
-    @Delete('/invitation/:inviteId')
-    async refuseInvitationCurrentUser(
-        @Param('inviteId') inviteId: string,
-        @CurrentUser() currentUser: UserAuthBackendDTO,
-    ) {
-        return await this.eogService.refuseUserCapabilityInvite(
-            inviteId,
-            currentUser,
-        );
-    }
-
-    @UseGuards(JwtAuthLocalGuard)
-    @Post('/invitation/:inviteId')
-    async acceptDirectlyToEntityOwnership(
-        @Param('inviteId') inviteId: string,
-        @CurrentUser() currentUser: UserAuthBackendDTO,
-    ) {
-        return await this.eogService.addUserCapabilityAcceptInvite(
-            inviteId,
-            currentUser,
-        );
-    }
-
-    @UseGuards(JwtAuthLocalGuard)
-    @Get('invitation/_currentuser')
-    async fetchMyInvitations(@CurrentUser() currentUser: UserAuthBackendDTO) {
-        return await this.eogService.fetchCurrentUserInvitations(
-            currentUser.id,
-        );
+        return await this.eogService.deleteGroup(id);
     }
 }

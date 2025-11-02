@@ -47,6 +47,7 @@ import { EntityOwnershipGroupService } from './services/entity-ownership-group.s
 import { EntityOwnershipGroupMapper } from './mapper/entity-ownership-group.mapper';
 import { EntityOwnershipGroupController } from './web/entity-ownership-group.controller';
 import { EntityOwnershipGroupInvitation, EntityOwnershipGroupInvitationSchema } from './domain/entity-ownership-group-invitation.schema';
+import { EntityOwnershipGroupMemberController } from './web/entity-ownership-group-member.controller';
 
 @Module({
     controllers: [
@@ -58,7 +59,8 @@ import { EntityOwnershipGroupInvitation, EntityOwnershipGroupInvitationSchema } 
         UserMicroserviceController,
         UserRegisterController,
         EntityOwnershipGroupMicroserviceController,
-        EntityOwnershipGroupController
+        EntityOwnershipGroupController,
+        EntityOwnershipGroupMemberController
     ],
 
     imports: [
