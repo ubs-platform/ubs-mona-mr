@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { EntityOwnershipGroup } from '../domain/entity-ownership-group.schema';
 import {
-    EntityOwnershipGroupCreateDTO,
+    EntityOwnershipGroupCommonDTO,
     EntityOwnershipGroupDTO,
 } from '@ubs-platform/users-common';
 import { UserService } from '../services/user.service';
@@ -16,48 +16,46 @@ export class EntityOwnershipGroupMapper {
         private userServiceLocal: UserService,
     ) {}
 
-    async toEntityCreate(eogDto: EntityOwnershipGroupCreateDTO) {
-        const user = await this.userServiceLocal.findById(eogDto.initialUserId);
+    async toEntityCreate(
+        eogDto: EntityOwnershipGroupCommonDTO,
+        currentUserId: string,
+    ) {
+        const user = await this.userServiceLocal.findById(currentUserId);
         return new this.eogModel({
-            groupName: eogDto.groupName,
+            groupName: eogDto.name,
             description: eogDto.description,
             userCapabilities: [
                 {
-                    userId: eogDto.initialUserId,
+                    userId: currentUserId,
                     userFullName: user?.name + ' ' + user?.surname,
                     entityCapabilities: eogDto.initialUserEntityCapabilities,
-                    groupCapability:
-                        eogDto.initialUserGroupCapability || 'OWNER',
+                    groupCapability: 'OWNER',
                 },
             ],
         });
     }
 
-    // async toEntity(eogDto: EntityOwnershipGroupDTO) {
-    //     return new this.eogModel({
-    //         _id: eogDto.id,
-    //         groupName: eogDto.groupName,
-    //         description: eogDto.description,
-    //         userCapabilities: eogDto.userCapabilities.map((a) => ({
-    //             userId: a.userId,
-    //             capability: a.capability,
-    //             userFullName: a.userFullName,
-    //             groupCapability: a.groupCapability,
-    //         })),
-    //     });
-    // }
+    async editExisting(
+        existing: EntityOwnershipGroup,
+        eogDto: EntityOwnershipGroupDTO,
+    ) {
+        existing.groupName = eogDto.groupName;
+        existing.description = eogDto.description;
+
+        return existing;
+    }
 
     toDto(eog: EntityOwnershipGroup) {
         return {
             id: eog._id.toString(),
-            groupName: eog.groupName,
+            name: eog.groupName,
             description: eog.description,
-            userCapabilities: eog.userCapabilities.map((a) => ({
-                userId: a.userId,
-                entityCapabilities: a.entityCapabilities,
-                groupCapability: a.groupCapability,
-                userFullName: a.userFullName,
-            })),
-        } as EntityOwnershipGroupDTO;
+            // userCapabilities: eog.userCapabilities.map((a) => ({
+            //     userId: a.userId,
+            //     entityCapabilities: a.entityCapabilities,
+            //     groupCapability: a.groupCapability,
+            //     userFullName: a.userFullName,
+            // })),
+        } as EntityOwnershipGroupCommonDTO;
     }
 }

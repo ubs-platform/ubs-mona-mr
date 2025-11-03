@@ -7,7 +7,7 @@ import {
     EntityOwnershipUserCheck,
     EntityOwnershipUserSearch,
     UserCapabilityDTO,
-    EntityOwnershipGroupCreateDTO,
+    EntityOwnershipGroupCommonDTO,
     EntityOwnershipGroupDTO,
     EntityOwnershipGroupMetaDTO,
     EOGCheckUserGroupCapabilityDTO,
@@ -40,7 +40,7 @@ export class EntityOwnershipGroupClientService {
     }
 
     insert(
-        eog: EntityOwnershipGroupCreateDTO,
+        eog: EntityOwnershipGroupCommonDTO,
     ): Observable<EntityOwnershipGroupDTO> {
         return this.kafkaClient.send<EntityOwnershipGroupDTO>(
             EOGroupEventConsts.createGroup,

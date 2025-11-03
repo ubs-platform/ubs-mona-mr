@@ -7,14 +7,16 @@ import {
     Param,
     Post,
     Put,
+    Query,
     UnauthorizedException,
     UseGuards,
 } from '@nestjs/common';
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import {
-    EntityOwnershipGroupCreateDTO,
+    EntityOwnershipGroupCommonDTO,
     EntityOwnershipGroupDTO,
     EntityOwnershipGroupMetaDTO,
+    EntityOwnershipGroupSearchDTO,
     EOGCheckUserGroupCapabilityDTO,
     EOGUserCapabilityDTO,
     EOGUserCapabilityInvitationDTO,
@@ -25,6 +27,7 @@ import {
 } from '@ubs-platform/users-common';
 import { EntityOwnershipGroupService } from '../services/entity-ownership-group.service';
 import { CurrentUser } from '@ubs-platform/users-microservice-helper';
+import { SearchRequest } from '@ubs-platform/crud-base-common/search-request';
 
 @Controller('entity-ownership-group')
 export class EntityOwnershipGroupController {
@@ -49,10 +52,31 @@ export class EntityOwnershipGroupController {
         }
     }
 
+
+    @UseGuards(JwtAuthLocalGuard)
+    @Get()
+    async fetchAll(
+       @Query() q : EntityOwnershipGroupSearchDTO,
+       @Query() pagination: SearchRequest,
+       @CurrentUser() currentUser: UserAuthBackendDTO,
+    ) {
+        // Only users with global admin role can create EOGs
+        if (!currentUser.roles.includes('ADMIN')) { 
+            if (!q.memberUserId) {
+                q.memberUserId = currentUser.id;
+            } else if (q.memberUserId !== currentUser.id) {
+                throw new UnauthorizedException(
+                    `User ${currentUser.id} cannot query EOGs for other users`,
+                );
+            }
+        }
+        return await this.eogService.searchPagination({...q, ...pagination}, currentUser);
+    }
+
     @UseGuards(JwtAuthLocalGuard)
     @Post()
     async createEntityOwnershipGroup(
-        @Body() eogCreate: EntityOwnershipGroupCreateDTO
+        @Body() eogCreate: EntityOwnershipGroupCommonDTO
     ) {
         // Only users with global admin role can create EOGs
         return await this.eogService.createGroup(eogCreate);

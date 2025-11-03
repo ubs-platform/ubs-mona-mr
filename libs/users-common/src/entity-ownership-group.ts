@@ -1,21 +1,35 @@
 export type GroupCapability = 'OWNER' | 'VIEWER' | "EDITOR" | "META_EDIT" | 'ADJUST_MEMBERS' | 'ONLY_EDIT_MEMBER_CAPABILITIES';
 
-export class EntityOwnershipGroupCreateDTO {
-    groupName: string;
-    description?: string;
-    initialUserId: string;
+export class EntityOwnershipGroupCommonDTO {
+    // required when editing the EOG
+    id?: string;
+    name: string;
+    description: string;
+    // required when creating the EOG from microservice
+    initialUserId?: string;
+    // required when creating the EOG
+    // initialUserId: string;
+    // required when creating the EOG
     initialUserEntityCapabilities: EOGUserEntityCapabilityDTO[];
     /**
+     * required when creating the EOG
      * Default: OWNER
      */
-    initialUserGroupCapability?: GroupCapability;
+    // initialUserGroupCapability?: GroupCapability;
+}
+
+export class EntityOwnershipGroupSearchDTO {
+    id?: string;
+    groupName: string;
+    description?: string;
+    memberUserId?: string;
 }
 
 export class EntityOwnershipGroupDTO {
     id?: string;
     groupName: string;
     description?: string;
-    userCapabilities: EOGUserCapabilityDTO[];
+    // userCapabilities: EOGUserCapabilityDTO[];
 }
 
 
@@ -23,7 +37,7 @@ export class EntityOwnershipGroupMetaDTO {
     id: string;
     groupName: string;
     description?: string;
-    userCapabilities: EOGUserCapabilityDTO[];
+    // userCapabilities: EOGUserCapabilityDTO[];
 }
 
 export class EOGUserEntityCapabilityDTO {

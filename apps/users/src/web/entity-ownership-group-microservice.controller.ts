@@ -16,11 +16,12 @@ import {
 import { CacheManagerService } from '@ubs-platform/cache-manager';
 import { EntityOwnershipGroupService } from '../services/entity-ownership-group.service';
 import {
-    EntityOwnershipGroupCreateDTO,
+    EntityOwnershipGroupCommonDTO,
     EntityOwnershipGroupDTO,
     EOGCheckUserGroupCapabilityDTO,
     EOGUserCapabilityDTO,
 } from 'libs/users-common/src/entity-ownership-group';
+import e from 'express';
 
 @Controller('entity-ownership-group')
 export class EntityOwnershipGroupMicroserviceController {
@@ -30,7 +31,7 @@ export class EntityOwnershipGroupMicroserviceController {
     ) {}
 
     @EventPattern(EOGroupEventConsts.getByUserIds)
-    async getByUserIds(userIds: string[]): Promise<EntityOwnershipGroupDTO[]> {
+    async getByUserIds(userIds: string[]): Promise<EntityOwnershipGroupCommonDTO[]> {
         return await this.eogService.findGroupsUserIn(userIds);
     }
 
@@ -42,9 +43,9 @@ export class EntityOwnershipGroupMicroserviceController {
     }
     
     @EventPattern(EOGroupEventConsts.createGroup)
-    async insertOwnershipGroup(eog: EntityOwnershipGroupCreateDTO) {
+    async insertOwnershipGroup(eog: EntityOwnershipGroupCommonDTO) {
         this.cacheman.invalidateRegex(/eog-*/);
-        return await this.eogService.createGroup(eog);
+        return await this.eogService.createGroup(eog, eog.initialUserId!);
     }
 
     @EventPattern(EOGroupEventConsts.addUserCapability)
