@@ -27,7 +27,7 @@ export class EntityOwnershipGroup {
      * Group name of the ownership group. Can be used for best reading
      */
     @Prop({ type: String })
-    groupName?: string;
+    name?: string;
 
     @Prop({ type: String })
     description?: string;

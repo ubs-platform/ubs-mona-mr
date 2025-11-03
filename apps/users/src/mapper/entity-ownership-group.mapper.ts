@@ -22,7 +22,7 @@ export class EntityOwnershipGroupMapper {
     ) {
         const user = await this.userServiceLocal.findById(currentUserId);
         return new this.eogModel({
-            groupName: eogDto.name,
+            name: eogDto.name,
             description: eogDto.description,
             userCapabilities: [
                 {
@@ -39,7 +39,7 @@ export class EntityOwnershipGroupMapper {
         existing: EntityOwnershipGroup,
         eogDto: EntityOwnershipGroupDTO,
     ) {
-        existing.groupName = eogDto.groupName;
+        existing.name = eogDto.name;
         existing.description = eogDto.description;
 
         return existing;
@@ -48,7 +48,7 @@ export class EntityOwnershipGroupMapper {
     toDto(eog: EntityOwnershipGroup) {
         return {
             id: eog._id.toString(),
-            name: eog.groupName,
+            name: eog.name,
             description: eog.description,
             // userCapabilities: eog.userCapabilities.map((a) => ({
             //     userId: a.userId,

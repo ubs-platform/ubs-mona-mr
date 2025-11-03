@@ -20,14 +20,14 @@ export class EntityOwnershipGroupCommonDTO {
 
 export class EntityOwnershipGroupSearchDTO {
     id?: string;
-    groupName: string;
+    name: string;
     description?: string;
     memberUserId?: string;
 }
 
 export class EntityOwnershipGroupDTO {
     id?: string;
-    groupName: string;
+    name: string;
     description?: string;
     // userCapabilities: EOGUserCapabilityDTO[];
 }
@@ -35,7 +35,7 @@ export class EntityOwnershipGroupDTO {
 
 export class EntityOwnershipGroupMetaDTO {
     id: string;
-    groupName: string;
+    name: string;
     description?: string;
     // userCapabilities: EOGUserCapabilityDTO[];
 }

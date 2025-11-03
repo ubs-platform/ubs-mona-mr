@@ -52,16 +52,27 @@ export class EntityOwnershipGroupController {
         }
     }
 
+    @UseGuards(JwtAuthLocalGuard)
+    @Get(":id")
+    async getOne(
+        @Param('id') id: string,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
+    ) {
+        // Only users with global admin role can create EOGs
+        this.assertHasUserGroupCapability(currentUser, id, ['OWNER', "EDITOR", "META_EDIT","ONLY_EDIT_MEMBER_CAPABILITIES", "VIEWER"]);
+        return await this.eogService.getByIdPublic(id);
+    }
+
 
     @UseGuards(JwtAuthLocalGuard)
     @Get()
     async fetchAll(
-       @Query() q : EntityOwnershipGroupSearchDTO,
-       @Query() pagination: SearchRequest,
-       @CurrentUser() currentUser: UserAuthBackendDTO,
+        @Query() q: EntityOwnershipGroupSearchDTO,
+        @Query() pagination: SearchRequest,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         // Only users with global admin role can create EOGs
-        if (!currentUser.roles.includes('ADMIN')) { 
+        if (!currentUser.roles.includes('ADMIN')) {
             if (!q.memberUserId) {
                 q.memberUserId = currentUser.id;
             } else if (q.memberUserId !== currentUser.id) {
@@ -70,16 +81,17 @@ export class EntityOwnershipGroupController {
                 );
             }
         }
-        return await this.eogService.searchPagination({...q, ...pagination}, currentUser);
+        return await this.eogService.searchPagination({ ...q, ...pagination }, currentUser);
     }
 
     @UseGuards(JwtAuthLocalGuard)
     @Post()
     async createEntityOwnershipGroup(
-        @Body() eogCreate: EntityOwnershipGroupCommonDTO
+        @Body() eogCreate: EntityOwnershipGroupCommonDTO,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         // Only users with global admin role can create EOGs
-        return await this.eogService.createGroup(eogCreate);
+        return await this.eogService.createGroup(eogCreate, currentUser.id);
     }
 
     @UseGuards(JwtAuthLocalGuard)

@@ -96,7 +96,7 @@ export class EntityOwnershipGroupMicroserviceController {
     async searchByUserId(searchParams: {
         userId: string;
         capability?: string;
-    }): Promise<EntityOwnershipGroupDTO[]> {
+    }): Promise<EntityOwnershipGroupCommonDTO[]> {
         return this.cacheman.getOrCallAsync(
             `eog-searchByUserId ${searchParams.userId}`,
             () =>

@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
 import { Document, Model, Types } from 'mongoose';
@@ -29,6 +29,7 @@ import { EmailService } from './email.service';
 import { SearchRequest } from '@ubs-platform/crud-base-common/search-request';
 import { SearchResult } from '@ubs-platform/crud-base-common/search-result';
 import { SearchUtil } from '@ubs-platform/crud-base';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class EntityOwnershipGroupService {
@@ -64,7 +65,7 @@ export class EntityOwnershipGroupService {
         if (!a) {
             throw new Error('EntityOwnershipGroup not found');
         }
-        a.groupName = data.groupName;
+        a.name = data.name;
         a.description = data.description;
         await a.save();
         return this.mapper.toDto(a);
@@ -122,6 +123,15 @@ export class EntityOwnershipGroupService {
             .then((entities) => entities.map((e) => this.mapper.toDto(e)));
     }
 
+    async getByIdPublic(id: string): Promise<EntityOwnershipGroupCommonDTO> {
+        const entity = await this.eogModel.findById(id).exec();
+        if (!entity) {
+            throw new NotFoundException('EntityOwnershipGroup');
+        }
+        return await this.mapper.toDto(entity);
+    }
+
+
     async getById(id: string): Promise<Optional<EntityOwnershipGroup>> {
         return this.eogModel.findById(id).exec();
     }
@@ -153,9 +163,9 @@ export class EntityOwnershipGroupService {
                 $regex: new RegExp(searchAndPagination.description, 'i'),
             };
         }
-        if (searchAndPagination?.groupName) {
-            s.groupName = {
-                $regex: new RegExp(searchAndPagination.groupName, 'i'),
+        if (searchAndPagination?.name) {
+            s.name = {
+                $regex: new RegExp(searchAndPagination.name, 'i'),
             };
         }
         if (searchAndPagination?.memberUserId) {
@@ -167,7 +177,7 @@ export class EntityOwnershipGroupService {
     searchByUserId(
         userId: string,
         capacity: string | undefined,
-    ): Promise<EntityOwnershipGroupDTO[]> {
+    ): Promise<EntityOwnershipGroupCommonDTO[]> {
         return this.eogModel
             .find({
                 'userCapabilities.userId': userId,
@@ -180,7 +190,7 @@ export class EntityOwnershipGroupService {
     async addUserCapability(
         groupId: string,
         userCapability: EOGUserCapabilityDTO,
-    ): Promise<EntityOwnershipGroupDTO> {
+    ): Promise<EntityOwnershipGroupCommonDTO> {
         const group = await this.getById(groupId);
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
@@ -225,7 +235,7 @@ export class EntityOwnershipGroupService {
     async updateUserCapability(
         groupId: string,
         userCapability: EOGUserCapabilityDTO,
-    ): Promise<EntityOwnershipGroupDTO> {
+    ): Promise<EntityOwnershipGroupCommonDTO> {
         const group = await this.getById(groupId);
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
@@ -265,7 +275,7 @@ export class EntityOwnershipGroupService {
         }
 
         const invitedByName = `${currentUser.name} ${currentUser.surname}`;
-        const groupName = group.groupName;
+        const name = group.name;
         const emailTemplate = 'lotus-publisher-team-invitation';
         const emailSubject = 'ubs-user-email-change-title';
         // const invitationKey =
@@ -300,7 +310,7 @@ export class EntityOwnershipGroupService {
                 groupCapability: userCapability.groupCapability,
                 entityCapabilities:
                     this.eogCapabilitiesToEntity(eogCapabilities),
-                eogName: group.groupName,
+                eogName: group.name,
                 eogId: group._id,
                 eogDescription: group.description,
             });
@@ -313,7 +323,7 @@ export class EntityOwnershipGroupService {
             emailSubject,
             emailTemplate,
             {
-                groupName,
+                name,
                 invitedBy: invitedByName,
             },
         );
