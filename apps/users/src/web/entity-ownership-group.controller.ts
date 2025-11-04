@@ -59,7 +59,7 @@ export class EntityOwnershipGroupController {
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         // Only users with global admin role can create EOGs
-        this.assertHasUserGroupCapability(currentUser, id, ['OWNER', "EDITOR", "META_EDIT","ONLY_EDIT_MEMBER_CAPABILITIES", "VIEWER"]);
+        this.assertHasUserGroupCapability(currentUser, id, ['OWNER', "EDITOR", "META_EDIT", "ONLY_EDIT_MEMBER_CAPABILITIES", "VIEWER"]);
         return await this.eogService.getByIdPublic(id);
     }
 
@@ -71,8 +71,14 @@ export class EntityOwnershipGroupController {
         @Query() pagination: SearchRequest,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        // Only users with global admin role can create EOGs
-        if (!currentUser.roles.includes('ADMIN')) {
+        if (q.admin === "true") {
+            // Only users with global admin role can create EOGs
+            if (!currentUser.roles.includes('ADMIN')) {
+                throw new UnauthorizedException(
+                    `User ${currentUser.id} cannot query EOGs for admin users`,
+                );
+            }
+        } else {
             if (!q.memberUserId) {
                 q.memberUserId = currentUser.id;
             } else if (q.memberUserId !== currentUser.id) {

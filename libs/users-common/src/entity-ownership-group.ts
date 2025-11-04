@@ -23,6 +23,7 @@ export class EntityOwnershipGroupSearchDTO {
     name: string;
     description?: string;
     memberUserId?: string;
+    admin?: "true" | "false";
 }
 
 export class EntityOwnershipGroupDTO {
