@@ -33,7 +33,6 @@ import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class EntityOwnershipGroupService {
-
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
         timestamp: true,
     });
@@ -46,7 +45,7 @@ export class EntityOwnershipGroupService {
         private mapper: EntityOwnershipGroupMapper,
         private userServiceLocal: UserService,
         private emailService: EmailService,
-    ) { }
+    ) {}
 
     async deleteGroup(id: string) {
         await this.eogModel.findByIdAndDelete(id).exec();
@@ -54,7 +53,7 @@ export class EntityOwnershipGroupService {
 
     async createGroup(
         eogDto: EntityOwnershipGroupCommonDTO,
-        userId: string
+        userId: string,
     ): Promise<EntityOwnershipGroupCommonDTO> {
         this.logger.debug('EOG CREATE', eogDto.name);
         const entity = await this.mapper.toEntityCreate(eogDto, userId);
@@ -133,9 +132,24 @@ export class EntityOwnershipGroupService {
         return await this.mapper.toDto(entity);
     }
 
-
     async getById(id: string): Promise<Optional<EntityOwnershipGroup>> {
         return this.eogModel.findById(id).exec();
+    }
+
+    async searchAll(
+        searchAndPagination?: EntityOwnershipGroupSearchDTO & SearchRequest,
+        user?: UserAuthBackendDTO,
+    ): Promise<EntityOwnershipGroupCommonDTO[]> {
+
+        let s = await this.searchParams(searchAndPagination); //{ ...searchAndPagination, page: undefined, size: undefined };
+        let sort;
+        if (searchAndPagination?.sortBy && searchAndPagination.sortRotation) {
+            sort = {};
+            sort[searchAndPagination.sortBy] = searchAndPagination.sortRotation;
+        }
+        return (
+            await this.eogModel.find(s).sort(sort).exec()
+        ).map((a) => this.mapper.toDto(a));
     }
 
     async searchPagination(
@@ -158,7 +172,11 @@ export class EntityOwnershipGroupService {
         ).mapAsync((a) => this.mapper.toDto(a));
     }
 
-    searchParams(searchAndPagination: (EntityOwnershipGroupSearchDTO & SearchRequest) | undefined) {
+    searchParams(
+        searchAndPagination:
+            | (EntityOwnershipGroupSearchDTO & SearchRequest)
+            | undefined,
+    ) {
         const s: any = {};
         if (searchAndPagination?.description) {
             s.description = {

@@ -63,10 +63,35 @@ export class EntityOwnershipGroupController {
         return await this.eogService.getByIdPublic(id);
     }
 
-
     @UseGuards(JwtAuthLocalGuard)
     @Get()
-    async fetchAll(
+    async findAll(
+        @Query() q: EntityOwnershipGroupSearchDTO,
+        @Query() pagination: SearchRequest,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
+    ) {
+        if (q.admin === "true") {
+            // Only users with global admin role can create EOGs
+            if (!currentUser.roles.includes('ADMIN')) {
+                throw new UnauthorizedException(
+                    `User ${currentUser.id} cannot query EOGs for admin users`,
+                );
+            }
+        } else {
+            if (!q.memberUserId) {
+                q.memberUserId = currentUser.id;
+            } else if (q.memberUserId !== currentUser.id) {
+                throw new UnauthorizedException(
+                    `User ${currentUser.id} cannot query EOGs for other users`,
+                );
+            }
+        }
+        return await this.eogService.searchAll({ ...q, ...pagination }, currentUser);
+    }
+
+    @UseGuards(JwtAuthLocalGuard)
+    @Get("_search")
+    async searchAll(
         @Query() q: EntityOwnershipGroupSearchDTO,
         @Query() pagination: SearchRequest,
         @CurrentUser() currentUser: UserAuthBackendDTO,
