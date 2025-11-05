@@ -11,6 +11,7 @@ import {
     EntityOwnershipGroupDTO,
     EntityOwnershipGroupMetaDTO,
     EOGCheckUserGroupCapabilityDTO,
+    EOGUserCapabilityDTO,
 } from '@ubs-platform/users-common';
 import {
     EOChannelConsts,
@@ -88,8 +89,8 @@ export class EntityOwnershipGroupClientService {
 
     fetchMembers(
         groupId: string,
-    ): Observable<EntityOwnershipInsertCapabiltyDTO[]> {
-        return this.kafkaClient.send<EntityOwnershipInsertCapabiltyDTO[]>(
+    ): Observable<EOGUserCapabilityDTO[]> {
+        return this.kafkaClient.send<EOGUserCapabilityDTO[]>(
             EOGroupEventConsts.fetchMembers,
             groupId,
         );

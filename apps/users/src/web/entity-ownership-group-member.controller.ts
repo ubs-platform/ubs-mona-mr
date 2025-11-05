@@ -27,17 +27,20 @@ export class EntityOwnershipGroupMemberController {
     /**
      *
      */
-    constructor(private eogService: EntityOwnershipGroupService) {}
+    constructor(private eogService: EntityOwnershipGroupService) { }
 
     async assertHasUserGroupCapability(
-        eogCheckCap: EOGCheckUserGroupCapabilityDTO,
+        currentUser: UserAuthBackendDTO, groupId: string, requiredCapabilities: GroupCapability[]
     ) {
+        if (currentUser.roles.includes('ADMIN')) {
+            return;
+        }
         const hasCap = await this.eogService.hasUserGroupCapability(
-            eogCheckCap
+            { userId: currentUser.id, entityOwnershipGroupId: groupId, groupCapabilitiesAtLeastOne: requiredCapabilities }
         );
         if (!hasCap) {
             throw new UnauthorizedException(
-                `User ${eogCheckCap.userId} does not have capability ${eogCheckCap.groupCapabilitiesAtLeastOne} in entity ownership group ${eogCheckCap.entityOwnershipGroupId}`,
+                `User ${currentUser.id} does not have capability ${requiredCapabilities} in entity ownership group ${groupId}`,
             );
         }
     }
@@ -55,11 +58,11 @@ export class EntityOwnershipGroupMemberController {
         @Param('id') id: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ): Promise<EOGUserCapabilityInvitationDTO[]> {
-        await this.assertHasUserGroupCapability({
-            entityOwnershipGroupId: id,
-            userId: currentUser.id,
-            groupCapabilitiesAtLeastOne: ['OWNER', 'ADJUST_MEMBERS', 'VIEWER'],
-        });
+        await this.assertHasUserGroupCapability(
+            currentUser,
+            id,
+            ['OWNER', 'ADJUST_MEMBERS', 'VIEWER'],
+        );
         return await this.eogService.fetchUserCapabilityInvitations(id);
     }
 
@@ -70,12 +73,11 @@ export class EntityOwnershipGroupMemberController {
         @Param('userId') userId: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        await this.assertHasUserGroupCapability({
-            entityOwnershipGroupId: id,
-            userId: currentUser.id,
-            groupCapabilitiesAtLeastOne: ['OWNER', 'ADJUST_MEMBERS'],
-        });
-
+        await this.assertHasUserGroupCapability(
+            currentUser,
+            id,
+            ['OWNER', 'ADJUST_MEMBERS'],
+        );
         return await this.eogService.removeUserCapability(id, userId);
     }
 
@@ -86,11 +88,11 @@ export class EntityOwnershipGroupMemberController {
         @Param('invitationId') invitationId: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        await this.assertHasUserGroupCapability({
-            entityOwnershipGroupId: id,
-            userId: currentUser.id,
-            groupCapabilitiesAtLeastOne: ['OWNER', 'ADJUST_MEMBERS'],
-        });
+        await this.assertHasUserGroupCapability(
+            currentUser,
+            id,
+            ['OWNER', 'ADJUST_MEMBERS'],
+        );
 
         return await this.eogService.removeInvitationAdmin(invitationId);
     }
@@ -102,18 +104,18 @@ export class EntityOwnershipGroupMemberController {
         @Body() body: EOGUserCapabilityInviteDTO,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        await this.assertHasUserGroupCapability({
-            entityOwnershipGroupId: id,
-            userId: currentUser.id,
-            groupCapabilitiesAtLeastOne: ['OWNER', 'ADJUST_MEMBERS'],
-        });
+        await this.assertHasUserGroupCapability(
+            currentUser,
+            id,
+            ['OWNER', 'ADJUST_MEMBERS'],
+        );
         return await this.eogService.addUserCapabilityInvite(
             id,
             body,
             currentUser,
         );
     }
-
+t
     // Region: Invitation Acceptance for invited users
 
     @UseGuards(JwtAuthLocalGuard)

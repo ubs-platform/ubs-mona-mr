@@ -33,9 +33,7 @@ import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class EntityOwnershipGroupService {
-    deleteGroup(id: string) {
-        throw new Error('Method not implemented.');
-    }
+
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
         timestamp: true,
     });
@@ -48,7 +46,11 @@ export class EntityOwnershipGroupService {
         private mapper: EntityOwnershipGroupMapper,
         private userServiceLocal: UserService,
         private emailService: EmailService,
-    ) {}
+    ) { }
+
+    async deleteGroup(id: string) {
+        await this.eogModel.findByIdAndDelete(id).exec();
+    }
 
     async createGroup(
         eogDto: EntityOwnershipGroupCommonDTO,
