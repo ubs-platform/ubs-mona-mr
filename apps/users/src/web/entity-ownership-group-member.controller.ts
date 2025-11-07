@@ -6,6 +6,7 @@ import {
     Injectable,
     Param,
     Post,
+    Put,
     UnauthorizedException,
     UseGuards,
 } from '@nestjs/common';
@@ -66,6 +67,23 @@ export class EntityOwnershipGroupMemberController {
         return await this.eogService.fetchUserCapabilityInvitations(id);
     }
 
+
+
+    @UseGuards(JwtAuthLocalGuard)
+    @Put(':id/capability')
+    async updateUserCapability(
+        @Param('id') id: string,
+        @Body() body: EOGUserCapabilityDTO,
+        @CurrentUser() currentUser: UserAuthBackendDTO,
+    ) {
+        await this.assertHasUserGroupCapability(
+            currentUser,
+            id,
+            ['OWNER', 'ADJUST_MEMBERS', "ONLY_EDIT_MEMBER_CAPABILITIES"],
+        );
+        return await this.eogService.updateUserCapability(id, body);
+    }
+
     @UseGuards(JwtAuthLocalGuard)
     @Delete(':id/capability/:userId')
     async removeUserFromEntityOwnership(
@@ -115,7 +133,7 @@ export class EntityOwnershipGroupMemberController {
             currentUser,
         );
     }
-t
+    t
     // Region: Invitation Acceptance for invited users
 
     @UseGuards(JwtAuthLocalGuard)

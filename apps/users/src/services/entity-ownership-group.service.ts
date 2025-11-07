@@ -256,7 +256,8 @@ export class EntityOwnershipGroupService {
         groupId: string,
         userCapability: EOGUserCapabilityDTO,
     ): Promise<EntityOwnershipGroupCommonDTO> {
-        const group = await this.getById(groupId);
+        const group = await this.eogModel.findById(groupId);
+
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
         }
@@ -267,11 +268,12 @@ export class EntityOwnershipGroupService {
         if (index === undefined || index < 0) {
             throw new Error('UserCapability not found in group');
         }
-
         group.userCapabilities[index].entityCapabilities =
             userCapability.entityCapabilities;
         group.userCapabilities[index].groupCapability =
             userCapability.groupCapability;
+        group.markModified('userCapabilities');
+        group.markModified('groupCapability');
         await (group as any).save();
         return this.mapper.toDto(group);
     }

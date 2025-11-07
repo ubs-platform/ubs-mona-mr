@@ -51,7 +51,6 @@ export class EOGUserCapabilityDTO {
     userFullName?: string;
     entityCapabilities: EOGUserEntityCapabilityDTO[];
     groupCapability: GroupCapability;
-    userCapabilityTemplateName?: string;
 }
 
 
@@ -59,7 +58,6 @@ export class EOGUserCapabilityInviteDTO {
     userLogin: string;
     entityCapabilities: EOGUserEntityCapabilityDTO[];
     groupCapability: GroupCapability;
-    userCapabilityTemplateName?: string;
 }
 
 
