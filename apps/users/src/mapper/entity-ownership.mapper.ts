@@ -54,6 +54,7 @@ export class EntityOwnershipMapper {
         // existingEntity.overriderRoles = entityOwnership.overriderRoles;
         existingEntity.entityOwnershipGroupId = entityOwnership.entityOwnershipGroupId;
         existingEntity.userCapabilities = entityOwnership.userCapabilities;
+        existingEntity.entityOwnershipGroupId = entityOwnership.entityOwnershipGroupId;
         return existingEntity;
     }
 }

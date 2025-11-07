@@ -8,4 +8,5 @@ export class EOChannelConsts {
     public static insertUserCapability = 'insert-user-capability';
     public static deleteOwnership = 'delete-ownership';
     public static searchOwnership = 'search-ownership';
+    public static editOwnership = 'edit-ownership';
 }

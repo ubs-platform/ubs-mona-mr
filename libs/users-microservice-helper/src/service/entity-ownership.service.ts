@@ -43,6 +43,10 @@ export class EntityOwnershipService implements OnModuleInit {
         // (this.userClient as ClientKafka).subscribeToResponseOf?.('user-by-id');
     }
 
+    async editOwnership(oe: EntityOwnershipDTO) {
+        this.kafkaClient.emit(EOChannelConsts.editOwnership, oe);
+    }
+
     async insertOwnership(oe: EntityOwnershipDTO) {
         this.kafkaClient.emit(EOChannelConsts.insertOwnership, oe);
     }
@@ -74,8 +78,6 @@ export class EntityOwnershipService implements OnModuleInit {
     ): Observable<void> {
         return this.kafkaClient.send(EOChannelConsts.removeOwnershipUserCapability, eo);
     }
-
-
 
     searchOwnershipEntityIdsByUser(
         eo: EntityOwnershipUserSearch,

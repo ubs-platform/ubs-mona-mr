@@ -163,6 +163,27 @@ export class EntityOwnershipService {
         });
     }
 
+    public async edit(eoDto: EntityOwnershipDTO): Promise<void> {
+        this.logger.debug('EO EDIT', eoDto.entityGroup, eoDto.entityId, eoDto.entityName);
+
+        const searchKeys: EntityOwnershipSearch = {
+            entityGroup: eoDto.entityGroup,
+            entityId: eoDto.entityId,
+            entityName: eoDto.entityName,
+        };
+
+        const foundEntities = await this.findEntitiesBySearchKeys(searchKeys);
+        let entity;
+
+        if (foundEntities.length > 0) {
+            entity = foundEntities[0];
+            this.mapper.toEntityEdit(entity, eoDto);
+            await entity.save();
+        } else {
+            throw new Error('EntityOwnership not found for edit.');
+        }
+    }
+
     async insert(eoDto: EntityOwnershipDTO): Promise<void> {
         this.logger.debug('EO INSERT', eoDto.entityGroup, eoDto.entityId, eoDto.entityName);
 
@@ -327,6 +348,7 @@ export class EntityOwnershipService {
 
     public async search(sk: EntityOwnershipSearch): Promise<EntityOwnershipDTO[]> {
         const entities = await this.findEntitiesBySearchKeys(sk);
+        console.info('Found entities:', entities.length);
         return entities.map((a) => this.mapper.toDto(a));
     }
 

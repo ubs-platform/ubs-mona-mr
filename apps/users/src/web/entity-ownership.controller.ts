@@ -18,6 +18,14 @@ export class EntityOwnershipController {
         private cacheman: CacheManagerService,
     ) { }
 
+    
+
+    @EventPattern(EOChannelConsts.editOwnership)
+    async editOwnership(oe: EntityOwnershipDTO) {
+        await this.eoService.edit(oe);
+        this.cacheman.invalidateRegex(/eo-*/);
+    }
+
     @EventPattern(EOChannelConsts.insertOwnership)
     async insertOwnership(oe: EntityOwnershipDTO) {
         await this.eoService.insert(oe);

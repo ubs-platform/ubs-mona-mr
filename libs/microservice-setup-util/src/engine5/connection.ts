@@ -281,6 +281,7 @@ export class Engine5Connection {
     }
 
     private parseData(dataString: string[]): any {
+        if (dataString[0] == 'undefined') return undefined;
         return JSON.parse(dataString.join(""));
     }
 
@@ -289,10 +290,15 @@ export class Engine5Connection {
 
         // her 1000 karakterde bir bölelim
         const chunkSize = 1000;
-        const chunks : string[] = [];
-        for (let i = 0; i < a.length; i += chunkSize) {
-            chunks.push(a.substring(i, i + chunkSize));
+        const chunks: string[] = [];
+        if (a?.length) {
+            for (let i = 0; i < a.length; i += chunkSize) {
+                chunks.push(a.substring(i, i + chunkSize));
+            }
+        } else {
+            chunks.push('undefined');
         }
+
         // stringleri bölmek şu anda '4' karakteri sorununa çözüm değil. Ancak ileride farklı bir protokole geçildiğinde sorun olmayacak.
         return chunks;
     }
