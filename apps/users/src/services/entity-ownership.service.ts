@@ -177,7 +177,7 @@ export class EntityOwnershipService {
 
         if (foundEntities.length > 0) {
             entity = foundEntities[0];
-            this.mapper.toEntityEdit(entity, eoDto);
+            this.mapper.toEntityEditWithMembers(entity, eoDto);
             await entity.save();
         } else {
             throw new Error('EntityOwnership not found for edit.');
@@ -279,7 +279,7 @@ export class EntityOwnershipService {
 
         if (!entityOwnership) return null;
 
-        // EntityOwnership içinde ara
+        // EntityOwnership içinsde ara
         let found = this.findUserCapabilityInEntity(
             entityOwnership,
             entityOwnershipUserCheck.userId,
@@ -304,6 +304,7 @@ export class EntityOwnershipService {
                 );
             }
         }
+        this.logger.debug('Found capability:', found);
 
         return found;
     }

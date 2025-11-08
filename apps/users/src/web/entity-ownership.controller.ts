@@ -16,9 +16,7 @@ export class EntityOwnershipController {
     constructor(
         private eoService: EntityOwnershipService,
         private cacheman: CacheManagerService,
-    ) { }
-
-    
+    ) {}
 
     @EventPattern(EOChannelConsts.editOwnership)
     async editOwnership(oe: EntityOwnershipDTO) {
@@ -42,9 +40,11 @@ export class EntityOwnershipController {
 
     @MessagePattern(EOChannelConsts.checkOwnership)
     async hasOwnershipDetailed(eo: EntityOwnershipUserCheck) {
+        debugger;
+
         this.validateOwnershipParameters(eo);
         return this.cacheman.getOrCallAsync(
-            `eo-hasOwnershipDetailed ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${eo.capabilityAtLeastOne?.join(",")}`,
+            `eo-hasOwnershipDetailed ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${eo.capabilityAtLeastOne?.join(',')}`,
             () => this.eoService.findInsertedUserCapability(eo, true),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
@@ -61,16 +61,21 @@ export class EntityOwnershipController {
     // async hasOwnershipOfOne(eo: EntityOwnershipUserCheck) {
     //     return ((await this.hasOwnershipDetailed(eo)) != null);
     // }
-    private validateOwnershipParametersOnlyUserId(eo: EntityOwnershipUserCheck | EntityOwnershipUserSearch) {
+    private validateOwnershipParametersOnlyUserId(
+        eo: EntityOwnershipUserCheck | EntityOwnershipUserSearch,
+    ) {
         if (!eo.userId) {
             throw new Error('userId must be provided.');
         }
     }
 
-
-    private validateOwnershipParameters(eo: EntityOwnershipUserCheck | EntityOwnershipUserSearch) {
+    private validateOwnershipParameters(
+        eo: EntityOwnershipUserCheck | EntityOwnershipUserSearch,
+    ) {
         if (!eo.userId && !eo.entityOwnershipGroupId) {
-            throw new Error('At least one of userId or entityOwnershipGroupId must be provided.');
+            throw new Error(
+                'At least one of userId or entityOwnershipGroupId must be provided.',
+            );
         }
     }
 
@@ -93,7 +98,7 @@ export class EntityOwnershipController {
     @MessagePattern(EOChannelConsts.searchOwnershipUser)
     async searchOwnershipUser(eo: EntityOwnershipUserSearch) {
         return this.cacheman.getOrCallAsync(
-            `eo-searchOwnershipUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${eo.capabilityAtLeastOne?.join(",")} `,
+            `eo-searchOwnershipUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${eo.capabilityAtLeastOne?.join(',')} `,
             () => this.eoService.searchByUser(eo),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
@@ -102,7 +107,7 @@ export class EntityOwnershipController {
     @MessagePattern(EOChannelConsts.searchEntityIdsByUser)
     async searchEntityIdsByUser(eo: EntityOwnershipUserSearch) {
         return this.cacheman.getOrCallAsync(
-            `eo-searchEntityIdsByUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${eo.capabilityAtLeastOne?.join(",")} `,
+            `eo-searchEntityIdsByUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${eo.capabilityAtLeastOne?.join(',')} `,
             () => this.eoService.searchEntityIdsByUser(eo),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );

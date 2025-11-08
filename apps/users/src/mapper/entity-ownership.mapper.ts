@@ -40,6 +40,32 @@ export class EntityOwnershipMapper {
         });
     }
 
+    toEntityEditWithMembers(
+        existingEntity: EntityOwnership,
+        entityOwnership: EntityOwnershipDTO,
+    ) {
+        // existingEntity.fileUploadAllowedFormats =
+        //   entityOwnership.fileUploadAllowedFormats;
+        // existingEntity.fileUploadMaxLengthBytes =
+        //   entityOwnership.fileUploadMaxLengthBytes;
+        // existingEntity.entityGroup = entityOwnership.entityGroup;
+        // existingEntity.entityId = entityOwnership.entityId;
+        // existingEntity.entityName = entityOwnership.entityName;
+        // existingEntity.overriderRoles = entityOwnership.overriderRoles;
+        existingEntity.entityOwnershipGroupId =
+            entityOwnership.entityOwnershipGroupId;
+        existingEntity.userCapabilities = entityOwnership.userCapabilities;
+        existingEntity.entityOwnershipGroupId =
+            entityOwnership.entityOwnershipGroupId;
+        existingEntity.userCapabilities = entityOwnership.userCapabilities.map(
+            (a) => ({
+                userId: a.userId,
+                capability: a.capability,
+            }),
+        );
+        return existingEntity;
+    }
+
     toEntityEdit(
         existingEntity: EntityOwnership,
         entityOwnership: EntityOwnershipDTO,
@@ -52,9 +78,11 @@ export class EntityOwnershipMapper {
         // existingEntity.entityId = entityOwnership.entityId;
         // existingEntity.entityName = entityOwnership.entityName;
         // existingEntity.overriderRoles = entityOwnership.overriderRoles;
-        existingEntity.entityOwnershipGroupId = entityOwnership.entityOwnershipGroupId;
+        existingEntity.entityOwnershipGroupId =
+            entityOwnership.entityOwnershipGroupId;
         existingEntity.userCapabilities = entityOwnership.userCapabilities;
-        existingEntity.entityOwnershipGroupId = entityOwnership.entityOwnershipGroupId;
+        existingEntity.entityOwnershipGroupId =
+            entityOwnership.entityOwnershipGroupId;
         return existingEntity;
     }
 }
