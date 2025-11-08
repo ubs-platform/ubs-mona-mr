@@ -40,7 +40,6 @@ export class EntityOwnershipController {
 
     @MessagePattern(EOChannelConsts.checkOwnership)
     async hasOwnershipDetailed(eo: EntityOwnershipUserCheck) {
-        debugger;
 
         this.validateOwnershipParameters(eo);
         return this.cacheman.getOrCallAsync(

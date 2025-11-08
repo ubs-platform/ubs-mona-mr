@@ -33,7 +33,7 @@ export class CommentService {
         private commentMapper: CommentMapper,
         private commentMetaService: CommentMetaService,
         private commentAbilityCheckService: CommentAbilityCheckService,
-    ) {}
+    ) { }
 
     async renameCommenterUserFullname(u: UserAuthBackendDTO) {
         //todo: bunu tekrar gözden geçir sanırım çalışmıyor?...
@@ -116,15 +116,15 @@ export class CommentService {
         ...commentsSearchs: CommentSearchDTO[]
     ): Promise<SearchResult<CommentDTO>> {
         console.debug('searchComments called with', { pagination, commentsSearchs });
-        
+
         const sortingRotation = pagination.sortRotation == 'asc' ? 1 : -1;
 
         const sortingField: { [key: string]: 1 | -1 } =
             pagination.sortBy == 'creationDate'
                 ? {
-                      creationDate: sortingRotation,
-                      _id: sortingRotation,
-                  }
+                    creationDate: sortingRotation,
+                    _id: sortingRotation,
+                }
                 : { votesLength: sortingRotation, _id: sortingRotation };
 
         // this.fillChildrenWithParentIfEmpty(...comments);
@@ -183,10 +183,10 @@ export class CommentService {
                 ...(commentSearch.entityGroup ? { entityGroup: commentSearch.entityGroup } : {}),
                 ...(commentSearch.contentTextIn
                     ? {
-                          textContent: this.regexSearch(
-                              commentSearch.contentTextIn,
-                          ),
-                      }
+                        textContent: this.regexSearch(
+                            commentSearch.contentTextIn,
+                        ),
+                    }
                     : {}),
                 ...(commentSearch.childEntityId
                     ? { childEntityId: commentSearch.childEntityId }
@@ -196,13 +196,13 @@ export class CommentService {
                     : {}),
                 ...(commentSearch.childOfCommentId
                     ? {
-                          childOfCommentId: commentSearch.childOfCommentId,
-                          isChild: true,
-                      }
+                        childOfCommentId: commentSearch.childOfCommentId,
+                        isChild: true,
+                    }
                     : { isChild: { $ne: true } }),
             };
+
             if (userId && commentSearch.mainEntityIdByOwner) {
-                debugger;
                 const entities = await lastValueFrom(
                     this.eoService.searchOwnershipUser({
                         entityGroup: commentSearch.entityGroup,
@@ -221,7 +221,7 @@ export class CommentService {
                 filters.push({
                     ...currentCommentSearch,
                     ...(commentSearch.mainEntityId
-                        ? { byUserId: commentSearch.mainEntityId }
+                        ? { mainEntityId: commentSearch.mainEntityId }
                         : {}),
                 });
             }

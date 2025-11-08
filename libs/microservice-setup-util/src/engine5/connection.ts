@@ -76,7 +76,6 @@ export class Engine5Connection {
                         );
                         console.info('Payload:', p);
                         console.info('Stringified:', buff.toString().substring(0, wrongIndex) + '>>>>' + buff.toString().substring(wrongIndex, wrongIndex + 1) + '<<<<' + buff.toString().substring(wrongIndex + 1));
-                        debugger;
                     }
                     this.tcpClient.write(buff, (e) => {
                         if (e) fail(e);
