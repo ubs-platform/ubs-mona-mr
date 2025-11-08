@@ -115,6 +115,8 @@ export class CommentService {
         currentUser: UserAuthBackendDTO,
         ...commentsSearchs: CommentSearchDTO[]
     ): Promise<SearchResult<CommentDTO>> {
+        console.debug('searchComments called with', { pagination, commentsSearchs });
+        
         const sortingRotation = pagination.sortRotation == 'asc' ? 1 : -1;
 
         const sortingField: { [key: string]: 1 | -1 } =
@@ -176,8 +178,9 @@ export class CommentService {
         for (let index = 0; index < commentsSearch.length; index++) {
             const commentSearch = commentsSearch[index];
             const currentCommentSearch = {
-                mainEntityName: commentSearch.mainEntityName,
-                entityGroup: commentSearch.entityGroup,
+                ...(commentSearch.mainEntityName ? { mainEntityName: commentSearch.mainEntityName } : {}),
+                ...(commentSearch.mainEntityId ? { mainEntityId: commentSearch.mainEntityId } : {}),
+                ...(commentSearch.entityGroup ? { entityGroup: commentSearch.entityGroup } : {}),
                 ...(commentSearch.contentTextIn
                     ? {
                           textContent: this.regexSearch(
@@ -199,6 +202,7 @@ export class CommentService {
                     : { isChild: { $ne: true } }),
             };
             if (userId && commentSearch.mainEntityIdByOwner) {
+                debugger;
                 const entities = await lastValueFrom(
                     this.eoService.searchOwnershipUser({
                         entityGroup: commentSearch.entityGroup,
@@ -216,7 +220,9 @@ export class CommentService {
             } else {
                 filters.push({
                     ...currentCommentSearch,
-                    mainEntityId: commentSearch.mainEntityId,
+                    ...(commentSearch.mainEntityId
+                        ? { byUserId: commentSearch.mainEntityId }
+                        : {}),
                 });
             }
         }
