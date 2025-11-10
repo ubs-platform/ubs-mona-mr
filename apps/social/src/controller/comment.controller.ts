@@ -3,6 +3,7 @@ import {
     Controller,
     Delete,
     Get,
+    Ip,
     Param,
     Post,
     Put,
@@ -46,8 +47,9 @@ export class CommentController {
     async addComment(
         @Body() comment: CommentAddDTO,
         @CurrentUser() user: UserAuthBackendDTO,
+        @Ip() ip: string,
     ) {
-        return await this.commentService.insertComment(comment, user);
+        return await this.commentService.insertComment(comment, user, ip);
     }
 
     @Get()
