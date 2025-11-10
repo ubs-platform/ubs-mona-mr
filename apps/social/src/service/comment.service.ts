@@ -69,7 +69,8 @@ export class CommentService {
     public async insertComment(
         commentDto: CommentAddDTO,
         currentUser: UserAuthBackendDTO,
-    ) {
+        ip: string,
+    ): Promise<CommentDTO> {
         const status =
             await this.commentAbilityCheckService.checkCommentingAbilities(
                 commentDto,
@@ -93,6 +94,7 @@ export class CommentService {
         commentModel.byUserId = currentUser.id;
         commentModel.byFullName = currentUser.name + ' ' + currentUser.surname;
         commentModel.votesLength = 0;
+        commentModel.ipAddress = ip;
         const saved = await commentModel.save();
         if (commentDto.childOfCommentId) {
             const parent = await this.commentModel.findById(

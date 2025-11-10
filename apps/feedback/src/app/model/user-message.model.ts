@@ -31,5 +31,7 @@ export class UserMessage {
     relatedUrl?: String;
     @Prop()
     localeCode?: String;
+    @Prop()
+    ipAddress?: String;
 }
 export const UserMessageSchema = SchemaFactory.createForClass(UserMessage);

@@ -71,8 +71,9 @@ export interface CommentDTO {
 
     childCommentsCount: number;
 
-
     userBanned: boolean;
+
+    commenterIpAddress: string;
 }
 
 export interface CommentAbilityDTO {

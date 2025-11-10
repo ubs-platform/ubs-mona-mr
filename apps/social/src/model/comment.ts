@@ -54,6 +54,9 @@ export class SocialComment {
 
     @Prop(Number)
     votesLength: number = 0;
+
+    @Prop(String)
+    ipAddress: string;
 }
 
 export const SocialCommentSchema = SchemaFactory.createForClass(SocialComment);
