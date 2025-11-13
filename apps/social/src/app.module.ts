@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import { BackendJwtUtilsModule } from '@ubs-platform/users-microservice-helper';
+import { BackendJwtUtilsModule, UserMicroserviceHelperModule } from '@ubs-platform/users-microservice-helper';
 import { Mongoose } from 'mongoose';
 import { MongooseModule } from '@nestjs/mongoose';
 // import {
@@ -32,7 +32,7 @@ import { CommentMicroserviceController } from './controller/comment-microservice
 
 @Module({
     imports: [
-        BackendJwtUtilsModule,
+        UserMicroserviceHelperModule,
         MongooseModule.forRoot(
             `mongodb://${process.env.NX_MONGO_USERNAME}:${
                 process.env.NX_MONGO_PASSWORD

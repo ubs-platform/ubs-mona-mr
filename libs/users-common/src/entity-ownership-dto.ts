@@ -33,7 +33,7 @@ export interface EntityOwnershipInsertCapabiltyDTO {
 export interface EntityOwnershipUserSearch {
     entityGroup: string;
     entityName: string;
-    userId: string;
+    userId?: string;
     entityOwnershipGroupId?: string;
     capabilityAtLeastOne?: string[];
 }

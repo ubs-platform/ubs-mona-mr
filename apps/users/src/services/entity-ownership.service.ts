@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Model } from 'mongoose';
-import { EntityOwnership, EntityOwnershipDocument } from '../domain/entity-ownership.schema';
+import {
+    EntityOwnership,
+    EntityOwnershipDocument,
+} from '../domain/entity-ownership.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { EntityOwnershipMapper } from '../mapper/entity-ownership.mapper';
 import {
@@ -19,8 +22,6 @@ import { Optional } from '@ubs-platform/crud-base-common/utils';
 
 @Injectable()
 export class EntityOwnershipService {
-
-
     private readonly logger = new Logger(EntityOwnershipService.name, {
         timestamp: true,
     });
@@ -32,7 +33,7 @@ export class EntityOwnershipService {
         private eogModel: Model<EntityOwnershipGroup>,
         private userService: UserService,
         private mapper: EntityOwnershipMapper,
-    ) { }
+    ) {}
 
     public async removeUserCapability(eo: EntityOwnershipUserCheck) {
         const searchKeys: EntityOwnershipSearch = {
@@ -53,12 +54,16 @@ export class EntityOwnershipService {
     }
 
     // Ortak kullanılan entity bulma metodu
-    private async findEntityBySearchKeys(searchKeys: EntityOwnershipSearch): Promise<EntityOwnership | null> {
+    private async findEntityBySearchKeys(
+        searchKeys: EntityOwnershipSearch,
+    ): Promise<EntityOwnership | null> {
         return await this.eoModel.findOne(searchKeys);
     }
 
     // Ortak kullanılan multiple entity bulma metodu
-    private async findEntitiesBySearchKeys(searchKeys: EntityOwnershipSearch): Promise<EntityOwnership[]> {
+    private async findEntitiesBySearchKeys(
+        searchKeys: EntityOwnershipSearch,
+    ): Promise<EntityOwnership[]> {
         return await this.eoModel.find(searchKeys);
     }
 
@@ -66,21 +71,27 @@ export class EntityOwnershipService {
     private findUserCapabilityInEntity(
         entityOwnership: EntityOwnership,
         userId: string,
-        capabilitiesAtLeastOne?: string[]
+        capabilitiesAtLeastOne?: string[],
     ): Optional<UserCapabilityDTO> {
         if (!entityOwnership?.userCapabilities?.length) return null;
 
         const found = entityOwnership.userCapabilities.find(
-            (uc) => uc.userId === userId && (!capabilitiesAtLeastOne?.length || (uc.capability && capabilitiesAtLeastOne.includes(uc.capability)))
+            (uc) =>
+                uc.userId === userId &&
+                (!capabilitiesAtLeastOne?.length ||
+                    (uc.capability &&
+                        capabilitiesAtLeastOne.includes(uc.capability))),
         );
 
-        return found ? { userId: found.userId!, capability: found.capability! } : null;
+        return found
+            ? { userId: found.userId!, capability: found.capability! }
+            : null;
     }
 
     // EntityOwnershipGroup'dan user capability arama
     private async findUserCapabilityInGroup(
         entityOwnership: EntityOwnership,
-        userCheck: EntityOwnershipUserCheck
+        userCheck: EntityOwnershipUserCheck,
     ): Promise<Optional<UserCapabilityDTO>> {
         if (!entityOwnership?.entityOwnershipGroupId) return null;
 
@@ -93,42 +104,53 @@ export class EntityOwnershipService {
                         $elemMatch: {
                             entityGroup: userCheck.entityGroup,
                             entityName: userCheck.entityName,
-                            ...(userCheck.capabilityAtLeastOne?.length ? { capability: { $in: userCheck.capabilityAtLeastOne } } : {}),
+                            ...(userCheck.capabilityAtLeastOne?.length
+                                ? {
+                                      capability: {
+                                          $in: userCheck.capabilityAtLeastOne,
+                                      },
+                                  }
+                                : {}),
                         },
                     },
-                }
-            }
+                },
+            },
         });
 
         if (!ownerShipGroup?.userCapabilities?.length) return null;
 
         const userCapability = ownerShipGroup.userCapabilities.find(
-            (uc) => uc.userId === userCheck.userId
+            (uc) => uc.userId === userCheck.userId,
         );
 
         if (!userCapability) return null;
 
         const entityCapabilityMatch = userCapability.entityCapabilities.find(
-            (ec) => userCheck.entityGroup === ec.entityGroup &&
+            (ec) =>
+                userCheck.entityGroup === ec.entityGroup &&
                 userCheck.entityName === ec.entityName &&
-                (!userCheck.capabilityAtLeastOne?.length || userCheck.capabilityAtLeastOne.includes(ec.capability))
+                (!userCheck.capabilityAtLeastOne?.length ||
+                    userCheck.capabilityAtLeastOne.includes(ec.capability)),
         );
 
-        return entityCapabilityMatch ? {
-            userId: userCapability.userId!,
-            capability: entityCapabilityMatch.capability!,
-        } : null;
+        return entityCapabilityMatch
+            ? {
+                  userId: userCapability.userId!,
+                  capability: entityCapabilityMatch.capability!,
+              }
+            : null;
     }
 
     // Role override kontrolü
     private async checkRoleOverride(
         roleOverrides: string[],
         userId: string,
-        capability?: string
+        capability?: string,
     ): Promise<Optional<UserCapabilityDTO>> {
         if (!roleOverrides?.length || !userId) return null;
 
-        const user: Optional<UserAuthBackendDTO> = await this.userService.findUserAuthBackend(userId);
+        const user: Optional<UserAuthBackendDTO> =
+            await this.userService.findUserAuthBackend(userId);
         if (!user?.roles?.length) return null;
 
         // Admin her şeyi override eder
@@ -140,31 +162,44 @@ export class EntityOwnershipService {
         }
 
         // Diğer rolleri kontrol et
-        const hasOverrideRole = user.roles.some(role => roleOverrides.includes(role));
-        return hasOverrideRole ? {
-            userId: user.id,
-            capability: capability?.toString(),
-        } : null;
+        const hasOverrideRole = user.roles.some((role) =>
+            roleOverrides.includes(role),
+        );
+        return hasOverrideRole
+            ? {
+                  userId: user.id,
+                  capability: capability?.toString(),
+              }
+            : null;
     }
 
     // EntityOwnershipGroup'ları user'a göre bulma
-    private async findEntityOwnershipGroupsByUser(eo: EntityOwnershipUserSearch): Promise<EntityOwnershipGroup[]> {
+    private async findEntityOwnershipGroupsByUser(
+        eo: EntityOwnershipUserSearch,
+    ): Promise<EntityOwnershipGroup[]> {
         return await this.eogModel.find({
             'userCapabilities.userId': eo.userId,
-            ...(eo.capabilityAtLeastOne ? {
-                'userCapabilities.entityCapabilities': {
-                    $elemMatch: {
-                        capability: { $in: eo.capabilityAtLeastOne },
-                        entityGroup: eo.entityGroup,
-                        entityName: eo.entityName
-                    }
-                }
-            } : {}),
+            ...(eo.capabilityAtLeastOne
+                ? {
+                      'userCapabilities.entityCapabilities': {
+                          $elemMatch: {
+                              capability: { $in: eo.capabilityAtLeastOne },
+                              entityGroup: eo.entityGroup,
+                              entityName: eo.entityName,
+                          },
+                      },
+                  }
+                : {}),
         });
     }
 
     public async edit(eoDto: EntityOwnershipDTO): Promise<void> {
-        this.logger.debug('EO EDIT', eoDto.entityGroup, eoDto.entityId, eoDto.entityName);
+        this.logger.debug(
+            'EO EDIT',
+            eoDto.entityGroup,
+            eoDto.entityId,
+            eoDto.entityName,
+        );
 
         const searchKeys: EntityOwnershipSearch = {
             entityGroup: eoDto.entityGroup,
@@ -185,7 +220,12 @@ export class EntityOwnershipService {
     }
 
     async insert(eoDto: EntityOwnershipDTO): Promise<void> {
-        this.logger.debug('EO INSERT', eoDto.entityGroup, eoDto.entityId, eoDto.entityName);
+        this.logger.debug(
+            'EO INSERT',
+            eoDto.entityGroup,
+            eoDto.entityId,
+            eoDto.entityName,
+        );
 
         const searchKeys: EntityOwnershipSearch = {
             entityGroup: eoDto.entityGroup,
@@ -206,7 +246,9 @@ export class EntityOwnershipService {
         await entity.save();
     }
 
-    public async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO): Promise<void> {
+    public async insertUserCapability(
+        oe: EntityOwnershipInsertCapabiltyDTO,
+    ): Promise<void> {
         const hasRoleAlready = await this.findInsertedUserCapability(oe, false);
         const searchKeys: EntityOwnershipSearch = {
             entityGroup: oe.entityGroup,
@@ -224,7 +266,7 @@ export class EntityOwnershipService {
     // Mevcut user capability güncelleme
     private async updateExistingUserCapability(
         searchKeys: EntityOwnershipSearch,
-        oe: EntityOwnershipInsertCapabiltyDTO
+        oe: EntityOwnershipInsertCapabiltyDTO,
     ): Promise<void> {
         const updateResult = await this.eoModel.updateOne(
             { ...searchKeys, 'userCapabilities.userId': oe.userId },
@@ -244,7 +286,7 @@ export class EntityOwnershipService {
     // Yeni user capability ekleme
     private async addNewUserCapability(
         searchKeys: EntityOwnershipSearch,
-        oe: EntityOwnershipInsertCapabiltyDTO
+        oe: EntityOwnershipInsertCapabiltyDTO,
     ): Promise<void> {
         const foundEntities = await this.findEntitiesBySearchKeys(searchKeys);
         if (foundEntities.length > 0) {
@@ -261,7 +303,10 @@ export class EntityOwnershipService {
         eouc: EntityOwnershipUserCheck,
         checkRoleOverride: boolean,
     ): Promise<boolean> {
-        const found = await this.findInsertedUserCapability(eouc, checkRoleOverride);
+        const found = await this.findInsertedUserCapability(
+            eouc,
+            checkRoleOverride,
+        );
         return !!found;
     }
 
@@ -269,7 +314,9 @@ export class EntityOwnershipService {
         entityOwnershipUserCheck: EntityOwnershipUserCheck,
         checkRoleOverride: boolean,
     ): Promise<Optional<UserCapabilityDTO>> {
-        this.logger.debug({ cap: entityOwnershipUserCheck.capabilityAtLeastOne?.join(",") });
+        this.logger.debug({
+            cap: entityOwnershipUserCheck.capabilityAtLeastOne?.join(','),
+        });
 
         const entityOwnership = await this.findEntityBySearchKeys({
             entityGroup: entityOwnershipUserCheck.entityGroup,
@@ -283,24 +330,32 @@ export class EntityOwnershipService {
         let found = this.findUserCapabilityInEntity(
             entityOwnership,
             entityOwnershipUserCheck.userId,
-            entityOwnershipUserCheck.capabilityAtLeastOne
+            entityOwnershipUserCheck.capabilityAtLeastOne,
         );
 
         // EntityOwnership Group içinde ara
         if (!found) {
-            found = await this.findUserCapabilityInGroup(entityOwnership, entityOwnershipUserCheck);
+            found = await this.findUserCapabilityInGroup(
+                entityOwnership,
+                entityOwnershipUserCheck,
+            );
         }
 
         // Role override kontrolü
         if (!found && checkRoleOverride) {
-            const roleOverrides = entityOwnership.overriderRoles ||
-                (await this.eogModel.findById(entityOwnership.entityOwnershipGroupId))?.overriderRoles;
+            const roleOverrides =
+                entityOwnership.overriderRoles ||
+                (
+                    await this.eogModel.findById(
+                        entityOwnership.entityOwnershipGroupId,
+                    )
+                )?.overriderRoles;
 
             if (roleOverrides?.length) {
                 found = await this.checkRoleOverride(
                     roleOverrides,
                     entityOwnershipUserCheck.userId,
-                    entityOwnershipUserCheck.capabilityAtLeastOne?.[0]
+                    entityOwnershipUserCheck.capabilityAtLeastOne?.[0],
                 );
             }
         }
@@ -309,7 +364,9 @@ export class EntityOwnershipService {
         return found;
     }
 
-    private async searchByUserRaw(eo: EntityOwnershipUserSearch): Promise<EntityOwnership[]> {
+    private async searchByUserRaw(
+        eo: EntityOwnershipUserSearch,
+    ): Promise<EntityOwnership[]> {
         const eogsByUser = await this.findEntityOwnershipGroupsByUser(eo);
         this.logger.debug('EOGs by user:', eogsByUser.length);
 
@@ -319,35 +376,72 @@ export class EntityOwnershipService {
             entityId: { $ne: null },
             $or: [
                 {
-                    "userCapabilities": {
+                    userCapabilities: {
                         $elemMatch: {
                             userId: eo.userId,
-                            ...(eo.capabilityAtLeastOne ? { capability: { $in: eo.capabilityAtLeastOne } } : {}),
-                        }
-                    }
-                },
-                ...(eogsByUser.length ? [{
-                    entityOwnershipGroupId: {
-                        $in: eogsByUser.map((eog) => eog._id),
+                            ...(eo.capabilityAtLeastOne
+                                ? {
+                                      capability: {
+                                          $in: eo.capabilityAtLeastOne,
+                                      },
+                                  }
+                                : {}),
+                        },
                     },
-                }] : []),
+                },
+                ...(eogsByUser.length
+                    ? [
+                          {
+                              entityOwnershipGroupId: {
+                                  $in: eogsByUser.map((eog) => eog._id),
+                              },
+                          },
+                      ]
+                    : []),
             ],
         });
         // debugger;
         return eos;
     }
 
-    async searchByUser(eo: EntityOwnershipUserSearch): Promise<EntityOwnershipDTO[]> {
+    async searchByUser(
+        eo: EntityOwnershipUserSearch,
+    ): Promise<EntityOwnershipDTO[]> {
         const entityOwnerships = await this.searchByUserRaw(eo);
         return entityOwnerships.map((a) => this.mapper.toDto(a));
     }
 
-    async searchEntityIdsByUser(eo: EntityOwnershipUserSearch): Promise<string[]> {
+    async searchByEntityIdsByEogroup(
+        eo: EntityOwnershipUserSearch,
+    ): Promise<string[]> {
+        if (!eo.entityOwnershipGroupId) {
+            throw new Error(
+                'entityOwnershipGroupId is required for this method.',
+            );
+        }
+        // const eogsByUser = await this.findEntityOwnershipGroupsByUser(eo);
+        // this.logger.debug('EOGs by user:', eogsByUser.length);
+
+        const eos = await this.eoModel.find({
+            entityGroup: eo.entityGroup,
+            entityName: eo.entityName,
+            entityId: { $ne: null },
+            entityOwnershipGroupId: eo.entityOwnershipGroupId,
+        });
+        // debugger;
+        return eos.map((a) => a.entityId?.toString()!);
+    }
+
+    async searchEntityIdsByUser(
+        eo: EntityOwnershipUserSearch,
+    ): Promise<string[]> {
         const entityOwnerships = await this.searchByUserRaw(eo);
         return entityOwnerships.map((a) => a.entityId!.toString());
     }
 
-    public async search(sk: EntityOwnershipSearch): Promise<EntityOwnershipDTO[]> {
+    public async search(
+        sk: EntityOwnershipSearch,
+    ): Promise<EntityOwnershipDTO[]> {
         const entities = await this.findEntitiesBySearchKeys(sk);
         console.info('Found entities:', entities.length);
         return entities.map((a) => this.mapper.toDto(a));
@@ -358,7 +452,9 @@ export class EntityOwnershipService {
     }
 
     // Deprecated - geriye uyumluluk için
-    private async findRaw(searchKeys: EntityOwnershipSearch): Promise<EntityOwnership[]> {
+    private async findRaw(
+        searchKeys: EntityOwnershipSearch,
+    ): Promise<EntityOwnership[]> {
         return this.findEntitiesBySearchKeys(searchKeys);
     }
 }
