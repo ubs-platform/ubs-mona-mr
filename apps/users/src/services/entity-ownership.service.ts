@@ -33,7 +33,7 @@ export class EntityOwnershipService {
         private eogModel: Model<EntityOwnershipGroup>,
         private userService: UserService,
         private mapper: EntityOwnershipMapper,
-    ) {}
+    ) { }
 
     public async removeUserCapability(eo: EntityOwnershipUserCheck) {
         const searchKeys: EntityOwnershipSearch = {
@@ -53,18 +53,13 @@ export class EntityOwnershipService {
         return updateResult;
     }
 
-    // Ortak kullanılan entity bulma metodu
-    private async findEntityBySearchKeys(
-        searchKeys: EntityOwnershipSearch,
-    ): Promise<EntityOwnership | null> {
-        return await this.eoModel.findOne(searchKeys);
-    }
-
     // Ortak kullanılan multiple entity bulma metodu
     private async findEntitiesBySearchKeys(
         searchKeys: EntityOwnershipSearch,
     ): Promise<EntityOwnership[]> {
-        return await this.eoModel.find(searchKeys);
+        return await this.eoModel.find(
+            { ...(searchKeys.entityId ? { entityId: searchKeys.entityId } : {}), entityGroup: searchKeys.entityGroup, entityName: searchKeys.entityName }
+        );
     }
 
     // User capability kontrolü için ortak metod
@@ -106,10 +101,10 @@ export class EntityOwnershipService {
                             entityName: userCheck.entityName,
                             ...(userCheck.capabilityAtLeastOne?.length
                                 ? {
-                                      capability: {
-                                          $in: userCheck.capabilityAtLeastOne,
-                                      },
-                                  }
+                                    capability: {
+                                        $in: userCheck.capabilityAtLeastOne,
+                                    },
+                                }
                                 : {}),
                         },
                     },
@@ -135,9 +130,9 @@ export class EntityOwnershipService {
 
         return entityCapabilityMatch
             ? {
-                  userId: userCapability.userId!,
-                  capability: entityCapabilityMatch.capability!,
-              }
+                userId: userCapability.userId!,
+                capability: entityCapabilityMatch.capability!,
+            }
             : null;
     }
 
@@ -167,9 +162,9 @@ export class EntityOwnershipService {
         );
         return hasOverrideRole
             ? {
-                  userId: user.id,
-                  capability: capability?.toString(),
-              }
+                userId: user.id,
+                capability: capability?.toString(),
+            }
             : null;
     }
 
@@ -181,14 +176,14 @@ export class EntityOwnershipService {
             'userCapabilities.userId': eo.userId,
             ...(eo.capabilityAtLeastOne
                 ? {
-                      'userCapabilities.entityCapabilities': {
-                          $elemMatch: {
-                              capability: { $in: eo.capabilityAtLeastOne },
-                              entityGroup: eo.entityGroup,
-                              entityName: eo.entityName,
-                          },
-                      },
-                  }
+                    'userCapabilities.entityCapabilities': {
+                        $elemMatch: {
+                            capability: { $in: eo.capabilityAtLeastOne },
+                            entityGroup: eo.entityGroup,
+                            entityName: eo.entityName,
+                        },
+                    },
+                }
                 : {}),
         });
     }
@@ -318,11 +313,11 @@ export class EntityOwnershipService {
             cap: entityOwnershipUserCheck.capabilityAtLeastOne?.join(','),
         });
 
-        const entityOwnership = await this.findEntityBySearchKeys({
+        const entityOwnership = (await this.findEntitiesBySearchKeys({
             entityGroup: entityOwnershipUserCheck.entityGroup,
-            entityId: entityOwnershipUserCheck.entityId,
             entityName: entityOwnershipUserCheck.entityName,
-        });
+            ...(entityOwnershipUserCheck.entityId ? { entityId: entityOwnershipUserCheck.entityId } : {}),
+        }))[0];
 
         if (!entityOwnership) return null;
 
@@ -381,22 +376,22 @@ export class EntityOwnershipService {
                             userId: eo.userId,
                             ...(eo.capabilityAtLeastOne
                                 ? {
-                                      capability: {
-                                          $in: eo.capabilityAtLeastOne,
-                                      },
-                                  }
+                                    capability: {
+                                        $in: eo.capabilityAtLeastOne,
+                                    },
+                                }
                                 : {}),
                         },
                     },
                 },
                 ...(eogsByUser.length
                     ? [
-                          {
-                              entityOwnershipGroupId: {
-                                  $in: eogsByUser.map((eog) => eog._id),
-                              },
-                          },
-                      ]
+                        {
+                            entityOwnershipGroupId: {
+                                $in: eogsByUser.map((eog) => eog._id),
+                            },
+                        },
+                    ]
                     : []),
             ],
         });

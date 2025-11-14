@@ -3,6 +3,7 @@ import { EntityOwnershipService } from '../services/entity-ownership.service';
 import { EventPattern, MessagePattern } from '@nestjs/microservices';
 import {
     EntityOwnershipDTO,
+    EntityOwnershipGroupIdCheck,
     EntityOwnershipInsertCapabiltyDTO,
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
@@ -48,6 +49,19 @@ export class EntityOwnershipController {
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
     }
+
+
+    @MessagePattern(EOChannelConsts.searchOwnershipByEogId)
+    async searchByEntityIdsByEogroup(eo: EntityOwnershipGroupIdCheck) {
+
+        this.validateOwnershipParameters(eo);
+        return this.cacheman.getOrCallAsync(
+            `eo-searchByEntityIdsByEogroup ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.entityOwnershipGroupId}/${eo.entityOwnershipGroupId}/${eo.capabilityAtLeastOne?.join(',')}`,
+            () => this.eoService.searchByEntityIdsByEogroup(eo),
+            { livetime: 1000, livetimeExtending: 'ON_GET' },
+        );
+    }
+
 
     @MessagePattern(EOChannelConsts.removeOwnershipUserCapability)
     async removeOwnershipUserCapability(eo: EntityOwnershipUserCheck) {
