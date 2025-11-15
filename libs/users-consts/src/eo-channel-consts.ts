@@ -9,4 +9,5 @@ export class EOChannelConsts {
     public static deleteOwnership = 'delete-ownership';
     public static searchOwnership = 'search-ownership';
     public static editOwnership = 'edit-ownership';
+    public static searchOwnershipByEogId = 'search-ownership-by-eog-id';
 }

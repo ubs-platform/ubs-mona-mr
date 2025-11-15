@@ -2,6 +2,7 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientProxy, ClientKafka, ClientRMQ } from '@nestjs/microservices';
 import {
     EntityOwnershipDTO,
+    EntityOwnershipGroupIdCheck,
     EntityOwnershipInsertCapabiltyDTO,
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
@@ -47,6 +48,8 @@ export class EntityOwnershipService implements OnModuleInit {
         this.kafkaClient.emit(EOChannelConsts.editOwnership, oe);
     }
 
+
+
     async insertOwnership(oe: EntityOwnershipDTO) {
         this.kafkaClient.emit(EOChannelConsts.insertOwnership, oe);
     }
@@ -66,6 +69,13 @@ export class EntityOwnershipService implements OnModuleInit {
     ): Observable<EntityOwnershipDTO[]> {
         return this.kafkaClient.send(EOChannelConsts.searchOwnership, eo);
     }
+
+    searchByEntityIdsByEogroup(
+        eo: EntityOwnershipGroupIdCheck,
+    ): Observable<string[]> {
+        return this.kafkaClient.send(EOChannelConsts.searchOwnershipByEogId, eo);
+    }
+
 
     searchOwnershipUser(
         eo: EntityOwnershipUserSearch,

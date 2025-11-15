@@ -41,16 +41,24 @@ export interface EntityOwnershipUserSearch {
 export interface EntityOwnershipSearch {
     entityGroup: string;
     entityName: string;
-    entityId: string;
+    entityId?: string;
 }
 
 export interface EntityOwnershipUserCheck {
     entityGroup: string;
     entityName: string;
-    entityId: string;
+    entityId?: string;
     // capability?: string;
     capabilityAtLeastOne?: string[];
 
     userId: string;
     entityOwnershipGroupId?: string;
+}
+
+export interface EntityOwnershipGroupIdCheck {
+    entityGroup: string;
+    entityName: string;
+    entityId?: string;
+    capabilityAtLeastOne?: string[];
+    entityOwnershipGroupId: string;
 }
