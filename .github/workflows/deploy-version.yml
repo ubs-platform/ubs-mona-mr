@@ -55,16 +55,16 @@ jobs:
         run: npm ci
 
       # xr zaten bunu yapıyor
-      # - name: Update version in package.json
-      #   run: |
-      #     jq --arg VERSION "${{ steps.extract_version.outputs.version }}" '.version=$VERSION' package.json > package.json.tmp
-      #     mv package.json.tmp package.json
+      - name: Update version in package.json
+        run: |
+          jq --arg VERSION "${{ steps.extract_version.outputs.version }}" '.version=$VERSION' package.json > package.json.tmp
+          mv package.json.tmp package.json
 
-      # - name: Update version tag (if provided)
-      #   if: ${{ steps.extract_version.outputs.version_tag != '' }}
-      #   run: |
-      #     jq --arg VERSION_TAG "${{ steps.extract_version.outputs.version_tag }}" '.childrenVersionTag=$VERSION_TAG' package.json > package.json.tmp
-      #     mv package.json.tmp package.json
+      - name: Update version tag (if provided)
+        if: ${{ steps.extract_version.outputs.version_tag != '' }}
+        run: |
+          jq --arg VERSION_TAG "${{ steps.extract_version.outputs.version_tag }}" '.childrenVersionTag=$VERSION_TAG' package.json > package.json.tmp
+          mv package.json.tmp package.json
 
       - name: Publish libraries to NPM
         run: npm run xr publish-libs
