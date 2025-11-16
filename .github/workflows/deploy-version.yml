@@ -18,6 +18,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: PUBLISHING  # Environment adını buraya yaz
     
     steps:
       - name: Checkout code
