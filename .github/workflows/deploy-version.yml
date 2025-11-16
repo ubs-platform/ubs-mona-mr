@@ -1,0 +1,89 @@
+name: Deploy Version
+
+on:
+  push:
+    branches:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version number (e.g., 1.0.0)'
+        required: true
+        type: string
+      version_tag:
+        description: 'Version tag (optional)'
+        required: false
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Extract version from branch name
+        id: extract_version
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            BRANCH_NAME="${{ github.ref_name }}"
+            VERSION="${BRANCH_NAME#v}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "version_tag=" >> $GITHUB_OUTPUT
+          else
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+            echo "version_tag=${{ inputs.version_tag }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      # xr zaten bunu yapıyor
+      # - name: Update version in package.json
+      #   run: |
+      #     jq --arg VERSION "${{ steps.extract_version.outputs.version }}" '.version=$VERSION' package.json > package.json.tmp
+      #     mv package.json.tmp package.json
+
+      # - name: Update version tag (if provided)
+      #   if: ${{ steps.extract_version.outputs.version_tag != '' }}
+      #   run: |
+      #     jq --arg VERSION_TAG "${{ steps.extract_version.outputs.version_tag }}" '.childrenVersionTag=$VERSION_TAG' package.json > package.json.tmp
+      #     mv package.json.tmp package.json
+
+      - name: Publish libraries to NPM
+        run: npm run xr publish-libs
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Release all apps
+        run: ./tools/release-all-apps.sh
+
+      - name: Commit version changes
+        run: |
+          git add .
+          git commit -m "Version upgrade to ${{ steps.extract_version.outputs.version }} and publish completion" || echo "No changes to commit"
+          git push || echo "Nothing to push"
