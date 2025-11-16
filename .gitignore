@@ -51,8 +51,8 @@ pids
 *.pid
 *.seed
 *.pid.lock
-yarn.lock
-package-lock.json
+# yarn.lock
+# package-lock.json
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 xr-generate-rest-doc
