@@ -414,8 +414,6 @@ export class EntityOwnershipService {
                 'entityOwnershipGroupId is required for this method.',
             );
         }
-        // const eogsByUser = await this.findEntityOwnershipGroupsByUser(eo);
-        // this.logger.debug('EOGs by user:', eogsByUser.length);
 
         const eos = await this.eoModel.find({
             entityGroup: eo.entityGroup,
@@ -425,6 +423,18 @@ export class EntityOwnershipService {
         });
         // debugger;
         return eos.map((a) => a.entityId?.toString()!);
+    }
+
+    async hasOwnershipsByEogId(
+        eogId: string,
+    ): Promise<boolean> {
+
+        const eos = await this.eoModel.find({
+
+            entityOwnershipGroupId: eogId,
+        });
+        // debugger;
+        return eos?.length > 0;
     }
 
     async searchEntityIdsByUser(

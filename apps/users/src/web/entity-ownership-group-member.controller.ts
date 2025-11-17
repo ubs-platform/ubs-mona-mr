@@ -96,6 +96,19 @@ export class EntityOwnershipGroupMemberController {
             id,
             ['OWNER', 'ADJUST_MEMBERS'],
         );
+
+        const people = await this.eogService.fetchUsersInGroup(id);
+        if (people.length == 1) {
+            throw new UnauthorizedException(
+                `Member can't be removed as the only member.`,
+            );
+        }
+        if ((people.find(a => a.userId == userId)?.groupCapability == "OWNER") && (people.filter(a => a.groupCapability == "OWNER").length < 2)) {
+            throw new UnauthorizedException(
+                `Owner can't leave Entity Ownership Group ${id} as the only owner.`,
+            );
+        }
+
         return await this.eogService.removeUserCapability(id, userId);
     }
 
@@ -106,6 +119,7 @@ export class EntityOwnershipGroupMemberController {
         @Param('invitationId') invitationId: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
+
         await this.assertHasUserGroupCapability(
             currentUser,
             id,

@@ -28,13 +28,14 @@ import {
 import { EntityOwnershipGroupService } from '../services/entity-ownership-group.service';
 import { CurrentUser } from '@ubs-platform/users-microservice-helper';
 import { SearchRequest } from '@ubs-platform/crud-base-common/search-request';
+import { EntityOwnershipService } from '../services/entity-ownership.service';
 
 @Controller('entity-ownership-group')
 export class EntityOwnershipGroupController {
     /**
      *
      */
-    constructor(private eogService: EntityOwnershipGroupService) { }
+    constructor(private eogService: EntityOwnershipGroupService, private eoService: EntityOwnershipService) { }
 
     async assertHasUserGroupCapability(
         currentUser: UserAuthBackendDTO, groupId: string, requiredCapabilities: GroupCapability[]
@@ -144,8 +145,13 @@ export class EntityOwnershipGroupController {
         @Param('id') id: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
+        if (await this.eoService.hasOwnershipsByEogId(id)) {
+            throw new UnauthorizedException(
+                `Entity Ownership Group ${id} cannot be deleted because it has owned entities.`,
+            );
+        }
         // Only users with global admin role can delete EOGs
-        this.assertHasUserGroupCapability(currentUser, id, ['OWNER']);
+        await this.assertHasUserGroupCapability(currentUser, id, ['OWNER']);
 
         return await this.eogService.deleteGroup(id);
     }
