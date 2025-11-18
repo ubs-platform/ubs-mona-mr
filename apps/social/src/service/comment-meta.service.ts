@@ -49,7 +49,7 @@ export class CommentMetaService {
 
     public async increaseExisting(
         commentDto: CommentSearchDTO,
-        u: SocialCommentMetaDocument,
+        u: SocialCommentMeta,
     ) {
         const willBeIncreased = u.subItemLengths.findIndex(
             (a) =>
@@ -67,8 +67,8 @@ export class CommentMetaService {
             });
         }
         // 
-        await u.markModified('subItemLengths');
-        await u.save();
+        await (u as any).markModified('subItemLengths');
+        await (u as any).save();
     }
 
     public async count(commentDto: CommentSearchDTO) {

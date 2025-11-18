@@ -31,7 +31,7 @@ export class RealtimeChatService {
     ) {}
 
     async insertUserMessage(dto: UserSendingMessageDto, user: UserDTO) {
-        let session: ChatSessionDoc;
+        let session: ChatSession;
         if (dto.newSession) {
             session = new this.chatSessionModel({
                 userParticipantsIds: [user.id],
@@ -43,10 +43,10 @@ export class RealtimeChatService {
                 .exec())!;
         }
         session.llmAnswerStatus = 'WAITING';
-        await session.save();
+        await (session as any).save();
 
         const message = new this.chatMessageModel({
-            sessionId: session.id,
+            sessionId: session._id,
             moderationNoteWarning: '',
             createdAt: new Date(),
             updatedAt: new Date(),
