@@ -405,7 +405,7 @@ export class EntityOwnershipGroupService {
 
     private async removeUserInEntityCapability(group: EntityOwnershipGroup, invite: Document<unknown, {}, EntityOwnershipGroupInvitation, {}> & EntityOwnershipGroupInvitation & { _id: Types.ObjectId; } & { __v: number; }) {
         await this.eoModel
-            .updateOne(
+            .updateMany(
                 {
                     entityOwnershipGroupId: group._id!,
                     userCapabilities: {
