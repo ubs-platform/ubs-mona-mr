@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Document, Model } from 'mongoose';
 import { Notification } from '../model/notification';
 import { NotificationDto } from '@ubs-platform/notify-common';
+import { Cron } from '@nestjs/schedule';
 @Injectable()
 export class NotificationService {
     // Service methods would go here
@@ -18,6 +19,7 @@ export class NotificationService {
         return {
             message: notification.message,
             recipientUserId: notification.recipientUserId,
+            distributionSentAt: notification.distributionSentAt,
             isNonCritical: notification.isNonCritical,
         };
     }
@@ -28,6 +30,7 @@ export class NotificationService {
         let newNotification = new this.notificationModel(notificationDto);
 
         newNotification = await newNotification.save();
+        await this.distributeNotification(newNotification);
         this.toDto(newNotification);
     }
 
@@ -54,4 +57,10 @@ export class NotificationService {
             .exec();
         return notifications.map((n) => this.toDto(n));
     }
+
+    distributeNotification(newNotification: Document<unknown, {}, Notification> & Notification & Required<{ _id: string; }> & { __v: number; }) {
+        // Firebase or other push notification logic would go here
+        
+    }
+
 }

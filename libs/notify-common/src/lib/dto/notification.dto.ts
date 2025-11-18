@@ -4,4 +4,5 @@ export class NotificationDto {
     isNonCritical?: boolean;
     navigationLink?: string;
     language?: string;
+    distributionSentAt?: Date | null;
 }

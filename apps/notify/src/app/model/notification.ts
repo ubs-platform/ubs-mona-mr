@@ -21,6 +21,9 @@ export class Notification {
 
     @Prop({ default: true })
     isNonCritical: boolean = true;
+
+    @Prop({type: Date, default: null})
+    distributionSentAt: Date | null = null;
 }
 
 export const NotificationSchema = SchemaFactory.createForClass(Notification);
