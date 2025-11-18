@@ -19,6 +19,10 @@ import { EmailController } from './controller/email-operation.controller';
 import { EmailService } from './service/email.service';
 import nodemailer from 'nodemailer';
 import { NotificationSchema, Notification } from './model/notification';
+import { FcmTokenUserModel, FcmTokenUserSchema } from './model/fcm-token-user.model';
+import { NotificationController } from './controller/notification.controller';
+import { NotificationService } from './service/notification.service';
+import { FirebaseNotificationHelperService } from './service/notification-firebase-helper.service';
 
 @Module({
     imports: [
@@ -35,6 +39,7 @@ import { NotificationSchema, Notification } from './model/notification';
             { name: EmailTemplate.name, schema: EmailTemplateSchema },
             { name: GlobalVariable.name, schema: GlobalVariableSchema },
             { name: Notification.name, schema: NotificationSchema },
+            { name: FcmTokenUserModel.name, schema: FcmTokenUserSchema },
         ]),
         MailerModule.forRoot({
             transport: `smtp://${process.env.UNOTIFY_MAIL_SERVER_UNAME}:${
@@ -54,7 +59,8 @@ import { NotificationSchema, Notification } from './model/notification';
         EmailTemplateController,
         GlobalVariableController,
         EmailController,
+        NotificationController
     ],
-    providers: [EmailTemplateService, GlobalVariableService, EmailService],
+    providers: [EmailTemplateService, GlobalVariableService, EmailService, NotificationService, FirebaseNotificationHelperService],
 })
 export class AppModule {}

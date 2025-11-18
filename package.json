@@ -60,6 +60,7 @@
     "comment-json": "^4.2.5",
     "crypto-promise": "^2.1.0",
     "detect-port": "^2.1.0",
+    "firebase-admin": "^13.6.0",
     "http-proxy": "^1.18.1",
     "kafkajs": "^2.2.4",
     "mongoose": "^8.10.2",
