@@ -1,0 +1,55 @@
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Notification } from '../model/notification';
+import { NotificationDto } from '@ubs-platform/notify-common';
+@Injectable()
+export class NotificationService {
+    // Service methods would go here
+    /**
+     *
+     */
+    constructor(
+        @InjectModel(Notification.name)
+        private notificationModel: Model<Notification>,
+    ) {}
+
+    public toDto(notification: Notification): NotificationDto {
+        return {
+            message: notification.message,
+            recipientUserId: notification.recipientUserId,
+            isNonCritical: notification.isNonCritical,
+        };
+    }
+
+    public async addNotification(
+        notificationDto: NotificationDto,
+    ): Promise<void> {
+        let newNotification = new this.notificationModel(notificationDto);
+        
+        newNotification = await newNotification.save();
+        this.toDto(newNotification);
+    }
+
+    public async markAsRead(id: string): Promise<void> {
+        await this.notificationModel.updateOne(
+            { _id: id },
+            { readedAt: new Date() },
+        );
+    }
+
+    public async getUnreadNotifications(
+        recipient: string,
+        fromDate: Date,
+        untilDate: Date,
+    ): Promise<NotificationDto[]> {
+        const notifications = await this.notificationModel
+            .find({
+                recipientUserId: recipient,
+                readedAt: null,
+                createdAt: { $lte: untilDate, $gte: fromDate },
+            })
+            .exec();
+        return notifications.map((n) => this.toDto(n));
+    }
+}

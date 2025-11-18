@@ -18,6 +18,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { EmailController } from './controller/email-operation.controller';
 import { EmailService } from './service/email.service';
 import nodemailer from 'nodemailer';
+import { NotificationSchema, Notification } from './model/notification';
 
 @Module({
     imports: [
@@ -33,6 +34,7 @@ import nodemailer from 'nodemailer';
         MongooseModule.forFeature([
             { name: EmailTemplate.name, schema: EmailTemplateSchema },
             { name: GlobalVariable.name, schema: GlobalVariableSchema },
+            { name: Notification.name, schema: NotificationSchema },
         ]),
         MailerModule.forRoot({
             transport: `smtp://${process.env.UNOTIFY_MAIL_SERVER_UNAME}:${
