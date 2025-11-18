@@ -30,6 +30,8 @@ import { SearchRequest } from '@ubs-platform/crud-base-common/search-request';
 import { SearchResult } from '@ubs-platform/crud-base-common/search-result';
 import { SearchUtil } from '@ubs-platform/crud-base';
 import { NotFoundError } from 'rxjs';
+import { EntityOwnershipService } from './entity-ownership.service';
+import { EntityOwnership } from '../domain/entity-ownership.schema';
 
 @Injectable()
 export class EntityOwnershipGroupService {
@@ -45,6 +47,8 @@ export class EntityOwnershipGroupService {
         private mapper: EntityOwnershipGroupMapper,
         private userServiceLocal: UserService,
         private emailService: EmailService,
+        @InjectModel(EntityOwnership.name)
+        private eoModel: Model<EntityOwnership>,
     ) {}
 
     async deleteGroup(id: string) {
@@ -140,16 +144,15 @@ export class EntityOwnershipGroupService {
         searchAndPagination?: EntityOwnershipGroupSearchDTO & SearchRequest,
         user?: UserAuthBackendDTO,
     ): Promise<EntityOwnershipGroupCommonDTO[]> {
-
         let s = await this.searchParams(searchAndPagination); //{ ...searchAndPagination, page: undefined, size: undefined };
         let sort;
         if (searchAndPagination?.sortBy && searchAndPagination.sortRotation) {
             sort = {};
             sort[searchAndPagination.sortBy] = searchAndPagination.sortRotation;
         }
-        return (
-            await this.eogModel.find(s).sort(sort).exec()
-        ).map((a) => this.mapper.toDto(a));
+        return (await this.eogModel.find(s).sort(sort).exec()).map((a) =>
+            this.mapper.toDto(a),
+        );
     }
 
     async searchPagination(
@@ -397,6 +400,25 @@ export class EntityOwnershipGroupService {
 
         // Davet kullanıldıktan sonra silinir
         await this.eogInvitationModel.deleteOne({ _id: invite._id }).exec();
+        await this.removeUserInEntityCapability(group, invite);
+    }
+
+    private async removeUserInEntityCapability(group: EntityOwnershipGroup, invite: Document<unknown, {}, EntityOwnershipGroupInvitation, {}> & EntityOwnershipGroupInvitation & { _id: Types.ObjectId; } & { __v: number; }) {
+        await this.eoModel
+            .updateOne(
+                {
+                    entityOwnershipGroupId: group._id!,
+                    userCapabilities: {
+                        $elemMatch: { userId: invite.invitedUserId },
+                    },
+                },
+                {
+                    $pull: {
+                        userCapabilities: { userId: invite.invitedUserId },
+                    },
+                }
+            )
+            .exec();
     }
 
     async removeInvitationAdmin(invitationId: string) {
