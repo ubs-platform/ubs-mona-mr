@@ -14,10 +14,15 @@ export class NotificationController {
 
     @Get('/unread')
     @UseGuards(JwtAuthGuard)
-    public async getUnreadNotifications(@CurrentUser() user: UserAuthBackendDTO, @Query('fromDate') fromDateStr: string, @Query('untilDate') untilDateStr: string) { 
+    public async getUnreadNotifications(@CurrentUser() user: UserAuthBackendDTO, @Query('fromDate') fromDateStr: string, @Query('untilDate') untilDateStr: string, @Query('non-critical') nonCritical?: string): Promise<NotificationDto[]>  { 
+        const nonCriticalFlag = nonCritical === 'true';
+        if (nonCriticalFlag === false) {
+            // For critical notifications, we can set a very early fromDate to get all critical notifications
+            fromDateStr = '1970-01-01T00:00:00.000Z';
+        }
         const fromDate = new Date(fromDateStr);
         const untilDate = new Date(untilDateStr);
-        return this.s.getUnreadNotifications(user.id, fromDate, untilDate);
+        return this.s.getUnreadNotifications(user.id, fromDate, untilDate, nonCriticalFlag);
     }
 
     @EventPattern('notification-send')

@@ -26,7 +26,7 @@ export class NotificationService {
         notificationDto: NotificationDto,
     ): Promise<void> {
         let newNotification = new this.notificationModel(notificationDto);
-        
+
         newNotification = await newNotification.save();
         this.toDto(newNotification);
     }
@@ -42,12 +42,14 @@ export class NotificationService {
         recipient: string,
         fromDate: Date,
         untilDate: Date,
+        nonCritical?: boolean,
     ): Promise<NotificationDto[]> {
         const notifications = await this.notificationModel
             .find({
                 recipientUserId: recipient,
                 readedAt: null,
                 createdAt: { $lte: untilDate, $gte: fromDate },
+                isNonCritical: nonCritical != null ? nonCritical : false,
             })
             .exec();
         return notifications.map((n) => this.toDto(n));
