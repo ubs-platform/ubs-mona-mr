@@ -86,7 +86,7 @@ export class RealtimeChatFeederService {
                         : this.llmOpService.generateResponse(allMsgs)
                     ).subscribe(async (a) => {
                         assistantStage = await this.auditMessage(
-                            assistantMessage as any as ChatMessageDoc,
+                            assistantMessage,
                             sessionId,
                             a,
                             assistantStage,
@@ -102,7 +102,7 @@ export class RealtimeChatFeederService {
     }
 
     async auditMessage(
-        assistantMessage: ChatMessageDoc,
+        assistantMessage: ChatMessage,
         sessionId: string,
         ollamaChatResponse: ChatResponse,
         assistantStage: TextAssitantStage,
