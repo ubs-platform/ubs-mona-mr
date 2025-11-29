@@ -9,8 +9,10 @@ import { exec } from 'child_process';
 
 export class Engine5Connection {
     tcpClient = new net.Socket();
-    connectionStatus: "CONNECTING" | "CLOSED" | "CONNECTED" = "CLOSED";
-    connectionStatusSubject: ReplaySubject<"CONNECTING" | "CLOSED" | "CONNECTED"> = new ReplaySubject(1);
+    connectionStatus: 'CONNECTING' | 'CLOSED' | 'CONNECTED' = 'CLOSED';
+    connectionStatusSubject: ReplaySubject<
+        'CONNECTING' | 'CLOSED' | 'CONNECTED'
+    > = new ReplaySubject(1);
     listeningSubjectCallbacks: { [key: string]: ((a: any) => any)[] } = {};
     ongoingRequestsToComplete: { [key: string]: (a: any) => void } = {};
     readonly queue = new DynamicQueue();
@@ -18,85 +20,79 @@ export class Engine5Connection {
     tcpClientEventsRegistered = false;
     // onGoingRequests: Map<string, ((a: any) => any)[]> = new Map();
 
-
     constructor(
         private host: string,
         private port: string | number,
         private instanceGroup?: string,
         private instanceId?: string,
     ) {
-        this.connectionStatusSubject.next("CLOSED");
+        this.connectionStatusSubject.next('CLOSED');
         this.queue.push(async () => {
             await this.runAtWhenConnected(() => {
-                "This is for prevent add some events or requests before connection"
-            })
-        })
-
+                'This is for prevent add some events or requests before connection';
+            });
+        });
 
         setInterval(() => {
-            if (this.reconnectOnFail && this.connectionStatus == "CLOSED") {
-                console.info("Trying to establish a connection")
-                this.init().then().catch(e => console.error(e));
+            if (this.reconnectOnFail && this.connectionStatus == 'CLOSED') {
+                console.info('Trying to establish a connection');
+                this.init()
+                    .then()
+                    .catch((e) => console.error(e));
             }
-        }, 5000)
+        }, 5000);
     }
 
     runAtWhenConnected(ac: () => any) {
         let completed = false;
         return new Promise((ok, fail) => {
-            let subscription = null as any
+            let subscription = null as any;
 
             subscription = this.connectionStatusSubject.subscribe(async (a) => {
-                if (!completed && a == "CONNECTED") {
+                if (!completed && a == 'CONNECTED') {
                     completed = true;
                     subscription?.unsubscribe();
                     try {
-                        const result = await ac()
-                        ok(result)
+                        const result = await ac();
+                        ok(result);
                     } catch (e) {
-                        fail(e)
+                        fail(e);
                     }
                 } else if (completed) {
                     subscription?.unsubscribe();
                 }
-            })
-        })
-
+            });
+        });
     }
 
     async writePayload(p: Payload): Promise<Engine5Connection> {
         return new Promise((ok, fail) => {
             this.queue.push(() => {
                 try {
-                    const buff = Buffer.from([...encode(p), 4]);
-                    if (buff.indexOf(4) != buff.length - 1) {
-                        const wrongIndex = buff.indexOf(4);
-                        console.error(
-                            'Payload contains invalid byte (4) that is used as a delimiter',
-                        );
-                        console.info('Payload:', p);
-                        console.info('Stringified:', buff.toString().substring(0, wrongIndex) + '>>>>' + buff.toString().substring(wrongIndex, wrongIndex + 1) + '<<<<' + buff.toString().substring(wrongIndex + 1));
-                    }
-                    this.tcpClient.write(buff, (e) => {
+                    // First 4 bytes are for length
+                    const msgpackData = Buffer.from(encode(p));
+                    const lengthPrefix = Buffer.alloc(4);
+                    lengthPrefix.writeUInt32BE(msgpackData.length, 0); 
+                    const full = Buffer.concat([lengthPrefix, msgpackData]);
+                    this.tcpClient.write(full, (e) => {
                         if (e) fail(e);
                         else ok(this);
                     });
                 } catch (error) {
                     console.error(error);
                 }
-            })
+            });
         });
     }
 
     async listen(subject: string, cb: (a: any) => any) {
-        console.info("Listening Subject: " + subject)
+        console.info('Listening Subject: ' + subject);
         this.queue.push(async () => {
             await this.writeListenCommand(subject);
             const ls = this.listeningSubjectCallbacks[subject] || [];
             ls.push(cb);
             this.listeningSubjectCallbacks[subject] = ls;
         });
-
     }
 
     private async writeListenCommand(subject: string) {
@@ -113,7 +109,7 @@ export class Engine5Connection {
 
     async sendRequest(subject: string, data: any) {
         const messageId = this.messageIdGenerate();
-        if (!(this.connectionStatus == "CONNECTED")) {
+        if (!(this.connectionStatus == 'CONNECTED')) {
             await this.init();
         }
         await this.writePayload({
@@ -163,21 +159,23 @@ export class Engine5Connection {
 
     async init() {
         return new Promise<Engine5Connection>((ok, fail) => {
-            if (this.connectionStatus == "CLOSED") {
+            if (this.connectionStatus == 'CLOSED') {
                 this._init((v) => {
                     ok(v);
                 });
             } else {
                 this.runAtWhenConnected(() => {
-                    ok(this)
-                })
+                    ok(this);
+                });
             }
         });
     }
 
-    private _init(ok: (value: Engine5Connection | PromiseLike<Engine5Connection>) => void) {
-        this.connectionStatusSubject.next("CONNECTING");
-        this.connectionStatus = "CONNECTING"
+    private _init(
+        ok: (value: Engine5Connection | PromiseLike<Engine5Connection>) => void,
+    ) {
+        this.connectionStatusSubject.next('CONNECTING');
+        this.connectionStatus = 'CONNECTING';
         console.info('Connecting to server');
         const client = this.tcpClient;
         this.registerEvents(client, ok);
@@ -188,23 +186,86 @@ export class Engine5Connection {
         });
     }
 
-    private registerEvents(client: net.Socket, ok: (value: Engine5Connection | PromiseLike<Engine5Connection>) => void) {
-        if (this.tcpClientEventsRegistered) return
+    private registerEvents(
+        client: net.Socket,
+        ok: (value: Engine5Connection | PromiseLike<Engine5Connection>) => void,
+    ) {
+        if (this.tcpClientEventsRegistered) return;
         let currentBuff: number[] = [];
-
+        let sizeBytes: number[] = [];
+        let incomingLength = 0;
+        let sizePrefixBuffer: Buffer | null = null;
         client.on('data', (data: Buffer) => {
             // console.info("Gelen data", data);
             this.queue.push(() => {
-                let newBuffData = [...currentBuff, ...data];
-                let splitByteIndex = newBuffData.indexOf(4);
-                while (splitByteIndex > -1) {
-                    const popped = newBuffData.slice(0, splitByteIndex);
-                    this.processIncomingData(popped, ok);
+                let offset = 0;
+                while (offset < data.length) {
+                    if (sizeBytes.length < 4) {
+                        // Read size prefix bytes
+                        sizeBytes.push(data[offset]);
+                        offset++;
+                        if (sizeBytes.length == 4) {
+                            incomingLength = Buffer.from(sizeBytes).readUInt32BE(0);
+                        }
+                    } else {
+                        // Read message bytes
+                        const bytesNeeded = incomingLength - currentBuff.length;
+                        const bytesAvailable = data.length - offset;
+                        const bytesToRead = Math.min(bytesNeeded, bytesAvailable);
 
-                    newBuffData = newBuffData.slice(splitByteIndex + 1);
-                    splitByteIndex = newBuffData.indexOf(4);
+                        currentBuff.push(
+                            ...data.subarray(offset, offset + bytesToRead),
+                        );
+                        offset += bytesToRead;
+
+                        if (currentBuff.length == incomingLength) {
+                            // We have a complete message
+                            const messageBuffer = Buffer.from(currentBuff);
+                            this.processIncomingData(messageBuffer, ok);
+                            // Reset for next message
+                            sizeBytes = [];
+                            currentBuff = [];
+                            incomingLength = 0;
+                        }
+                    }
                 }
-                currentBuff = newBuffData;
+
+                // while
+                // if (sizeBytes.length < 4) {
+                //     // Read size prefix bytes
+                //     for (let i = 0; i < data.length && sizeBytes.length < 4; i++) {
+                // let offset = 0;
+                while (offset < data.length) {
+                    if (sizePrefixBuffer === null) {
+                        // Read size prefix
+                        sizePrefixBuffer = data.slice(offset, offset + 4);
+                        offset += 4;
+                    }
+                    const messageSize = sizePrefixBuffer.readUInt32BE(0);
+                    if (data.length - offset >= messageSize) {
+                        // We have a complete message
+                        const messageBuffer = data.slice(
+                            offset,
+                            offset + messageSize,
+                        );
+                        this.processIncomingData(messageBuffer, ok);
+                        offset += messageSize;
+                        sizePrefixBuffer = null; // Reset for next message
+                    } else {
+                        // Not enough data for a complete message
+                        break;
+                    }
+                }
+                // let newBuffData = [...currentBuff, ...data];
+                // let splitByteIndex = newBuffData.indexOf(4);
+                // while (splitByteIndex > -1) {
+                //     const popped = newBuffData.slice(0, splitByteIndex);
+                //     this.processIncomingData(popped, ok);
+
+                //     newBuffData = newBuffData.slice(splitByteIndex + 1);
+                //     splitByteIndex = newBuffData.indexOf(4);
+                // }
+                // currentBuff = newBuffData;
             });
         });
 
@@ -213,8 +274,8 @@ export class Engine5Connection {
         });
 
         client.on('close', async () => {
-            this.connectionStatus = "CLOSED";
-            this.connectionStatusSubject.next("CLOSED");
+            this.connectionStatus = 'CLOSED';
+            this.connectionStatusSubject.next('CLOSED');
             console.log('Connection closed');
         });
 
@@ -225,14 +286,22 @@ export class Engine5Connection {
         this.writePayload({
             Command: 'CONNECT',
             InstanceId: this.instanceId || '',
-            InstanceGroup: this.instanceGroup || this.instanceId
+            InstanceGroup: this.instanceGroup || this.instanceId,
         });
 
-        const alreadyListeningSubjects = Object.keys(this.listeningSubjectCallbacks);
+        const alreadyListeningSubjects = Object.keys(
+            this.listeningSubjectCallbacks,
+        );
 
-        for (let alsIndex = 0; alsIndex < alreadyListeningSubjects.length; alsIndex++) {
+        for (
+            let alsIndex = 0;
+            alsIndex < alreadyListeningSubjects.length;
+            alsIndex++
+        ) {
             const als = alreadyListeningSubjects[alsIndex];
-            this.writeListenCommand(als).then(() => console.info("Listening subject again: " + als)).catch(console.error)
+            this.writeListenCommand(als)
+                .then(() => console.info('Listening subject again: ' + als))
+                .catch(console.error);
         }
     }
 
@@ -245,10 +314,10 @@ export class Engine5Connection {
         const decoded: Payload = decode(data) as any as Payload;
         // console.info(decoded)
         if (decoded.Command == 'CONNECT_SUCCESS') {
-            this.connectionStatus = "CONNECTED";
-            this.connectionStatusSubject.next("CONNECTED");
+            this.connectionStatus = 'CONNECTED';
+            this.connectionStatusSubject.next('CONNECTED');
             this.instanceId = decoded.InstanceId!;
-            this.instanceGroup = decoded.InstanceGroup!
+            this.instanceGroup = decoded.InstanceGroup!;
             promiseResolveFunc?.(this);
             // this.reconnectOnFail = true;
             console.info('Connected Successfully');
@@ -279,27 +348,27 @@ export class Engine5Connection {
         }
     }
 
-    private parseData(dataString: string[]): any {
+    private parseData(dataString: string): any {
         if (dataString[0] == 'undefined') return undefined;
-        return JSON.parse(dataString.join(""));
+        return JSON.parse(dataString);
     }
 
-    private stringifyData(ac: any): string[] | undefined {
+    private stringifyData(ac: any): string | undefined {
         let a = JSON.stringify(ac) as string;
 
-        // her 1000 karakterde bir bölelim
-        const chunkSize = 1000;
-        const chunks: string[] = [];
-        if (a?.length) {
-            for (let i = 0; i < a.length; i += chunkSize) {
-                chunks.push(a.substring(i, i + chunkSize));
-            }
-        } else {
-            chunks.push('undefined');
-        }
+        // // her 1000 karakterde bir bölelim
+        // const chunkSize = 1000;
+        // const chunks: string[] = [];
+        // if (a?.length) {
+        //     for (let i = 0; i < a.length; i += chunkSize) {
+        //         chunks.push(a.substring(i, i + chunkSize));
+        //     }
+        // } else {
+        //     chunks.push('undefined');
+        // }
 
         // stringleri bölmek şu anda '4' karakteri sorununa çözüm değil. Ancak ileride farklı bir protokole geçildiğinde sorun olmayacak.
-        return chunks;
+        return a;
     }
 
     private processReceivedEvent(decoded: Payload) {
@@ -315,26 +384,31 @@ export class Engine5Connection {
     }
 
     async close() {
-        console.info("E5JSCL - Connection is about to be closed")
+        console.info('E5JSCL - Connection is about to be closed');
         this.reconnectOnFail = false;
-        await this.writePayload({ "Command": "CLOSE" })
+        await this.writePayload({ Command: 'CLOSE' });
     }
 
+    private static globalE5Connections: { [key: string]: Engine5Connection } =
+        {};
 
-    private static globalE5Connections: { [key: string]: Engine5Connection } = {};
-
-    public static create(host: string,
+    public static create(
+        host: string,
         port: string | number,
         instanceGroup?: string,
-        instanceId?: string) {
-        const key = `${instanceGroup}(${instanceId})@${host}:${port}`
+        instanceId?: string,
+    ) {
+        const key = `${instanceGroup}(${instanceId})@${host}:${port}`;
         if (!this.globalE5Connections[key]) {
-            const nk = new Engine5Connection(host, port, instanceGroup, instanceId);
+            const nk = new Engine5Connection(
+                host,
+                port,
+                instanceGroup,
+                instanceId,
+            );
             this.globalE5Connections[key] = nk;
         }
 
         return this.globalE5Connections[key];
-
     }
 }
-
