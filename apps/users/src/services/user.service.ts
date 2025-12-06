@@ -28,7 +28,7 @@ import { randomUUID } from 'crypto';
 import { EmailService } from './email.service';
 import { UserCommonService } from './user-common.service';
 import { UserKafkaEvents } from '@ubs-platform/users-consts';
-import { SearchUtil } from '@ubs-platform/crud-base';
+import { MongooseSearchUtil } from '@ubs-platform/crud-base';
 import { UserAdminSearch } from 'libs/users-common/src/user-admin-search.dto';
 import { exec } from 'child_process';
 
@@ -51,7 +51,7 @@ export class UserService {
 
     async fetchAllUsersPaginated(uas: UserAdminSearch) {
         return (
-            await SearchUtil.modelSearch(this.userModel, uas.size, uas.page, {})
+            await MongooseSearchUtil.modelSearch(this.userModel, uas.size, uas.page, {})
         ).mapAsync(async (a) => UserMapper.toAuthBackendDto(a));
     }
 

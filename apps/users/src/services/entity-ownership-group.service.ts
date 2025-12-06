@@ -28,7 +28,7 @@ import {
 import { EmailService } from './email.service';
 import { SearchRequest } from '@ubs-platform/crud-base-common/search-request';
 import { SearchResult } from '@ubs-platform/crud-base-common/search-result';
-import { SearchUtil } from '@ubs-platform/crud-base';
+import { MongooseSearchUtil } from '@ubs-platform/crud-base';
 import { NotFoundError } from 'rxjs';
 import { EntityOwnershipService } from './entity-ownership.service';
 import { EntityOwnership } from '../domain/entity-ownership.schema';
@@ -169,7 +169,7 @@ export class EntityOwnershipGroupService {
             sort[searchAndPagination.sortBy] = searchAndPagination.sortRotation;
         }
         return (
-            await SearchUtil.modelSearch(this.eogModel, size, page, sort, {
+            await MongooseSearchUtil.modelSearch(this.eogModel, size, page, sort, {
                 $match: s,
             })
         ).mapAsync((a) => this.mapper.toDto(a));

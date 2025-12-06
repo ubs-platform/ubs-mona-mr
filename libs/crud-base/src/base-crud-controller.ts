@@ -48,12 +48,7 @@ export interface ControllerConfiguration {
 }
 
 /*@ts-ignore*/
-export const BaseCrudControllerGenerator = <
-    MODEL,
-    INPUT extends { _id?: any },
-    OUTPUT,
-    SEARCH,
->(
+export const BaseCrudControllerGenerator = <MODEL, ID, INPUT, OUTPUT, SEARCH>(
     r: ControllerConfiguration,
 ) => {
     const findExistAuth = (field: RoleAuthorizationConfigKey) => {
@@ -99,10 +94,10 @@ export const BaseCrudControllerGenerator = <
             roles(target, propKey, descriptor);
         };
     };
-    let service: BaseCrudService<MODEL, INPUT, OUTPUT, SEARCH>;
+    let service: BaseCrudService<MODEL, ID, INPUT, OUTPUT, SEARCH>;
 
     class ControllerClass {
-        constructor(servicex: BaseCrudService<MODEL, INPUT, OUTPUT, SEARCH>) {
+        constructor(public servicex: BaseCrudService<MODEL, ID, INPUT, OUTPUT, SEARCH>) {
             service = servicex;
         }
 
@@ -157,7 +152,7 @@ export const BaseCrudControllerGenerator = <
             @Body() body: INPUT,
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
-            if (body._id == null) {
+            if (this.servicex.getIdFieldNameFromInput(body) == null) {
                 throw new NotFoundException();
             }
             await this.checkUser('EDIT', user, null, body);

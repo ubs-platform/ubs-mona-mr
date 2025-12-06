@@ -16,7 +16,7 @@ import { LlmOperationService } from './llm-operation.service';
 import { ClientKafka } from '@nestjs/microservices';
 import { RealtimeChatFeederService } from './realtime-chat-feeder.service';
 import { SearchResult } from '@ubs-platform/crud-base-common';
-import { SearchUtil } from '@ubs-platform/crud-base';
+import { MongooseSearchUtil } from '@ubs-platform/crud-base';
 
 @Injectable()
 export class SessionService {
@@ -33,7 +33,7 @@ export class SessionService {
         page: number,
     ): Promise<SearchResult<ChatSessionDTO>> {
         return (
-            await SearchUtil.modelSearch<ChatSession>(
+            await MongooseSearchUtil.modelSearch<ChatSession>(
                 this.chatSessionModel,
                 size,
                 page,

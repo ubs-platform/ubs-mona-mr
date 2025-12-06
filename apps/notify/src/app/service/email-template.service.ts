@@ -7,11 +7,12 @@ import {
     EmailTemplateSearch,
 } from '@ubs-platform/notify-common';
 import { InjectModel } from '@nestjs/mongoose';
-import { BaseCrudService } from '@ubs-platform/crud-base';
+import { BaseCrudService, MongoRepositoryWrap } from '@ubs-platform/crud-base';
 
 @Injectable()
 export class EmailTemplateService extends BaseCrudService<
     EmailTemplate,
+    string,
     EmailTemplateDTO,
     EmailTemplateDTO,
     EmailTemplateSearch
@@ -22,9 +23,24 @@ export class EmailTemplateService extends BaseCrudService<
     constructor(
         @InjectModel(EmailTemplate.name) private model: Model<EmailTemplate>,
     ) {
-        super(model);
+        super(new MongoRepositoryWrap<EmailTemplate>(model));
     }
-    async searchParams(s: EmailTemplateSearch): Promise<FilterQuery<EmailTemplate>> {
+
+    generateNewModel(): EmailTemplate {
+        return new this.model();
+    }
+
+    getIdFieldNameFromInput(i: EmailTemplateDTO): string {
+        return i._id!;
+    }
+    
+    getIdFieldNameFromModel(i: EmailTemplate): string {
+        return i._id as string;
+    }
+
+    async searchParams(
+        s: EmailTemplateSearch,
+    ): Promise<FilterQuery<EmailTemplate>> {
         const searchQueries: FilterQuery<EmailTemplate> = {};
         if (s) {
             if (s.htmlContentContains != null) {

@@ -21,6 +21,7 @@ const config: ControllerConfiguration = {
 @Controller('user-message')
 export class UserMessageController extends BaseCrudControllerGenerator<
     UserMessage,
+    string,
     IUserMessageDto,
     IUserMessageDto,
     IUserMessageSearch

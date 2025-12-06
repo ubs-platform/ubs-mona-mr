@@ -13,6 +13,7 @@ const config = {
 @Controller('email-template')
 export class EmailTemplateController extends BaseCrudControllerGenerator<
     EmailTemplate,
+    string,
     EmailTemplateDTO,
     EmailTemplateDTO,
     EmailTemplateSearch

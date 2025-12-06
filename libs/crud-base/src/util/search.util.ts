@@ -1,7 +1,10 @@
 import { RawSearchResult } from '@ubs-platform/crud-base-common';
 import { Model, PipelineStage } from 'mongoose';
 
-export class SearchUtil {
+/**
+ * Utility class for performing search operations on Mongoose models.
+ */
+export class MongooseSearchUtil {
     /**
      *
      * @param model

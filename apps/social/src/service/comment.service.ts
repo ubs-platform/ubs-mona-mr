@@ -19,7 +19,7 @@ import { CommentMapper } from '../mapper/comment.mapper';
 import { InjectModel } from '@nestjs/mongoose';
 import { CommentMetaService } from './comment-meta.service';
 import { CommentAbilityCheckService } from './comment-ability-check.service';
-import { SearchUtil } from '@ubs-platform/crud-base';
+import { MongooseSearchUtil } from '@ubs-platform/crud-base';
 import { SearchRequest, SearchResult } from '@ubs-platform/crud-base-common';
 import { filter, lastValueFrom } from 'rxjs';
 @Injectable()
@@ -141,7 +141,7 @@ export class CommentService {
 
         if (searchQueries.$match.$or.length > 0) {
             return (
-                await SearchUtil.modelSearch(
+                await MongooseSearchUtil.modelSearch(
                     this.commentModel,
                     pagination.size,
                     pagination.page,

@@ -4,7 +4,7 @@ import { UserMessage } from '../model/user-message.model';
 import { FilterQuery, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { EmailService } from './email.service';
-import { BaseCrudService } from '@ubs-platform/crud-base';
+import { BaseCrudService, MongoRepositoryWrap } from '@ubs-platform/crud-base';
 import {
     IUserMessageDto,
     IUserMessageSearch,
@@ -13,6 +13,7 @@ import {
 @Injectable()
 export class UserMessageService extends BaseCrudService<
     UserMessage,
+    string,
     IUserMessageDto,
     IUserMessageDto,
     IUserMessageSearch
@@ -21,7 +22,18 @@ export class UserMessageService extends BaseCrudService<
         @InjectModel(UserMessage.name) private _m: Model<UserMessage>,
         private emailService: EmailService,
     ) {
-        super(_m);
+        super(new MongoRepositoryWrap<UserMessage>(_m));
+    }
+
+    generateNewModel(): UserMessage {
+        return new this._m();
+    }
+
+    getIdFieldNameFromInput(i: IUserMessageDto): string {
+        return i._id!;
+    }
+    getIdFieldNameFromModel(i: UserMessage): string {
+        return i._id as string;
     }
 
     async afterCreate(i: IUserMessageDto): Promise<void> {
@@ -93,7 +105,9 @@ export class UserMessageService extends BaseCrudService<
         }
         return model;
     }
-    async searchParams(s: IUserMessageSearch): Promise<FilterQuery<UserMessage>> {
+    async searchParams(
+        s: IUserMessageSearch,
+    ): Promise<FilterQuery<UserMessage>> {
         const c = {} as FilterQuery<UserMessage>;
         if (s._id) {
             c._id = s._id;
