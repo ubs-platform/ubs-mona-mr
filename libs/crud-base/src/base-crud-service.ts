@@ -72,8 +72,8 @@ export abstract class BaseCrudService<
         let newModel = this.generateNewModel();
         await this.moveIntoModel(newModel, input);
         await this.beforeCreateOrEdit(newModel, 'CREATE', user);
-
-        await (newModel as HydratedDocument<MODEL, {}, unknown>).save();
+        await this.m.saveModel(newModel);
+        // await (newModel as HydratedDocument<MODEL, {}, unknown>).save();
         const out = await this.toOutput(newModel);
         await this.afterCreate(out, user);
         return out;
@@ -91,12 +91,12 @@ export abstract class BaseCrudService<
 
         await this.beforeCreateOrEdit(newModel, 'EDIT', user);
 
-        await (newModel as HydratedDocument<MODEL, {}, unknown>).save();
+        await this.m.saveModel(newModel);
 
         return this.toOutput(newModel as MODEL);
     }
 
-    async remove(id: ID, user?: UserAuthBackendDTO): Promise<OUTPUT> {
+    async remove(id: ID, ruser?: UserAuthBackendDTO): Promise<OUTPUT> {
         let ac = await this.m.findById(id)!;
         await this.m.deleteById(id);
         return this.toOutput(ac as MODEL);
