@@ -130,6 +130,7 @@ export const BaseCrudControllerGenerator = <MODEL, ID, INPUT, OUTPUT, SEARCH>(
             @Param() { id }: { id: any },
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
+            await this.checkUser('GETID', user, { id }, null);
             return await service.fetchOne(id, user);
         }
 
