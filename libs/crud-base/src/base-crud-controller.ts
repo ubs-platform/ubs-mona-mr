@@ -110,7 +110,7 @@ export const BaseCrudControllerGenerator = <MODEL, ID, INPUT, OUTPUT, SEARCH>(
             @Query() s?: SEARCH,
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
-            const manipulatedSearch = this.manipulateSearch(user, s);
+            const manipulatedSearch = await this.manipulateSearch(user, s);
             return await service.fetchAll(manipulatedSearch, user);
         }
         @RoleConfig('GETALL')
@@ -120,7 +120,7 @@ export const BaseCrudControllerGenerator = <MODEL, ID, INPUT, OUTPUT, SEARCH>(
             @Query() s: SEARCH & SearchRequest,
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
-            const manipulatedSearch = this.manipulateSearch(user, s);
+            const manipulatedSearch = await this.manipulateSearch(user, s);
             return await service.searchPagination(manipulatedSearch, user);
         }
         @Get('/:id')
@@ -184,10 +184,10 @@ export const BaseCrudControllerGenerator = <MODEL, ID, INPUT, OUTPUT, SEARCH>(
             // Implement your user checking logic here
         }
 
-        manipulateSearch(
+        async manipulateSearch(
             user: Optional<UserAuthBackendDTO>,
             queriesAndPaths: Optional<SEARCH>,
-        ): any {
+        ): Promise<any> {
             // Implement your user checking logic here
             return queriesAndPaths;
         }
