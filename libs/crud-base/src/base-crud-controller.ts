@@ -110,6 +110,7 @@ export const BaseCrudControllerGenerator = <MODEL, ID, INPUT, OUTPUT, SEARCH>(
             @Query() s?: SEARCH,
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
+            await this.checkUser('GETALL', user, s!, null);
             const manipulatedSearch = await this.manipulateSearch(user, s);
             return await service.fetchAll(manipulatedSearch, user);
         }
@@ -120,6 +121,7 @@ export const BaseCrudControllerGenerator = <MODEL, ID, INPUT, OUTPUT, SEARCH>(
             @Query() s: SEARCH & SearchRequest,
             @CurrentUser() user?: UserAuthBackendDTO,
         ) {
+            await this.checkUser('GETALL', user, s!, null);
             const manipulatedSearch = await this.manipulateSearch(user, s);
             return await service.searchPagination(manipulatedSearch, user);
         }
