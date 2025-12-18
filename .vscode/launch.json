@@ -6,17 +6,11 @@
     "configurations": [
         
         {
-            "type": "node",
+            "type": "node-terminal",
+            "name": "Dev monolith",
             "request": "launch",
-            "name": "Launch Program",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/tools/devserve.sh",
-            "preLaunchTask": "tsc: build - tsconfig.json",
-            "outFiles": [
-                "${workspaceFolder}/dist/**/*.js"
-            ]
+            "command": "npm run start dev-monolith",
+            "cwd": "${workspaceFolder}"
         }
     ]
 }
