@@ -11,7 +11,7 @@ console.info(`
 ▐▛▚▞▜▌▐▌ ▐▌▐▛▚▖▐▌▐▌ ▐▌ ▝▚▞▘ ▐▌ ▐▌
 ▐▌  ▐▌▐▌ ▐▌▐▌ ▝▜▌▐▛▀▜▌  ▐▌  ▐▛▀▚▖
 ▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌▐▌ ▐▌▗▞▘▝▚▖▐▌ ▐▌
-MonaXr for Mona5            H.C.G`);
+MonaXr for Mona5    H. Can Gündüz`);
 const actionList = {
     'generate-ngx-services': {
         info: "Generates Angular HttpClient services from REST API controllers in the current project",

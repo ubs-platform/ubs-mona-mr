@@ -15,7 +15,7 @@ import { AppModule as NotifyModule } from '../../notify/src/app/app.module';
         FeedbackModule,
         NotifyModule,
     ],
-    controllers: [],
+    controllers: [DevMonolithController],
     providers: [],
 })
 export class DevMonolithModule {}

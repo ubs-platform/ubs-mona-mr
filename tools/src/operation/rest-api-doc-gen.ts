@@ -27,10 +27,10 @@ export class RestApiDocGen {
                 });
             });
         });
-        await DirectoryUtil.ensureDirectory('xr-generated');
+        await DirectoryUtil.ensureDirectory('apps/dev-monolith/apidocs');
         // save to file
         writeFileSync(
-            'xr-generated/rest-api.json',
+            'apps/dev-monolith/apidocs/rest-api.json',
             JSON.stringify(byProject, null, 2),
         );
     }

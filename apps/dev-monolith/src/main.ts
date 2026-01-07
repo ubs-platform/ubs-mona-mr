@@ -9,7 +9,7 @@ import {
 import { LoadbalancedProxy } from '@ubs-platform/loadbalanced-proxy';
 import { UsersModule } from 'apps/users/src/users.module';
 import fastifyMultipart from '@fastify/multipart';
-
+import { join } from 'path';
 const INTERNAL_COMMUNICATION = {
     port: parseInt(process.env['U_USERS_MONA_INTERNAL_COM_PORT'] || '0'),
     host: process.env['U_USERS_MONA_INTERNAL_COM_HOST'],
@@ -21,9 +21,11 @@ async function bootstrap() {
             DevMonolithModule,
             new FastifyAdapter({
                 ignoreTrailingSlash: true,
-                
+
             }),
         );
+        // exec(`kdialog --msgbox "MonaXr Dev Monolith started. ${__dirname}"`);
+ 
         // const app = await NestFactory.create(UsersModule);
         console.info(
             'U_USERS_MONA_INTERNAL_COM_PORT: ' + INTERNAL_COMMUNICATION.port,

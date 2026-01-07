@@ -1,0 +1,1720 @@
+{
+  "dev-monolith": [
+    {
+      "methods": [
+        {
+          "methodType": "GET",
+          "path": ".",
+          "methodName": "getHello",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "string",
+            "importedFrom": "",
+            "typeExpandedText": "string"
+          }
+        }
+      ],
+      "name": "DevMonolithController",
+      "parentPath": "/service/dev-monolith/api"
+    }
+  ],
+  "root-e2d1": [],
+  "feedback": [
+    {
+      "methods": [
+        {
+          "methodType": "POST",
+          "path": ":id/resolve",
+          "methodName": "resolve",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "id",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "IUserMessageDto",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/feedback-common/src/lib/dto/user-message.dto.ts",
+            "typeExpandedText": "{ _id: any; firstName: undefined | string; lastName: undefined | string; email: string; message: undefined | string; fileUrls: undefined | import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/feedback-common/src/lib/dto/filemeta.dto\").IFileMetaDto[]; type: undefined | string; phoneNumber: undefined | string; summary: undefined | string; creationDate: undefined | { getVarDate: () => VarDate; }; status: undefined | \"WAITING\" | \"RESOLVED\"; reply: undefined | string; relatedUrl: undefined | string; localeCode: undefined | string; }"
+          },
+          "requestBody": {
+            "typeName": "__type",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/feedback/src/app/controller/user-messages.controller.ts",
+            "typeExpandedText": "{ reply: string; }"
+          }
+        }
+      ],
+      "name": "UserMessageController",
+      "parentPath": "/service/feedback/api/user-message"
+    }
+  ],
+  "root-6f82": [],
+  "files": [
+    {
+      "methods": [],
+      "name": "EntityPropertyController",
+      "parentPath": "/service/files/api"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "PUT",
+          "path": "/volatility",
+          "methodName": "applyVolatilities",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "Array",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/files/src/dto/file-volatile-tag.ts",
+            "typeExpandedText": "{ name: string; category: string; volatile: boolean; durationMiliseconds: number; }[]"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": "/:type/:objectId",
+          "methodName": "uploadFile",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "type",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "objectId",
+              "typeName": "string | undefined"
+            }
+          ],
+          "responseType": {
+            "typeName": "{ category: string; name: string; }",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/files/src/controller/file.controller.ts",
+            "typeExpandedText": "{ category: string; name: string; }"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": "/:type",
+          "methodName": "uploadFileOnlyType",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "type",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "objectId",
+              "typeName": "string | undefined"
+            }
+          ],
+          "responseType": {
+            "typeName": "{ category: string; name: string; }",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/files/src/controller/file.controller.ts",
+            "typeExpandedText": "{ category: string; name: string; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": "/:category/:name",
+          "methodName": "fetchFileContent",
+          "queryParameters": [
+            {
+              "parameterName": "width",
+              "typeName": "string | number | null | undefined"
+            }
+          ],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "category",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "name",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "never",
+            "importedFrom": "",
+            "typeExpandedText": "never"
+          }
+        }
+      ],
+      "name": "ImageFileController",
+      "parentPath": "/service/files/api/file"
+    }
+  ],
+  "root-efc7": [],
+  "notify": [
+    {
+      "methods": [
+        {
+          "methodType": "POST",
+          "path": ".",
+          "methodName": "sendEmail",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "EmailDto",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/notify-common/src/lib/dto/email.dto.ts",
+            "typeExpandedText": "{ to: string; subject: string; templateName: string; specialVariables: any; language: undefined | string; }"
+          }
+        }
+      ],
+      "name": "EmailController",
+      "parentPath": "/service/notify/api/email"
+    },
+    {
+      "methods": [],
+      "name": "EmailTemplateController",
+      "parentPath": "/service/notify/api/email-template"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "GET",
+          "path": ".",
+          "methodName": "fetchAll",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "GlobalVariableDTO[]",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/notify-common/src/lib/dto/global-variable.ts",
+            "typeExpandedText": "{ id: string; name: string; values: { language: string; value: string; }[]; }[]"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": ".",
+          "methodName": "edit",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "null | GlobalVariableDTO",
+            "importedFrom": "",
+            "typeExpandedText": "null | { id: string; name: string; values: { language: string; value: string; }[]; }"
+          },
+          "requestBody": {
+            "typeName": "GlobalVariableWriteDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/notify-common/src/lib/dto/global-variable-write.dto.ts",
+            "typeExpandedText": "{ name: string; language: string; value: string; }"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": "rename",
+          "methodName": "renameTo",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "null | GlobalVariableDTO",
+            "importedFrom": "",
+            "typeExpandedText": "null | { id: string; name: string; values: { language: string; value: string; }[]; }"
+          },
+          "requestBody": {
+            "typeName": "GlobalVariableRenameDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/notify-common/src/lib/dto/global-variable-rename.ts",
+            "typeExpandedText": "{ _id: string; name: string; }"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": "dublicate",
+          "methodName": "dublicate",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "null | GlobalVariableDTO",
+            "importedFrom": "",
+            "typeExpandedText": "null | { id: string; name: string; values: { language: string; value: string; }[]; }"
+          },
+          "requestBody": {
+            "typeName": "__type",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/notify/src/app/controller/global-variable.controller.ts",
+            "typeExpandedText": "{ id: any; }"
+          }
+        }
+      ],
+      "name": "GlobalVariableController",
+      "parentPath": "/service/notify/api/global-variable"
+    }
+  ],
+  "root-254e": [],
+  "social": [
+    {
+      "methods": [
+        {
+          "methodType": "GET",
+          "path": "admin/:userId/:restriction",
+          "methodName": "restrictionDetail",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "userId",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "restriction",
+              "typeName": "\"COMMENT\" | \"POST\""
+            }
+          ],
+          "responseType": {
+            "typeName": "ApplicationSocialRestrictionDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/application-social-restriction.dto.ts",
+            "typeExpandedText": "{ _id: string; userId: string; restriction: \"COMMENT\" | \"POST\"; until: undefined | string; endless: boolean; note: string; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": ":userId/:restriction",
+          "methodName": "hasRestriction",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "userId",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "restriction",
+              "typeName": "\"COMMENT\" | \"POST\""
+            }
+          ],
+          "responseType": {
+            "typeName": "false | true",
+            "importedFrom": "",
+            "typeExpandedText": "boolean"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": "admin",
+          "methodName": "addRestriction",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "ApplicationSocialRestrictionDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/application-social-restriction.dto.ts",
+            "typeExpandedText": "{ _id: string; userId: string; restriction: \"COMMENT\" | \"POST\"; until: undefined | string; endless: boolean; note: string; }"
+          },
+          "requestBody": {
+            "typeName": "ApplicationSocialRestrictionAddDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/application-social-restriction.dto.ts",
+            "typeExpandedText": "{ userId: string; restriction: \"COMMENT\" | \"POST\"; until: undefined | string; note: string; }"
+          }
+        },
+        {
+          "methodType": "DELETE",
+          "path": "admin/:userId/:restriction",
+          "methodName": "removeRestriction",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "userId",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "restriction",
+              "typeName": "\"COMMENT\" | \"POST\""
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          }
+        }
+      ],
+      "name": "ApplicationSocialRestrictionController",
+      "parentPath": "/service/social/api/application-social-restriction"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "DELETE",
+          "path": "user-id/:userId",
+          "methodName": "clearCommentsFromThatUserId",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "userId",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          }
+        }
+      ],
+      "name": "CommentAdminController",
+      "parentPath": "/service/social/api/comment/admin"
+    },
+    {
+      "methods": [],
+      "name": "CommentMicroserviceController",
+      "parentPath": "/service/social/api"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "POST",
+          "path": ".",
+          "methodName": "addComment",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "CommentDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto.ts",
+            "typeExpandedText": "{ _id: string; entityGroup: string; mainEntityName: string; mainEntityId: string; childEntityName: string; childEntityId: string; textContent: string; byUserId: string; byFullName: string; creationDate: { getVarDate: () => VarDate; }; lastEditDate: Date; editCount: number; isChild: undefined | false | true; childOfCommentId: undefined | string; userDownVoted: boolean; userUpVoted: boolean; votesLength: number; childCommentsCount: number; userBanned: boolean; commenterIpAddress: string; }"
+          },
+          "requestBody": {
+            "typeName": "CommentAddDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto.ts",
+            "typeExpandedText": "{ _id: undefined | string; entityGroup: string; mainEntityName: string; mainEntityId: string; childEntityName: undefined | string; childEntityId: undefined | string; textContent: string; childOfCommentId: undefined | string; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": ".",
+          "methodName": "fetchComments",
+          "queryParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "entityGroup",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityName",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityId",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityIdByOwner",
+              "typeName": "boolean | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "childEntityName",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "childEntityId",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "childOfCommentId",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "contentTextIn",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "page",
+              "typeName": "number"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "size",
+              "typeName": "number"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "sortBy",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "sortRotation",
+              "typeName": "\"desc\" | \"asc\" | undefined"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "SearchResult<CommentDTO>",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/crud-base-common/src/search-result.ts",
+            "typeExpandedText": "{ content: CommentDTO[]; page: number; size: number; maxItemLength: number; maxPagesIndex: number; lastPage: boolean; firstPage: boolean; }"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": "/search",
+          "methodName": "searchCommentsMultiple",
+          "queryParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "page",
+              "typeName": "number"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "size",
+              "typeName": "number"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "sortBy",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "sortRotation",
+              "typeName": "\"desc\" | \"asc\" | undefined"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "SearchResult<CommentDTO>",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/crud-base-common/src/search-result.ts",
+            "typeExpandedText": "{ content: CommentDTO[]; page: number; size: number; maxItemLength: number; maxPagesIndex: number; lastPage: boolean; firstPage: boolean; }"
+          },
+          "requestBody": {
+            "typeName": "Array",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto.ts",
+            "typeExpandedText": "{ entityGroup: string; mainEntityName: undefined | string; mainEntityId: undefined | string; mainEntityIdByOwner: undefined | false | true; childEntityName: undefined | string; childEntityId: undefined | string; childOfCommentId: undefined | string; contentTextIn: undefined | string; }[]"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": "count",
+          "methodName": "commentCount",
+          "queryParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "entityGroup",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityName",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityId",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityIdByOwner",
+              "typeName": "boolean | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "childEntityName",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "childEntityId",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "childOfCommentId",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "contentTextIn",
+              "typeName": "string | undefined"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "number",
+            "importedFrom": "",
+            "typeExpandedText": "number"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": "ability",
+          "methodName": "canComment",
+          "queryParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "entityGroup",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityName",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityId",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityIdByOwner",
+              "typeName": "boolean | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "childEntityName",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "childEntityId",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "childOfCommentId",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "contentTextIn",
+              "typeName": "string | undefined"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "CommentAbilityDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto.ts",
+            "typeExpandedText": "{ userCanComment: boolean; userCommentBlockReason: string; extraNote: undefined | string; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": "ability/:id",
+          "methodName": "fetch",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "commentId",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "ExistCommentAbilityDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto.ts",
+            "typeExpandedText": "{ canRemove: boolean; canEdit: boolean; userCommentAdmin: boolean; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": "status",
+          "methodName": "commentingStatus",
+          "queryParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "entityGroup",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityName",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityId",
+              "typeName": "string | undefined"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "{ status: \"ALLOW\" | \"ARCHIVE\" | \"DISABLE\"; }",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/social/src/service/comment-meta.service.ts",
+            "typeExpandedText": "{ status: \"ALLOW\" | \"ARCHIVE\" | \"DISABLE\"; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": "block-user",
+          "methodName": "fetchBlockedUsers",
+          "queryParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "entityGroup",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityName",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "mainEntityId",
+              "typeName": "string | undefined"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "UserDTO[]",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/user-dto.ts",
+            "typeExpandedText": "{ username: string; primaryEmail: string; name: string; surname: string; id: string; suspended: boolean; suspendReason: string; active: boolean; localeCode: string; }[]"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": "block-user",
+          "methodName": "banUser",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "BanUserDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto.ts",
+            "typeExpandedText": "{ entityGroup: string; mainEntityName: string; mainEntityId: string; byUserId: string; }"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": "unblock-user",
+          "methodName": "unbanUser",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "BanUserDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto.ts",
+            "typeExpandedText": "{ entityGroup: string; mainEntityName: string; mainEntityId: string; byUserId: string; }"
+          }
+        },
+        {
+          "methodType": "DELETE",
+          "path": ":id",
+          "methodName": "deleteComment",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": "status",
+          "methodName": "setCommentingStatus",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto\").NewCommentingStatus",
+            "importedFrom": "",
+            "typeExpandedText": "{ entityGroup: string; mainEntityName: undefined | string; mainEntityId: undefined | string; } & { newStatus: \"ALLOW\" | \"ARCHIVE\" | \"DISABLE\"; }"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": ":id",
+          "methodName": "editComment",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "CommentDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto.ts",
+            "typeExpandedText": "{ _id: string; entityGroup: string; mainEntityName: string; mainEntityId: string; childEntityName: string; childEntityId: string; textContent: string; byUserId: string; byFullName: string; creationDate: { getVarDate: () => VarDate; }; lastEditDate: Date; editCount: number; isChild: undefined | false | true; childOfCommentId: undefined | string; userDownVoted: boolean; userUpVoted: boolean; votesLength: number; childCommentsCount: number; userBanned: boolean; commenterIpAddress: string; }"
+          },
+          "requestBody": {
+            "typeName": "CommentEditDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto.ts",
+            "typeExpandedText": "{ textContent: string; }"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": ":id/upvote",
+          "methodName": "upvote",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "CommentDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto.ts",
+            "typeExpandedText": "{ _id: string; entityGroup: string; mainEntityName: string; mainEntityId: string; childEntityName: string; childEntityId: string; textContent: string; byUserId: string; byFullName: string; creationDate: { getVarDate: () => VarDate; }; lastEditDate: Date; editCount: number; isChild: undefined | false | true; childOfCommentId: undefined | string; userDownVoted: boolean; userUpVoted: boolean; votesLength: number; childCommentsCount: number; userBanned: boolean; commenterIpAddress: string; }"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": ":id/downvote",
+          "methodName": "downvote",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "CommentDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/social-common/src/dto/comment.dto.ts",
+            "typeExpandedText": "{ _id: string; entityGroup: string; mainEntityName: string; mainEntityId: string; childEntityName: string; childEntityId: string; textContent: string; byUserId: string; byFullName: string; creationDate: { getVarDate: () => VarDate; }; lastEditDate: Date; editCount: number; isChild: undefined | false | true; childOfCommentId: undefined | string; userDownVoted: boolean; userUpVoted: boolean; votesLength: number; childCommentsCount: number; userBanned: boolean; commenterIpAddress: string; }"
+          }
+        }
+      ],
+      "name": "CommentController",
+      "parentPath": "/service/social/api/comment"
+    }
+  ],
+  "root-6e7c": [],
+  "superlama": [
+    {
+      "methods": [
+        {
+          "methodType": "GET",
+          "path": ".",
+          "methodName": "findMessagesBySessionIdPaged",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "LlmModelDto[]",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/superlama-common/src/llm-model.dto.ts",
+            "typeExpandedText": "{ name: string; type: \"REASONABLE\" | \"HERBOKOLOG\" | \"VISSION_SUPPORT\"; }[]"
+          }
+        }
+      ],
+      "name": "LlmModelsController",
+      "parentPath": "/service/superlama/api/llm-models"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "POST",
+          "path": ".",
+          "methodName": "insertUserMessage",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "ChatMessageDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/superlama-common/src/chat-message.dto.ts",
+            "typeExpandedText": "{ _id: string; createdAt: string; updatedAt: string; textContent: string; requestedLlmModel: string; thoughtTextContent: string; systemTextContent: string; senderType: \"USER\" | \"ASSISTANT\" | \"SYSTEM\"; textAssistantStage: \"\" | \"ANSWER\" | \"THINKING\" | \"DONE\"; senderId: string; sessionId: string; moderationNoteWarning: string; assistantStartedAt: string; assistantFinishedAt: string; tokensPerSecond: number; }"
+          },
+          "requestBody": {
+            "typeName": "UserSendingMessageDto",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/superlama-common/src/user-sending-message.dto.ts",
+            "typeExpandedText": "{ newSession: boolean; sessionId: undefined | string; message: string; selectedLlm: string; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": ".",
+          "methodName": "findMessagesBySessionIdPaged",
+          "queryParameters": [
+            {
+              "parameterName": "sessionId",
+              "typeName": "string"
+            },
+            {
+              "parameterName": "beforeDate",
+              "typeName": "string | undefined"
+            },
+            {
+              "parameterName": "lastChatMessageId",
+              "typeName": "string | undefined"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "ChatMessageDTO[]",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/superlama-common/src/chat-message.dto.ts",
+            "typeExpandedText": "{ _id: string; createdAt: string; updatedAt: string; textContent: string; requestedLlmModel: string; thoughtTextContent: string; systemTextContent: string; senderType: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/superlama-common/src/text-sender-type.dto\").ChatMessageSenderType; textAssistantStage: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/superlama-common/src/text-assistant-stage\").TextAssitantStage; senderId: string; sessionId: string; moderationNoteWarning: string; assistantStartedAt: string; assistantFinishedAt: string; tokensPerSecond: number; }[]"
+          }
+        }
+      ],
+      "name": "RealtimeChatController",
+      "parentPath": "/service/superlama/api/realtime-chat"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "GET",
+          "path": "current-user",
+          "methodName": "searchUserSessions",
+          "queryParameters": [
+            {
+              "parameterName": "size",
+              "typeName": "number"
+            },
+            {
+              "parameterName": "page",
+              "typeName": "number"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "SearchResult<ChatSessionDTO>",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/crud-base-common/src/search-result.ts",
+            "typeExpandedText": "{ content: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/superlama-common/src/chat-session.dto\").ChatSessionDTO[]; page: number; size: number; maxItemLength: number; maxPagesIndex: number; lastPage: boolean; firstPage: boolean; }"
+          }
+        }
+      ],
+      "name": "SessionController",
+      "parentPath": "/service/superlama/api/session"
+    }
+  ],
+  "root-cbd3": [],
+  "users": [
+    {
+      "methods": [
+        {
+          "methodType": "POST",
+          "path": ".",
+          "methodName": "authenticate",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "UserAuthSuccess",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/user-auth-status.model.ts",
+            "typeExpandedText": "{ token: undefined | string; success: boolean; message: string; }"
+          },
+          "requestBody": {
+            "typeName": "UserAuth",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/user-auth.model.ts",
+            "typeExpandedText": "{ login: string; password: string; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": ".",
+          "methodName": "getSelfUser",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "any",
+            "importedFrom": "",
+            "typeExpandedText": "any"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": "has-role",
+          "methodName": "hasRole",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "false | true",
+            "importedFrom": "",
+            "typeExpandedText": "boolean"
+          },
+          "requestBody": {
+            "typeName": "Array",
+            "importedFrom": "",
+            "typeExpandedText": "string[]"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": "/logout",
+          "methodName": "logout",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          }
+        }
+      ],
+      "name": "AuthController",
+      "parentPath": "/service/users/api/auth"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "GET",
+          "path": ":id/users",
+          "methodName": "fetchUsersInGroup",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "EOGUserCapabilityDTO[]",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ userId: string; userFullName: string | undefined; entityCapabilities: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group\").EOGUserEntityCapabilityDTO[]; groupCapability: GroupCapability; }[]"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": ":id/invitation",
+          "methodName": "fetchUserCapabilityInvitations",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "EOGUserCapabilityInvitationDTO[]",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ eogName: string; eogDescription: string; eogId: string; invitedByUserId: string; invitedByUserName: string; userName: string; userId: string; invitationId: string; entityCapabilities: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group\").EOGUserEntityCapabilityDTO[]; groupCapability: GroupCapability; }[]"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": ":id/capability",
+          "methodName": "updateUserCapability",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "EntityOwnershipGroupCommonDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ id: undefined | string; name: string; description: string; initialUserId: undefined | string; initialUserEntityCapabilities: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group\").EOGUserEntityCapabilityDTO[]; }"
+          },
+          "requestBody": {
+            "typeName": "EOGUserCapabilityDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ userId: string; userFullName: undefined | string; entityCapabilities: { entityGroup: string; entityName: string; capability: string; }[]; groupCapability: \"OWNER\" | \"VIEWER\" | \"EDITOR\" | \"META_EDIT\" | \"ADJUST_MEMBERS\" | \"ONLY_EDIT_MEMBER_CAPABILITIES\"; }"
+          }
+        },
+        {
+          "methodType": "DELETE",
+          "path": ":id/capability/:userId",
+          "methodName": "removeUserFromEntityOwnership",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            },
+            {
+              "parameterName": "userId",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          }
+        },
+        {
+          "methodType": "DELETE",
+          "path": ":id/invitation/:invitationId",
+          "methodName": "removeUserFromEntityOwnershipInvitation",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            },
+            {
+              "parameterName": "invitationId",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": ":id/invitation",
+          "methodName": "addUserToEntityOwnership",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "EOGUserCapabilityInviteDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ userLogin: string; entityCapabilities: { entityGroup: string; entityName: string; capability: string; }[]; groupCapability: \"OWNER\" | \"VIEWER\" | \"EDITOR\" | \"META_EDIT\" | \"ADJUST_MEMBERS\" | \"ONLY_EDIT_MEMBER_CAPABILITIES\"; }"
+          }
+        },
+        {
+          "methodType": "DELETE",
+          "path": "/invitation/:inviteId",
+          "methodName": "refuseInvitationCurrentUser",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "inviteId",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": "/invitation/:inviteId",
+          "methodName": "acceptDirectlyToEntityOwnership",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "inviteId",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": "invitation/_currentuser",
+          "methodName": "fetchMyInvitations",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "EOGUserCapabilityInvitationDTO[]",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ eogName: string; eogDescription: string; eogId: string; invitedByUserId: string; invitedByUserName: string; userName: string; userId: string; invitationId: string; entityCapabilities: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group\").EOGUserEntityCapabilityDTO[]; groupCapability: GroupCapability; }[]"
+          }
+        }
+      ],
+      "name": "EntityOwnershipGroupMemberController",
+      "parentPath": "/service/users/api/entity-ownership-group"
+    },
+    {
+      "methods": [],
+      "name": "EntityOwnershipGroupMicroserviceController",
+      "parentPath": "/service/users/api/entity-ownership-group"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "GET",
+          "path": ":id",
+          "methodName": "getOne",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "EntityOwnershipGroupCommonDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ id: undefined | string; name: string; description: string; initialUserId: undefined | string; initialUserEntityCapabilities: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group\").EOGUserEntityCapabilityDTO[]; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": ".",
+          "methodName": "findAll",
+          "queryParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "id",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "name",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "description",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "memberUserId",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "admin",
+              "typeName": "\"true\" | \"false\" | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "page",
+              "typeName": "number"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "size",
+              "typeName": "number"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "sortBy",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "sortRotation",
+              "typeName": "\"desc\" | \"asc\" | undefined"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "EntityOwnershipGroupCommonDTO[]",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ id: string | undefined; name: string; description: string; initialUserId: string | undefined; initialUserEntityCapabilities: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group\").EOGUserEntityCapabilityDTO[]; }[]"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": "_search",
+          "methodName": "searchAll",
+          "queryParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "id",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "name",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "description",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "memberUserId",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "admin",
+              "typeName": "\"true\" | \"false\" | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "page",
+              "typeName": "number"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "size",
+              "typeName": "number"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "sortBy",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "sortRotation",
+              "typeName": "\"desc\" | \"asc\" | undefined"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "SearchResult<EntityOwnershipGroupCommonDTO>",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/crud-base-common/src/search-result.ts",
+            "typeExpandedText": "{ content: EntityOwnershipGroupCommonDTO[]; page: number; size: number; maxItemLength: number; maxPagesIndex: number; lastPage: boolean; firstPage: boolean; }"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": ".",
+          "methodName": "createEntityOwnershipGroup",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "EntityOwnershipGroupCommonDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ id: undefined | string; name: string; description: string; initialUserId: undefined | string; initialUserEntityCapabilities: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group\").EOGUserEntityCapabilityDTO[]; }"
+          },
+          "requestBody": {
+            "typeName": "EntityOwnershipGroupCommonDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ id: undefined | string; name: string; description: string; initialUserId: undefined | string; initialUserEntityCapabilities: { entityGroup: string; entityName: string; capability: string; }[]; }"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": ".",
+          "methodName": "editMeta",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "EntityOwnershipGroupCommonDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ id: undefined | string; name: string; description: string; initialUserId: undefined | string; initialUserEntityCapabilities: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group\").EOGUserEntityCapabilityDTO[]; }"
+          },
+          "requestBody": {
+            "typeName": "EntityOwnershipGroupMetaDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/entity-ownership-group.ts",
+            "typeExpandedText": "{ id: string; name: string; description: undefined | string; }"
+          }
+        },
+        {
+          "methodType": "DELETE",
+          "path": ":id",
+          "methodName": "deleteEntityOwnershipGroup",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "parameterName": "id",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          }
+        }
+      ],
+      "name": "EntityOwnershipGroupController",
+      "parentPath": "/service/users/api/entity-ownership-group"
+    },
+    {
+      "methods": [],
+      "name": "EntityOwnershipController",
+      "parentPath": "/service/users/api/entity-ownership"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "POST",
+          "path": ".",
+          "methodName": "initPwReset",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "__type",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/users/src/web/password-reset.controller.ts",
+            "typeExpandedText": "{ username: string; }"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": ":id",
+          "methodName": "pwResetResolve",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "id",
+              "typeName": "any"
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "__type",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/users/src/web/password-reset.controller.ts",
+            "typeExpandedText": "{ newPassword: string; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": ":id",
+          "methodName": "hasPasswrodResetRequest",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "id",
+              "typeName": "any"
+            }
+          ],
+          "responseType": {
+            "typeName": "false | true",
+            "importedFrom": "",
+            "typeExpandedText": "boolean"
+          }
+        }
+      ],
+      "name": "ResetPasswordController",
+      "parentPath": "/service/users/api/reset-password"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "GET",
+          "path": ".",
+          "methodName": "listAllUsers",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "null | UserAuthBackendDTO[]",
+            "importedFrom": "",
+            "typeExpandedText": "null | { username: string; primaryEmail: string; name: string; surname: string; id: string; suspended: boolean; suspendReason: string; roles: string[]; localeCode: string; active: boolean; }[]"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": "_search",
+          "methodName": "searchAllUsers",
+          "queryParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "name",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "username",
+              "typeName": "string"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "page",
+              "typeName": "number"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "size",
+              "typeName": "number"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "sortBy",
+              "typeName": "string | undefined"
+            },
+            {
+              "importedFrom": "",
+              "parameterName": "sortRotation",
+              "typeName": "\"desc\" | \"asc\" | undefined"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "RawSearchResult<null | UserAuthBackendDTO>",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/crud-base-common/src/search-result.ts",
+            "typeExpandedText": "{ content: import(\"/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/user-admin-dto\").UserAuthBackendDTO | null[]; page: number; size: number; maxItemLength: number; maxPagesIndex: number; lastPage: boolean; firstPage: boolean; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": ":id",
+          "methodName": "fetchFull",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "id",
+              "typeName": "any"
+            }
+          ],
+          "responseType": {
+            "typeName": "UserFullDto",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/user-full-dto.ts",
+            "typeExpandedText": "{ _id: any; username: string; primaryEmail: string; name: string; surname: string; country: string; state: string; city: string; district: string; gender: string; pronounce: string; roles: string[]; webSites: string[]; active: boolean; suspended: boolean; suspendReason: string; password: undefined | string; localeCode: string; }"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": ".",
+          "methodName": "updateUser",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "UserFullDto",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/user-full-dto.ts",
+            "typeExpandedText": "{ _id: any; username: string; primaryEmail: string; name: string; surname: string; country: string; state: string; city: string; district: string; gender: string; pronounce: string; roles: string[]; webSites: string[]; active: boolean; suspended: boolean; suspendReason: string; password: undefined | string; localeCode: string; }"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": ".",
+          "methodName": "createUser",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "UserFullDto",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/user-full-dto.ts",
+            "typeExpandedText": "{ _id: any; username: string; primaryEmail: string; name: string; surname: string; country: string; state: string; city: string; district: string; gender: string; pronounce: string; roles: string[]; webSites: string[]; active: boolean; suspended: boolean; suspendReason: string; password: undefined | string; localeCode: string; }"
+          }
+        },
+        {
+          "methodType": "DELETE",
+          "path": ":id",
+          "methodName": "deleteUser",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "id",
+              "typeName": "any"
+            }
+          ],
+          "responseType": {
+            "typeName": "null | UserGeneralInfoDTO",
+            "importedFrom": "",
+            "typeExpandedText": "null | { id: undefined | string; name: string; surname: string; gender: string; pronounce: string; webSites: string[]; country: string; state: string; city: string; district: string; localeCode: string; username: string; }"
+          }
+        }
+      ],
+      "name": "UserAdminController",
+      "parentPath": "/service/users/api/_adm_/user"
+    },
+    {
+      "methods": [],
+      "name": "UserMicroserviceController",
+      "parentPath": "/service/users/api"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "POST",
+          "path": "init",
+          "methodName": "startRegistration",
+          "queryParameters": [
+            {
+              "parameterName": "registrationId",
+              "typeName": "string | undefined"
+            }
+          ],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "UserRegisterDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/user-register.model.ts",
+            "typeExpandedText": "{ registerId: string; username: string; password: string; primaryEmail: string; name: string; surname: string; localeCode: string; }"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": ".",
+          "methodName": "registerUser",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "UserRegisterDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/user-register.model.ts",
+            "typeExpandedText": "{ registerId: string; username: string; password: string; primaryEmail: string; name: string; surname: string; localeCode: string; }"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": "activate/:key",
+          "methodName": "activate",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "key",
+              "typeName": "string"
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          }
+        }
+      ],
+      "name": "UserRegisterController",
+      "parentPath": "/service/users/api/user-registration"
+    },
+    {
+      "methods": [
+        {
+          "methodType": "PUT",
+          "path": "/current/general",
+          "methodName": "updateGeneralUserInformation",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "UserGeneralInfoDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/user-general-info-dto.ts",
+            "typeExpandedText": "{ id: undefined | string; name: string; surname: string; gender: string; pronounce: string; webSites: string[]; country: string; state: string; city: string; district: string; localeCode: string; username: string; }"
+          }
+        },
+        {
+          "methodType": "GET",
+          "path": "/current/general",
+          "methodName": "fetchGeneralUserInformation",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "UserGeneralInfoDTO",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/libs/users-common/src/user-general-info-dto.ts",
+            "typeExpandedText": "{ id: undefined | string; name: string; surname: string; gender: string; pronounce: string; webSites: string[]; country: string; state: string; city: string; district: string; localeCode: string; username: string; }"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": "/current/email",
+          "methodName": "changeEmail",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "{ approveId: string; }",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/users/src/services/email-change-request.service.ts",
+            "typeExpandedText": "{ approveId: string; }"
+          },
+          "requestBody": {
+            "typeName": "__type",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/users/src/web/user.controller.ts",
+            "typeExpandedText": "{ email: string; }"
+          }
+        },
+        {
+          "methodType": "POST",
+          "path": "/current/email/:id",
+          "methodName": "approveChangeEmail",
+          "queryParameters": [],
+          "pathParameters": [
+            {
+              "importedFrom": "",
+              "parameterName": "id",
+              "typeName": "any"
+            }
+          ],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "__type",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/users/src/web/user.controller.ts",
+            "typeExpandedText": "{ code: string; }"
+          }
+        },
+        {
+          "methodType": "PUT",
+          "path": "/current/password",
+          "methodName": "changePassword",
+          "queryParameters": [],
+          "pathParameters": [],
+          "responseType": {
+            "typeName": "void",
+            "importedFrom": "",
+            "typeExpandedText": "void"
+          },
+          "requestBody": {
+            "typeName": "__type",
+            "importedFrom": "/home/huseyin/Belgeler/Dev/Tetakent/ubs-mona-mr/apps/users/src/web/user.controller.ts",
+            "typeExpandedText": "{ currentPassword: string; newPassword: string; }"
+          }
+        }
+      ],
+      "name": "UserController",
+      "parentPath": "/service/users/api/user"
+    }
+  ],
+  "cache-manager": [],
+  "crud-base": [],
+  "crud-base-common": [],
+  "dynamic-queue": [],
+  "feedback-common": [],
+  "file-helper": [],
+  "loadbalanced-proxy": [],
+  "microservice-setup-util": [],
+  "notify-common": [],
+  "social-common": [],
+  "social-consts": [],
+  "superlama-common": [],
+  "users-common": [],
+  "users-consts": [],
+  "users-microservice-helper": [],
+  "users-roles": []
+}

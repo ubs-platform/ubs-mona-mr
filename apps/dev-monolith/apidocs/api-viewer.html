@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ApiRehber for UBS Mona</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 350px;
+            background: #fff;
+            border-right: 1px solid #e0e0e0;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #1a73e8;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .service-group {
+            margin-bottom: 20px;
+        }
+
+        .service-title {
+            font-weight: 600;
+            font-size: 16px;
+            color: #5f6368;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .endpoint-item {
+            padding: 10px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .endpoint-item:hover {
+            background: #f8f9fa;
+        }
+
+        .endpoint-item.active {
+            background: #e8f0fe;
+            border-left-color: #1a73e8;
+        }
+
+        .method-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .method-GET { background: #61affe; color: white; }
+        .method-POST { background: #49cc90; color: white; }
+        .method-PUT { background: #fca130; color: white; }
+        .method-DELETE { background: #f93e3e; color: white; }
+        .method-PATCH { background: #50e3c2; color: white; }
+
+        .endpoint-path {
+            font-size: 13px;
+            color: #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .detail-card {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .detail-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .detail-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #5f6368;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .param-list {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 4px;
+        }
+
+        .param-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #1a73e8;
+        }
+
+        .param-name {
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+            color: #1a73e8;
+        }
+
+        .param-type {
+            color: #5f6368;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
+        .code-block {
+            background: #263238;
+            color: #aed581;
+            padding: 16px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .try-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #5f6368;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #1a73e8;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1557b0;
+        }
+
+        .response-section {
+            margin-top: 20px;
+        }
+
+        .response-status {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        .response-status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .response-status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #5f6368;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #5f6368;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h1>ApiRehber - UBS Mona</h1>
+            <input type="text" class="search-box" id="searchBox" placeholder="Endpoint ara...">
+            <div id="endpointList"></div>
+        </div>
+        <div class="main-content" id="mainContent">
+            <div class="empty-state">
+                <div class="empty-state-icon">📡</div>
+                <h2>API Endpoint Seçin</h2>
+                <p>Sol taraftan bir endpoint seçerek detayları görüntüleyin ve test edin</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let apiData = {};
+        let selectedEndpoint = null;
+
+        // JSON dosyasını yükle
+        async function loadApiData() {
+            try {
+                const response = await fetch('rest-api.json');
+                apiData = await response.json();
+                renderEndpointList();
+            } catch (error) {
+                console.error('API verisi yüklenemedi:', error);
+                document.getElementById('mainContent').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">❌</div>
+                        <h2>Veri Yüklenemedi</h2>
+                        <p>rest-api.json dosyası yüklenirken bir hata oluştu</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Endpoint listesini render et
+        function renderEndpointList(filter = '') {
+            const listContainer = document.getElementById('endpointList');
+            listContainer.innerHTML = '';
+
+            Object.keys(apiData).forEach(serviceName => {
+                const controllers = apiData[serviceName];
+                if (!controllers || controllers.length === 0) return;
+
+                let hasVisibleEndpoints = false;
+                const serviceDiv = document.createElement('div');
+                serviceDiv.className = 'service-group';
+                
+                const serviceTitle = document.createElement('div');
+                serviceTitle.className = 'service-title';
+                serviceTitle.textContent = serviceName;
+                serviceDiv.appendChild(serviceTitle);
+
+                controllers.forEach(controller => {
+                    controller.methods.forEach(method => {
+                        const fullPath = controller.parentPath + '/' + method.path;
+                        const searchText = `${method.methodType} ${fullPath} ${method.methodName}`.toLowerCase();
+                        
+                        if (filter && !searchText.includes(filter.toLowerCase())) {
+                            return;
+                        }
+
+                        hasVisibleEndpoints = true;
+                        const endpointDiv = document.createElement('div');
+                        endpointDiv.className = 'endpoint-item';
+                        endpointDiv.innerHTML = `
+                            <span class="method-badge method-${method.methodType}">${method.methodType}</span>
+                            <span class="endpoint-path">${fullPath.replace(/\/+/g, '/')}</span>
+                        `;
+                        endpointDiv.onclick = () => showEndpointDetails(controller, method);
+                        serviceDiv.appendChild(endpointDiv);
+                    });
+                });
+
+                if (hasVisibleEndpoints) {
+                    listContainer.appendChild(serviceDiv);
+                }
+            });
+        }
+
+        // Endpoint detaylarını göster
+        function showEndpointDetails(controller, method) {
+            selectedEndpoint = { controller, method };
+            
+            // Aktif endpoint'i işaretle
+            document.querySelectorAll('.endpoint-item').forEach(el => el.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+
+            const fullPath = controller.parentPath + '/' + method.path;
+            const baseUrl = window.location.origin;
+
+            let html = `
+                <div class="detail-card">
+                    <div class="detail-title">
+                        <span class="method-badge method-${method.methodType}">${method.methodType}</span>
+                        ${fullPath.replace(/\/+/g, '/')}
+                    </div>
+                    
+                    <div class="detail-section">
+                        <div class="section-title">Endpoint Bilgileri</div>
+                        <p><strong>Method Name:</strong> ${method.methodName}</p>
+                        <p><strong>Controller:</strong> ${controller.name}</p>
+                    </div>
+            `;
+
+            // Path Parameters
+            if (method.pathParameters && method.pathParameters.length > 0) {
+                html += `
+                    <div class="detail-section">
+                        <div class="section-title">Path Parameters</div>
+                        <div class="param-list">
+                            ${method.pathParameters.map(param => `
+                                <div class="param-item">
+                                    <span class="param-name">${param.parameterName}</span>
+                                    <span class="param-type">${param.typeName}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Query Parameters
+            if (method.queryParameters && method.queryParameters.length > 0) {
+                html += `
+                    <div class="detail-section">
+                        <div class="section-title">Query Parameters</div>
+                        <div class="param-list">
+                            ${method.queryParameters.map(param => `
+                                <div class="param-item">
+                                    <span class="param-name">${param.parameterName}</span>
+                                    <span class="param-type">${param.typeName}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Request Body
+            if (method.requestBody) {
+                html += `
+                    <div class="detail-section">
+                        <div class="section-title">Request Body</div>
+                        <div class="code-block">${escapeHtml(JSON.stringify(method.requestBody, null, 2))}</div>
+                    </div>
+                `;
+            }
+
+            // Response Type
+            if (method.responseType) {
+                html += `
+                    <div class="detail-section">
+                        <div class="section-title">Response Type</div>
+                        <div class="code-block">${escapeHtml(method.responseType.typeExpandedText || method.responseType.typeName)}</div>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+
+            // Try It Out Section
+            html += `
+                <div class="detail-card">
+                    <div class="detail-title">🧪 Try It Out</div>
+                    <div class="try-section">
+                        <div class="form-group">
+                            <label class="form-label">Base URL</label>
+                            <input type="text" class="form-input" id="baseUrl" value="${baseUrl}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Full Path</label>
+                            <input type="text" class="form-input" id="fullPath" value="${fullPath.replace(/\/+/g, '/')}">
+                        </div>
+
+                        ${method.requestBody ? `
+                        <div class="form-group">
+                            <label class="form-label">Request Body (JSON)</label>
+                            <textarea class="form-textarea" id="requestBody">{}</textarea>
+                        </div>
+                        ` : ''}
+
+                        <div class="form-group">
+                            <label class="form-label">Headers (JSON)</label>
+                            <textarea class="form-textarea" id="headers">{"Content-Type": "application/json"}</textarea>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="sendRequest()">
+                            Gönder
+                        </button>
+
+                        <div id="responseSection"></div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('mainContent').innerHTML = html;
+        }
+
+        // İstek gönder
+        async function sendRequest() {
+            const responseSection = document.getElementById('responseSection');
+            responseSection.innerHTML = '<div class="loading">İstek gönderiliyor...</div>';
+
+            try {
+                const baseUrl = document.getElementById('baseUrl').value;
+                const path = document.getElementById('fullPath').value;
+                const fullUrl = baseUrl + path;
+                
+                const method = selectedEndpoint.method.methodType;
+                const headersText = document.getElementById('headers').value;
+                const headers = JSON.parse(headersText);
+
+                const options = {
+                    method: method,
+                    headers: headers
+                };
+
+                if (method !== 'GET' && document.getElementById('requestBody')) {
+                    const bodyText = document.getElementById('requestBody').value;
+                    options.body = bodyText;
+                }
+
+                const startTime = Date.now();
+                const response = await fetch(fullUrl, options);
+                const duration = Date.now() - startTime;
+
+                const contentType = response.headers.get('content-type');
+                let responseData;
+                
+                if (contentType && contentType.includes('application/json')) {
+                    responseData = await response.json();
+                } else {
+                    responseData = await response.text();
+                }
+
+                const statusClass = response.ok ? 'success' : 'error';
+                
+                responseSection.innerHTML = `
+                    <div class="response-section">
+                        <div class="section-title">Response</div>
+                        <div class="response-status ${statusClass}">
+                            Status: ${response.status} ${response.statusText} | Time: ${duration}ms
+                        </div>
+                        <div class="code-block">${escapeHtml(typeof responseData === 'string' ? responseData : JSON.stringify(responseData, null, 2))}</div>
+                    </div>
+                `;
+            } catch (error) {
+                responseSection.innerHTML = `
+                    <div class="response-section">
+                        <div class="section-title">Error</div>
+                        <div class="response-status error">
+                            Request failed
+                        </div>
+                        <div class="code-block">${escapeHtml(error.message)}</div>
+                    </div>
+                `;
+            }
+        }
+
+        // HTML escape
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Search fonksiyonu
+        document.getElementById('searchBox').addEventListener('input', (e) => {
+            renderEndpointList(e.target.value);
+        });
+
+        // Sayfa yüklendiğinde
+        loadApiData();
+    </script>
+</body>
+</html>
