@@ -22,6 +22,7 @@ import { CommentAbilityCheckService } from './comment-ability-check.service';
 import { MongooseSearchUtil } from '@ubs-platform/crud-base';
 import { SearchRequest, SearchResult } from '@ubs-platform/crud-base-common';
 import { filter, lastValueFrom } from 'rxjs';
+import { Optional } from '@ubs-platform/crud-base-common/utils';
 @Injectable()
 export class CommentService {
     constructor(
@@ -114,7 +115,7 @@ export class CommentService {
 
     async searchComments(
         pagination: SearchRequest,
-        currentUser: UserAuthBackendDTO,
+        currentUser: Optional<UserAuthBackendDTO>,
         ...commentsSearchs: CommentSearchDTO[]
     ): Promise<SearchResult<CommentDTO>> {
         console.debug('searchComments called with', { pagination, commentsSearchs });
@@ -134,7 +135,7 @@ export class CommentService {
             $match: {
                 $or: await this.commentFilterMatch(
                     commentsSearchs,
-                    currentUser.id,
+                    currentUser?.id,
                 ),
             },
         };
