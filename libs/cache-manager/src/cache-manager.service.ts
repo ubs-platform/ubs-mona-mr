@@ -21,6 +21,9 @@ type ExpireItem = {
 
 @Injectable()
 export class CacheManagerService {
+    readonly DEFAULT_LIVETIME = 5 * 60 * 1000; // 5 dakika
+    readonly MAX_LIVETIME = 24 * 60 * 60 * 1000; // 24 saat
+    readonly MAX_INT = 2 ** 31 - 1;
     private readonly logger = new Logger(CacheManagerService.name, {
         timestamp: true,
     });
@@ -191,12 +194,12 @@ export class CacheManagerService {
     }
 
     private nextDelay(): number {
-        const maxInt = 2 ** 31 - 1;
-        if (this.expirations.length === 0) return maxInt; // pratikte "sonsuz"
+        // const maxInt = ; //2 ** 31 - 1;
+        if (this.expirations.length === 0) return this.MAX_INT; // pratikte "sonsuz"
         const now = Date.now();
         const delta = this.expirations[0].expiresAt - now;
         // negatifse hemen tetikleyelim
-        return Math.max(0, Math.min(delta, maxInt));
+        return Math.max(0, Math.min(delta, this.MAX_INT));
     }
 
     private drainExpirations(): void {
