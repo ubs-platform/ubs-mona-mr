@@ -8,7 +8,7 @@ export class UserCapability {
     // canView: boolean;
 }
 
-@Schema({autoIndex: true, timestamps: true})
+@Schema({ autoIndex: true, timestamps: true })
 export class EntityOwnership {
     _id?: any;
 
@@ -53,6 +53,15 @@ export class EntityOwnership {
 export type EntityOwnershipDocument = EntityOwnership & Document;
 export const EntityOwnershipSchema =
     SchemaFactory.createForClass(EntityOwnership);
+
+
+EntityOwnershipSchema.index(
+    { entityGroup: 1, entityName: 1 },
+);
+
+EntityOwnershipSchema.index(
+    { entityGroup: 1, entityName: 1, entityId: 1, 'userCapabilities.userId': 1 },
+);
 
 EntityOwnershipSchema.index(
     { entityGroup: 1, entityName: 1, entityId: 1 },
