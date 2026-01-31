@@ -59,4 +59,23 @@ export class SocialComment {
     ipAddress: string;
 }
 
-export const SocialCommentSchema = SchemaFactory.createForClass(SocialComment);
+ const SocialCommentSchema = SchemaFactory.createForClass(SocialComment);
+
+// Ana compound index - Tüm ana sorgu patternlerini kapsar (pattern 1, 2, 3)
+// Pattern 1: {entityGroup, mainEntityName}
+// Pattern 2: {entityGroup, mainEntityName, mainEntityId}
+// Pattern 3: {entityGroup, mainEntityName, mainEntityId, childEntityName, childEntityId}
+SocialCommentSchema.index({ 
+    entityGroup: 1, 
+    mainEntityName: 1, 
+    mainEntityId: 1, 
+    childEntityName: 1, 
+    childEntityId: 1 
+});
+
+// Parent yorumun altındaki child yorumları getirmek için
+SocialCommentSchema.index({ childOfCommentId: 1, isChild: 1 });
+
+// Kullanıcının yorumlarını tarihe göre sıralı getirmek için
+SocialCommentSchema.index({ byUserId: 1, creationDate: -1 });
+export {SocialCommentSchema};

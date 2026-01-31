@@ -8,7 +8,7 @@ export class UserCapability {
     // canView: boolean;
 }
 
-@Schema()
+@Schema({ autoIndex: true, timestamps: true })
 export class EntityOwnership {
     _id?: any;
 
@@ -27,19 +27,19 @@ export class EntityOwnership {
     /**
      *  Can be used for Application name
      */
-    @Prop({ type: String })
+    @Prop({ type: String, index: true })
     entityGroup?: string;
 
     /**
      * Name of the entity. Can be used for Entity Type (e.g. Project, Document etc.)
      */
-    @Prop({ type: String })
+    @Prop({ type: String, index: true })
     entityName?: string;
 
     /**
      * ID of the entity in the external system
      */
-    @Prop({ type: String })
+    @Prop({ type: String, index: true })
     entityId?: string;
 
     /**
@@ -53,3 +53,18 @@ export class EntityOwnership {
 export type EntityOwnershipDocument = EntityOwnership & Document;
 export const EntityOwnershipSchema =
     SchemaFactory.createForClass(EntityOwnership);
+
+
+EntityOwnershipSchema.index(
+    { entityGroup: 1, entityName: 1 },
+);
+
+EntityOwnershipSchema.index(
+    { entityGroup: 1, entityName: 1, entityId: 1, 'userCapabilities.userId': 1 },
+);
+
+EntityOwnershipSchema.index(
+    { entityGroup: 1, entityName: 1, entityId: 1 },
+    { unique: true },
+);
+EntityOwnershipSchema.index({ entityOwnershipGroupId: 1 });

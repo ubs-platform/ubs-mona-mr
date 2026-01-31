@@ -152,7 +152,7 @@ export class CommentService {
             ).mapAsync(async (a) => {
                 const meta =
                     await this.commentMetaService.findOrCreateNewMeta(a);
-                return await this.commentMapper.toDto(a, meta, currentUser);
+                return await this.commentMapper.toDto(a, meta, currentUser ?? undefined);
             });
         } else {
             return {
