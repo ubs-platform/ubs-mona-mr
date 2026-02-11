@@ -1,6 +1,6 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { FileDoc, FileModel } from '../model/file.schema';
-import { Model, ObjectId, Schema } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { FileMeta } from '../dto/file-meta';
 import { FileRequest } from '../dto/file-request';
@@ -8,215 +8,299 @@ import * as sharp from 'sharp';
 import { FileVolatileTag } from '../dto/file-volatile-tag';
 import { Cron } from '@nestjs/schedule';
 import { DynamicQueue } from '@ubs-platform/dynamic-queue';
+import { Optional } from '@ubs-platform/crud-base-common/utils';
+
+// Constants
+const IMAGE_MIME_TYPES_NONWEBP = new Set([
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/apng',
+    'image/avif',
+]);
+
+const DEFAULT_VOLATILITY_DURATION = 3600000; // 1 hour in milliseconds
+const IMAGE_WIDTH_STEP = 50;
+const MIN_IMAGE_WIDTH = 100;
+
 @Injectable()
 export class FileService {
-
-    private dynamicQueue = new DynamicQueue();
+    private readonly logger = new Logger(FileService.name);
+    private readonly dynamicQueue = new DynamicQueue();
 
     constructor(
         @InjectModel(FileModel.name) private fileModel: Model<FileDoc>,
     ) {}
 
     async removeByName(name: string): Promise<void> {
-        this.fileModel.findOneAndDelete(
-            {
-                name: name,
-            },
-            console.error,
-        );
+        try {
+            await this.fileModel.findOneAndDelete({ name });
+        } catch (error) {
+            this.logger.error(`Failed to remove file: ${name}`, error);
+        }
     }
 
-    async updateVolatilities(volatilities: FileVolatileTag[]) {
-        for (let index = 0; index < volatilities.length; index++) {
-            const volatility = volatilities[index];
-            const existFile = await this.findByNamePure(
-                volatility.category,
-                volatility.name,
-            );
-            this.setVotaility(
-                existFile!,
-                volatility.volatile,
-                volatility.durationMiliseconds,
-            );
-
-            // existFile.volatile = volatility.volatile;
-            // existFile.expireAt = new Date(
-            //   Date.now() + volatility.durationMiliseconds
-            // );
-            await existFile!.save();
-        }
+    async updateVolatilities(volatilities: FileVolatileTag[]): Promise<void> {
+        const updatePromises = volatilities.map(async (volatility) => {
+            try {
+                const existFile = await this.findByNamePure(
+                    volatility.category,
+                    volatility.name,
+                );
+                if (!existFile) {
+                    this.logger.warn(
+                        `File not found: ${volatility.category}/${volatility.name}`,
+                    );
+                    return;
+                }
+                this.setVolatility(
+                    existFile,
+                    volatility.volatile,
+                    volatility.durationMiliseconds,
+                );
+                await existFile.save();
+            } catch (error) {
+                this.logger.error(
+                    `Failed to update volatility for ${volatility.name}`,
+                    error,
+                );
+            }
+        });
+        await Promise.all(updatePromises);
     }
 
     async findByName(
         category: string,
         name: string,
-        widthForImage_?: string | number | null,
+        widthForImage?: string | number | null,
     ): Promise<FileMeta | null> {
         const file = await this.findByNamePure(category, name);
-        if (file != null) {
+        if (!file) {
+            return null;
+        }
 
-            let fileBin = await this.determineBin(file, widthForImage_!);
+        const fileBin = await this.determineBin(file, widthForImage);
 
-            this.dynamicQueue.push(async () => {
-                file.lastFetch = new Date();
+        // Update lastFetch asynchronously
+        this.dynamicQueue
+            .push(async () => {
                 try {
+                    file.lastFetch = new Date();
                     await file.save();
                 } catch (error) {
-                    console.error(error);
+                    this.logger.error(
+                        `Failed to update lastFetch for ${category}/${name}`,
+                        error,
+                    );
                 }
-            }).output.subscribe(() => console.info("Last fetch date have been saved for", category, name))
+            })
+            .output.subscribe({
+                error: (err) => this.logger.error('Queue error:', err),
+            });
 
+        return {
+            id: file._id,
+            file: fileBin,
+            mimetype: file.mimeType,
+            userId: file.userId,
+        };
+    }
 
-            return {
-                id: file._id,
-                file: fileBin,
-                mimetype: file.mimeType,
-                userId: file.userId,
-            };
-        } else {
-            return null;
+    private async determineBin(
+        file: FileDoc,
+        widthForImage?: Optional<string | number>,
+    ): Promise<Buffer> {
+        // Return original file if not an image or no width specified
+        if (!this.isImage(file.mimeType)) {
+            return file.file;
+        }
+
+        const widthForImageInt = this.parseImageWidth(widthForImage);
+        if (widthForImageInt <= 0) {
+            return file.file;
+        }
+
+        try {
+            // Initialize scaledImages if null
+            if (!file.scaledImages) {
+                file.scaledImages = [];
+            }
+
+            const roundedWidth = this.roundImageWidth(widthForImageInt);
+            const cachedImage = file.scaledImages.find(
+                (img) => img.width === roundedWidth,
+            );
+
+            if (cachedImage) {
+                return cachedImage.useSame
+                    ? file.file
+                    : Buffer.from(cachedImage.file!.buffer);
+            }
+
+            return await this.createAndCacheScaledImage(file, roundedWidth);
+        } catch (error) {
+            this.logger.error('Error determining image buffer:', error);
+            return file.file;
         }
     }
 
-    private async determineBin(file: FileDoc, widthForImage_: string | number) {
-        let fileBin = file.file;
-        // this is taking longer than normal
-        // try {
-        //     const widthForImageInt = parseInt(widthForImage_ as any);
-        //     if (this.isImage(file.mimeType) && !isNaN(widthForImageInt)) {
-        //         if (file.scaledImages == null) file.scaledImages = [];
-        //         const widthForImageRnd = Math.max(
-        //             Math.floor(widthForImageInt / 50) * 50,
-        //             100,
-        //         );
-        //         const a = file.scaledImages.find(
-        //             (a) => a.width == widthForImageRnd,
-        //         );
-        //         if (a) {
-        //             if (!a.useSame) {
-        //                 fileBin = Buffer.from(a.file!.buffer);
-        //             }
-        //         } else {
-        //             const imageSharp = sharp(fileBin, {});
-        //             const meta = await imageSharp.metadata();
-        //             if (meta.width! > widthForImageRnd) {
-        //                 const resized = imageSharp.resize({
-        //                     width: widthForImageRnd,
-        //                     withoutEnlargement: true,
-        //                     fit: 'contain',
-        //                 });
+    private async createAndCacheScaledImage(
+        file: FileDoc,
+        targetWidth: number,
+    ): Promise<Buffer> {
+        const imageSharp = sharp(file.file);
+        const metadata = await imageSharp.metadata();
 
-        //                 const buff = await resized.webp().toBuffer();
-        //                 fileBin = buff;
-        //                 file.scaledImages.push({
-        //                     width: widthForImageRnd,
-        //                     file: buff,
-        //                     useSame: false,
-        //                 });
-        //             } else {
-        //                 file.scaledImages.push({
-        //                     width: widthForImageRnd,
-        //                     file: null,
-        //                     useSame: true,
-        //                 });
-        //             }
-        //             // for fast response for phones
-        //             file.scaledImages = file.scaledImages.sort(
-        //                 (a, b) => a.width - b.width,
-        //             );
-        //         }
-        //     }
-        // } catch (ex) {
-        //     console.error(ex);
-        // }
-        return fileBin;
+        if (!metadata.width || metadata.width <= targetWidth) {
+            // Image is smaller than target or no width info
+            file.scaledImages!.push({
+                width: targetWidth,
+                file: null,
+                useSame: true,
+            });
+            return file.file;
+        }
+
+        // Resize image to WebP format
+        const resizedBuffer = await imageSharp
+            .resize({
+                width: targetWidth,
+                withoutEnlargement: true,
+                fit: 'contain',
+            })
+            .webp()
+            .toBuffer();
+
+        file.scaledImages!.push({
+            width: targetWidth,
+            file: resizedBuffer,
+            useSame: false,
+        });
+
+        // Keep sorted for consistent ordering
+        file.scaledImages!.sort((a, b) => a.width - b.width);
+
+        return resizedBuffer;
     }
 
-    private async findByNamePure(category: string, name: string) {
-        console.debug(category, name);
-        return await this.fileModel.findOne({
-            name,
-            category,
-        });
+    private parseImageWidth(width?: Optional<string | number>): number {
+        if (!width) return 0;
+        const parsed = parseInt(String(width), 10);
+        return isNaN(parsed) ? 0 : parsed;
+    }
+
+    private roundImageWidth(width: number): number {
+        return Math.max(
+            Math.floor(width / IMAGE_WIDTH_STEP) * IMAGE_WIDTH_STEP,
+            MIN_IMAGE_WIDTH,
+        );
+    }
+
+    private findByNamePure(category: string, name: string) {
+        this.logger.debug(`Finding file: ${category}/${name}`);
+        return this.fileModel.findOne({ name, category });
     }
 
     async uploadFile(
         ft: FileRequest,
         mode: 'start' | 'continue',
     ): Promise<number> {
-        ft = await this.applyUploadOptimisations(ft);
-        // if there is existing
-        const exist = await this.findByNamePure(ft.category, ft.name);
-        let f = exist || new this.fileModel();
-
-        const size = ft.size;
-
-        const bytesNew =
-            mode == 'start'
-                ? ft.fileBytesBuff
-                : Buffer.from([...f.file, ...ft.fileBytesBuff]);
-        const remaining = size - bytesNew.length;
-
         try {
-            f.file = bytesNew;
-            f.mimeType = ft.mimeType;
-            f.length = ft.size;
-            f.name = ft.name;
-            f.scaledImages = [];
-            f.category = ft.category;
-            this.setVotaility(f, ft.volatile, ft.durationMiliseconds);
-            f = await f.save();
+            const optimizedRequest = await this.applyUploadOptimisations(ft);
+            const existingFile = await this.findByNamePure(
+                optimizedRequest.category,
+                optimizedRequest.name,
+            );
+            const fileDoc = existingFile || new this.fileModel();
+
+            // Combine buffers more efficiently using Buffer.concat
+            const fileBuffer =
+                mode === 'start'
+                    ? optimizedRequest.fileBytesBuff
+                    : Buffer.concat([
+                          fileDoc.file || Buffer.alloc(0),
+                          optimizedRequest.fileBytesBuff,
+                      ]);
+
+            // Update document
+            fileDoc.file = fileBuffer;
+            fileDoc.mimeType = optimizedRequest.mimeType;
+            fileDoc.length = optimizedRequest.size;
+            fileDoc.name = optimizedRequest.name;
+            fileDoc.category = optimizedRequest.category;
+            fileDoc.scaledImages = [];
+
+            this.setVolatility(
+                fileDoc,
+                optimizedRequest.volatile,
+                optimizedRequest.durationMiliseconds,
+            );
+
+            await fileDoc.save();
+            const remaining = optimizedRequest.size - fileBuffer.length;
             return remaining;
         } catch (error) {
-            console.error(error);
+            this.logger.error(`Failed to upload file: ${ft.name}`, error);
             return 0;
         }
     }
 
-    private setVotaility(
-        f: import('mongoose').Document<unknown, {}, FileDoc> &
-            FileModel &
-            Document & { _id: import('mongoose').Types.ObjectId },
-        volatile,
-        durationMiliseconds,
-    ) {
-        f.volatile = volatile ?? true;
-        f.expireAt = new Date(Date.now() + (durationMiliseconds ?? 3600000));
-    }
-
-    async applyUploadOptimisations(ft: FileRequest): Promise<FileRequest> {
-        if (this.isImageNonWebP(ft.mimeType)) {
-            const buff = await sharp(ft.fileBytesBuff, {}).webp({}).toBuffer();
-            ft.fileBytesBuff = buff;
-            ft.mimeType = 'image/webp';
-        }
-        return ft;
-    }
-
-    private isImageNonWebP(mimeType: string) {
-        return (
-            mimeType == 'image/jpeg' ||
-            mimeType == 'image/png' ||
-            mimeType == 'image/gif' ||
-            mimeType == 'image/apng' ||
-            mimeType == 'image/avif'
+    private setVolatility(
+        file: any,
+        volatile?: boolean,
+        durationMilliseconds?: number,
+    ): void {
+        file.volatile = volatile ?? true;
+        file.expireAt = new Date(
+            Date.now() +
+                (durationMilliseconds ?? DEFAULT_VOLATILITY_DURATION),
         );
     }
 
-    private isImage(mimeType: string) {
-        return this.isImageNonWebP(mimeType) || mimeType == 'image/webp';
+    async applyUploadOptimisations(
+        fileRequest: FileRequest,
+    ): Promise<FileRequest> {
+        if (this.isImageNonWebP(fileRequest.mimeType)) {
+            try {
+                const webpBuffer = await sharp(fileRequest.fileBytesBuff)
+                    .webp()
+                    .toBuffer();
+                fileRequest.fileBytesBuff = webpBuffer;
+                fileRequest.mimeType = 'image/webp';
+            } catch (error) {
+                this.logger.warn(
+                    `Failed to convert to WebP: ${fileRequest.name}`,
+                    error,
+                );
+            }
+        }
+        return fileRequest;
+    }
+
+    private isImageNonWebP(mimeType: string): boolean {
+        return IMAGE_MIME_TYPES_NONWEBP.has(mimeType);
+    }
+
+    private isImage(mimeType: string): boolean {
+        return (
+            IMAGE_MIME_TYPES_NONWEBP.has(mimeType) ||
+            mimeType === 'image/webp'
+        );
     }
 
     @Cron('0 20 4 * * *')
-    async handleCron() {
-        console.info('Expired Volatile Files about to be removed');
-        console.info(
-            await this.fileModel.deleteMany({
+    async handleCron(): Promise<void> {
+        try {
+            this.logger.log('Cleaning up expired volatile files...');
+            const result = await this.fileModel.deleteMany({
                 volatile: true,
-                expireAt: {
-                    $lte: new Date(),
-                },
-            }),
-        );
+                expireAt: { $lte: new Date() },
+            });
+            this.logger.log(
+                `Deleted ${result.deletedCount} expired volatile files`,
+            );
+        } catch (error) {
+            this.logger.error('Error cleaning up expired files:', error);
+        }
     }
 }

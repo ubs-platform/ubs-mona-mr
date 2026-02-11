@@ -41,6 +41,9 @@ export class FileModel {
     @Prop({ type: Boolean, default: false })
     volatile: Boolean;
 
+    @Prop({ type: Boolean, default: false })
+    needAuthorizationAtView: Boolean;
+
     @Prop({ type: Date, default: new Date(Date.now() + 3600000) })
     expireAt: Date;
 
@@ -50,3 +53,5 @@ export class FileModel {
 
 export type FileDoc = FileModel & Document;
 export const FileSchema = SchemaFactory.createForClass(FileModel);
+FileSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
+FileSchema.index({ name: 1, category: 1 }, { unique: true });
