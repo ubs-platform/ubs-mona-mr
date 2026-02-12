@@ -40,6 +40,7 @@ import { lastValueFrom } from 'rxjs';
 import {
     JwtAuthGuard,
     CurrentUser,
+    UserIntercept,
 } from '@ubs-platform/users-microservice-helper';
 import {
     UploadFileCategoryRequest,
@@ -90,7 +91,7 @@ export class ImageFileController {
     constructor(
         private fservice: FileService,
         @Inject('KafkaClient') private e5: E5NestClient,
-    ) {}
+    ) { }
 
     @Put('/volatility')
     @UseGuards(JwtAuthGuard)
@@ -132,17 +133,60 @@ export class ImageFileController {
         return await this.uploadFile1(file, params, user);
     }
 
+    @Get('/:category/:objectId/exist')
+    @UseGuards(UserIntercept)
+    async hasFile(
+        @Param() params: { category: string; objectId: string },
+        @CurrentUser() user?: UserAuthBackendDTO,
+    ) {
+        const fil = await this.fservice.findByName(
+            params.category,
+            params.objectId,
+        );
+        if (fil && fil.needAuthorizationAtView) {
+            const client = await this.createClient("file-get-" + params.category);
+            const allow = await lastValueFrom(
+                client.send(
+                    "file-get-" + params.category,
+                    {
+                        userId: user?.id,
+                        objectId: params.objectId,
+                        roles: user!.roles,
+                    } as UploadFileCategoryRequest,
+                ));
+            return allow;
+        }
+        return fil != null;
+    }
+
     @Get('/:category/:name')
+    @UseGuards(UserIntercept)
     async fetchFileContent(
         @Param() params: { category: string; name: string },
         @Res() response: FastifyReply,
         @Query('width') width?: string | number | null,
+        @CurrentUser() user?: UserAuthBackendDTO,
     ) {
         const fil = await this.fservice.findByName(
             params.category,
             params.name,
             width,
         );
+        if (fil && fil.needAuthorizationAtView) {
+            const client = await this.createClient("file-get-" + params.category);
+            const allow = await lastValueFrom(
+                client.send(
+                    "file-get-" + params.category,
+                    {
+                        userId: user?.id,
+                        objectId: params.name,
+                        roles: user!.roles,
+                    } as UploadFileCategoryRequest,
+                ));
+            if (!allow) {
+                return response.status(403).send('Unauthorized to view this file');
+            }
+        }
         if (fil) {
             return response.status(200).type(fil.mimetype).send(fil.file);
         } else {
@@ -184,6 +228,7 @@ export class ImageFileController {
                     size: file.size,
                     volatile: categoryResponse.volatile!,
                     durationMiliseconds: categoryResponse.durationMiliseconds!,
+                    needAuthorizationAtView: categoryResponse.needAuthorizationAtView ?? false,
                 },
                 'start',
             );

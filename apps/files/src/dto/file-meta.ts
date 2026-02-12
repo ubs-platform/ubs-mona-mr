@@ -3,4 +3,5 @@ export class FileMeta {
   mimetype: string;
   file: Buffer;
   userId: String;
+  needAuthorizationAtView?: boolean;
 }

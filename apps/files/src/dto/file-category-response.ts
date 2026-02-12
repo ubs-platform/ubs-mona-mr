@@ -5,6 +5,7 @@ export interface UploadFileCategoryResponse {
   maxLimitBytes?: number;
   volatile?: boolean;
   durationMiliseconds?: number;
+  needAuthorizationAtView?: boolean;
 }
 
 export interface UploadFileCategoryRequest {

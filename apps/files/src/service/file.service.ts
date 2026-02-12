@@ -20,17 +20,18 @@ const IMAGE_MIME_TYPES_NONWEBP = new Set([
 ]);
 
 const DEFAULT_VOLATILITY_DURATION = 3600000; // 1 hour in milliseconds
-const IMAGE_WIDTH_STEP = 50;
+const IMAGE_WIDTH_STEP = 75; // Round widths to nearest 75px for caching
 const MIN_IMAGE_WIDTH = 100;
 
 @Injectable()
 export class FileService {
+
     private readonly logger = new Logger(FileService.name);
     private readonly dynamicQueue = new DynamicQueue();
 
     constructor(
         @InjectModel(FileModel.name) private fileModel: Model<FileDoc>,
-    ) {}
+    ) { }
 
     async removeByName(name: string): Promise<void> {
         try {
@@ -39,6 +40,7 @@ export class FileService {
             this.logger.error(`Failed to remove file: ${name}`, error);
         }
     }
+
 
     async updateVolatilities(volatilities: FileVolatileTag[]): Promise<void> {
         const updatePromises = volatilities.map(async (volatility) => {
@@ -75,6 +77,7 @@ export class FileService {
         widthForImage?: string | number | null,
     ): Promise<FileMeta | null> {
         const file = await this.findByNamePure(category, name);
+
         if (!file) {
             return null;
         }
@@ -103,6 +106,7 @@ export class FileService {
             file: fileBin,
             mimetype: file.mimeType,
             userId: file.userId,
+            needAuthorizationAtView: file.needAuthorizationAtView?.valueOf(),
         };
     }
 
@@ -218,9 +222,9 @@ export class FileService {
                 mode === 'start'
                     ? optimizedRequest.fileBytesBuff
                     : Buffer.concat([
-                          fileDoc.file || Buffer.alloc(0),
-                          optimizedRequest.fileBytesBuff,
-                      ]);
+                        fileDoc.file || Buffer.alloc(0),
+                        optimizedRequest.fileBytesBuff,
+                    ]);
 
             // Update document
             fileDoc.file = fileBuffer;
@@ -229,7 +233,7 @@ export class FileService {
             fileDoc.name = optimizedRequest.name;
             fileDoc.category = optimizedRequest.category;
             fileDoc.scaledImages = [];
-
+            fileDoc.needAuthorizationAtView = optimizedRequest.needAuthorizationAtView;
             this.setVolatility(
                 fileDoc,
                 optimizedRequest.volatile,
@@ -249,11 +253,13 @@ export class FileService {
         file: any,
         volatile?: boolean,
         durationMilliseconds?: number,
+        needAuthorizationAtView?: boolean,
     ): void {
         file.volatile = volatile ?? true;
+        file.needAuthorizationAtView = needAuthorizationAtView ?? false;
         file.expireAt = new Date(
             Date.now() +
-                (durationMilliseconds ?? DEFAULT_VOLATILITY_DURATION),
+            (durationMilliseconds ?? DEFAULT_VOLATILITY_DURATION),
         );
     }
 

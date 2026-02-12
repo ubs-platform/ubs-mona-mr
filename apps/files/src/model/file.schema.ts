@@ -53,5 +53,5 @@ export class FileModel {
 
 export type FileDoc = FileModel & Document;
 export const FileSchema = SchemaFactory.createForClass(FileModel);
-FileSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
+// FileSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 FileSchema.index({ name: 1, category: 1 }, { unique: true });

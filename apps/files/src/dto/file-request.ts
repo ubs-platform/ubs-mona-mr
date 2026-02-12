@@ -6,4 +6,5 @@ export interface FileRequest {
   category: string;
   volatile: boolean;
   durationMiliseconds: number;
+  needAuthorizationAtView: boolean;
 }
