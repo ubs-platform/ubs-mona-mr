@@ -70,23 +70,32 @@ export class ImageFileController {
         'text/x-shellscript',
     ];
     potentialMalicousExtensions = [
-        'exe',
-        'apk',
-        'sh',
-        'bat',
-        'ps1',
-        'js',
-        'bash',
-        'zsh',
-        'appimage',
-        'pisi',
-        'deb',
-        'yum',
-        'rpm',
+        'exe', // Windows executable
+        'apk', // Android application package
+        'sh', // Shell script
+        'bat', // Batch file
+        'ps1', // PowerShell script
+        'js', // JavaScript file
+        'bash', // Bash script
+        'zsh', // Zsh script
+        'appimage', // Linux executable
+        'pisi', // Pardus/Pisi Linux package
+        'deb', // Debian package
+        'yum', // Red Hat package
+        'rpm', // Red Hat package
+        'msi', // Windows installer
+        'vb', // Visual Basic script
+        'vbs', // Visual Basic script
+        'wsf', // Windows Script File
+        'cpl', // Windows Control Panel item
+        'scr', // Windows screensaver (executable)
     ];
+
+
     readonly mqServiceType: 'ENGINE5' | 'KAFKA' = process.env[
         'NX_MICROSERVICE_TYPE'
     ] as any;
+
     cacheClearTimeoutPtr: NodeJS.Timeout | null;
     constructor(
         private fservice: FileService,
@@ -192,6 +201,12 @@ export class ImageFileController {
         } else {
             return response.redirect('/assets/not-found.image.png', 303);
         }
+    }
+
+    @MessagePattern('ubs/files/exist')
+    async checkFileExistence(data: { category: string; name: string }) {
+        const fil = await this.fservice.findByName(data.category, data.name);
+        return fil != null;
     }
 
     async uploadFile1(
@@ -316,16 +331,5 @@ export class ImageFileController {
         if (this.potentialMalicousMimeTypes.includes(mimetype)) {
             throw new BadRequestException('potential-malicous-file');
         }
-
-        // for (
-        //     let index = 0;
-        //     index < this.potentialMalicousExtensions.length;
-        //     index++
-        // ) {
-        //     const ext = this.potentialMalicousExtensions[index];
-        //     if (file.originalname.endsWith('.' + ext)) {
-        //         throw new BadRequestException('potential-malicous-file');
-        //     }
-        // }
     }
 }
