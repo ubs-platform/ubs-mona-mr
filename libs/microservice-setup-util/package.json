@@ -8,8 +8,7 @@
     "homepage": "https://github.com/ubs-platform/ubs-mona-mr",
     "iksir": {
         "type": "LIBRARY",
-        "libraryMode": "PEER",
-        "buildSubFolder": "microservice-setup-util/src"
+        "libraryMode": "PEER"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"

@@ -7,6 +7,7 @@ export const CtResponse = "RESPONSE";
 export const CtListen = "LISTEN";
 export const CtClose = "CLOSE";
 
+
 export type CommandType =
   | typeof CtConnect
   | typeof CtConnectSuccess
@@ -24,5 +25,6 @@ export interface Payload {
   InstanceId?: string;
   MessageId?: string;
   ResponseOfMessageId?: string;
-  InstanceGroup?: string
+  InstanceGroup?: string;
+  AuthKey?: string;
 }
