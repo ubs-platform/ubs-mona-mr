@@ -8,9 +8,8 @@ import {
     CtEvent,
 } from './payload';
 import { encode, decode } from '@msgpack/msgpack';
-import { DynamicQueue } from './dynamic-queue';
+import { DynamicQueue } from '@ubs-platform/dynamic-queue';
 import { ReplaySubject } from 'rxjs';
-import { exec } from 'node:child_process';
 
 type ConnectionStatus = 'CONNECTING' | 'CLOSED' | 'CONNECTED';
 type CallbackFunction = (data: any) => any;

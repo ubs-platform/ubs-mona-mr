@@ -40,25 +40,27 @@ export class E5NestServer extends Server implements CustomTransportStrategy {
     ) {
         super();
         if (!instanceId) instanceId = 'nest_server' + randomUUID();
-
+        const tlsEnabled = process.env.E5_TLS_ENABLED === 'true';
         this.connection = Engine5Connection.create({
             host,
             port,
             instanceId,
             instanceGroup: instanceGroup || 'nest_servers',
-            tlsEnabled: process.env.E5_TLS_ENABLED === 'true',
+            tlsEnabled,
             authKey: process.env.E5_AUTH_SECRET || undefined,
-            tlsOptions: {
-                key: fs.readFileSync(
-                    process.env.E5_KEY_PATH || './certs/client.key',
-                ),
-                cert: fs.readFileSync(
-                    process.env.E5_CERT_PATH || './certs/client.crt',
-                ),
-                ca: fs.readFileSync(
-                    process.env.E5_CA_PATH || './certs/ca.crt',
-                ),
-            },
+            tlsOptions: tlsEnabled
+                ? {
+                      key: fs.readFileSync(
+                          process.env.E5_KEY_PATH || './certs/client.key',
+                      ),
+                      cert: fs.readFileSync(
+                          process.env.E5_CERT_PATH || './certs/client.crt',
+                      ),
+                      ca: fs.readFileSync(
+                          process.env.E5_CA_PATH || './certs/ca.crt',
+                      ),
+                  }
+                : undefined,
         });
     }
     /**
