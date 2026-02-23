@@ -22,7 +22,7 @@ export class E5NestClient {
             port,
             instanceId: instanceId || E5NestClient.appGlobalE5InstanceId,
             instanceGroup: instanceGroup || 'nest_clients',
-            tlsEnabled: true,
+            tlsEnabled: process.env.E5_TLS_ENABLED === 'true',
             authKey: process.env.E5_AUTH_SECRET || undefined,
             tlsOptions: {
                 key: fs.readFileSync(
