@@ -1,6 +1,6 @@
 services:
   ubs-files:
-    image: hcangunduz/ubs-mona-files:5.8.0
+    image: hcangunduz/ubs-mona-files:6.6.0
     ports:
       - 3360:3000
     environment:
@@ -16,7 +16,7 @@ services:
       - UBS_MAIN_PROCESS=true
       - UBS_MAIN_PROCESS_COUNT=3
   ubs-social:
-    image: hcangunduz/ubs-mona-social:5.8.0
+    image: hcangunduz/ubs-mona-social:6.6.0
     ports:
       - 3117:3000
     environment:
@@ -34,7 +34,7 @@ services:
       - UBS_MAIN_PROCESS_COUNT=3
 
   ubs-feedback:
-    image: hcangunduz/ubs-mona-feedback:5.8.0
+    image: hcangunduz/ubs-mona-feedback:6.6.0
     ports:
       - 3091:3091
     environment:
@@ -50,7 +50,7 @@ services:
       - PORT=3091
 
   ubs-notify:
-    image: 'hcangunduz/ubs-mona-notify:5.8.0'
+    image: 'hcangunduz/ubs-mona-notify:6.6.0
     ports:
       - 3169:3169
     environment:
@@ -71,7 +71,7 @@ services:
       # - UNOTIFY_MAIL_SERVER_PW=${UNOTIFY_MAIL_SERVER_PW}
       - UNOTIFY_MAIL_CERT_IGNORE_SSL=true
   ubs-users:
-    image: 'hcangunduz/ubs-mona-users:5.8.0'
+    image: 'hcangunduz/ubs-mona-users:6.6.0
     ports:
       - 3000:3000
       - 13001:13001
