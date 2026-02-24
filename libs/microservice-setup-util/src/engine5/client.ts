@@ -3,6 +3,7 @@ import { Engine5Connection } from './connection';
 import { from, Observable } from 'rxjs';
 import { randomUUID } from 'crypto';
 import { exec } from 'child_process';
+import * as fs from 'fs';
 
 interface E5NestClientConnectionOptions {
     host: string;
@@ -15,15 +16,30 @@ export class E5NestClient {
     static appGlobalE5InstanceId = 'nest_client' + randomUUID();
     connection: Engine5Connection;
     constructor(private connectionInfo: E5NestClientConnectionOptions) {
-        const { host, port, instanceId, instanceGroup } = connectionInfo
-        this.connection = Engine5Connection.create(
+        const { host, port, instanceId, instanceGroup } = connectionInfo;
+        const tlsEnabled = process.env.E5_TLS_ENABLED === 'true';
+        this.connection = Engine5Connection.create({
             host,
             port,
-            instanceGroup || instanceId || E5NestClient.appGlobalE5InstanceId,
-            E5NestClient.appGlobalE5InstanceId,
-        );
-        this.connection
-            .init()
+            instanceId: instanceId || E5NestClient.appGlobalE5InstanceId,
+            instanceGroup: instanceGroup || 'nest_clients',
+            tlsEnabled,
+            authKey: process.env.E5_AUTH_SECRET || undefined,
+            tlsOptions: tlsEnabled
+                ? {
+                      key: fs.readFileSync(
+                          process.env.E5_KEY_PATH || './certs/client.key',
+                      ),
+                      cert: fs.readFileSync(
+                          process.env.E5_CERT_PATH || './certs/client.crt',
+                      ),
+                      ca: fs.readFileSync(
+                          process.env.E5_CA_PATH || './certs/ca.crt',
+                      ),
+                  }
+                : undefined,
+        });
+        this.connection.init();
     }
 
     subscribeToResponseOf() {
@@ -31,7 +47,7 @@ export class E5NestClient {
     }
 
     // async connect(): Promise<any> {
-    //     return 
+    //     return
     // }
     unwrap() {
         return this.connection as any;
@@ -41,7 +57,7 @@ export class E5NestClient {
         pattern: any,
         data: TInput,
     ): Observable<TResult> {
-        console.info("Sending event: " + pattern)
+        console.info('Sending event: ' + pattern);
         return from(
             this.connection.sendEvent(pattern, data),
         ) as Observable<TResult>;

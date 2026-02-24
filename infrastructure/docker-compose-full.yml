@@ -91,10 +91,14 @@ services:
       - UBS_MAIN_PROCESS_COUNT=3
 
   engine5:
-    image: hcangunduz/engine5:0.0.7-alpha
+    image: hcangunduz/engine5:0.0.11-alpha
     ports:
       - 3535:3535
-  
+    environment:
+      - E5_PORT=3535
+      - ENABLE_TLS=false
+      - REQUIRE_AUTH=false
+      
   my-mongodb:
     image: mongo:4.2.3-bionic
     container_name: my-mongodb
