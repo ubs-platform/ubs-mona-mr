@@ -1,11 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { SearchRequest, SearchResult } from '@ubs-platform/crud-base-common';
-import { FilterQuery, HydratedDocument, Model, ObjectId } from 'mongoose';
+import { FilterQuery } from 'mongoose';
 import { BaseCrudKlass } from './base-crud-klass';
-import { EntityOwnershipDTO, UserAuthBackendDTO } from '@ubs-platform/users-common';
+import { UserAuthBackendDTO } from '@ubs-platform/users-common';
 import { IRepositoryWrap } from './repository-wrap';
-import { EntityOwnership } from 'apps/users/src/domain/entity-ownership.schema';
+
 
 export abstract class BaseCrudService<
     MODEL,
@@ -98,7 +96,9 @@ export abstract class BaseCrudService<
     }
 
     async remove(id: ID, ruser?: UserAuthBackendDTO): Promise<OUTPUT> {
-        let ac = await this.m.findById(id)!;
+        let ac = (await this.m.findById(id)) as MODEL;
+        // awaited tipine gerçekten gerek var mıydı.... 😭😭😭
+        await this.beforeRemove(ac, ruser);
         await this.m.deleteById(id);
         return this.toOutput(ac as MODEL);
     }
@@ -111,6 +111,10 @@ export abstract class BaseCrudService<
         mode: 'EDIT' | 'CREATE',
         user?: UserAuthBackendDTO,
     ) {}
+
+    async beforeRemove(model: MODEL, user?: UserAuthBackendDTO) {
+    }
+
 }
 
 // return BaseCrudService;
