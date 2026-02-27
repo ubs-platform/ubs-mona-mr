@@ -3,8 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SearchRequest, SearchResult } from '@ubs-platform/crud-base-common';
 import { FilterQuery, HydratedDocument, Model, ObjectId } from 'mongoose';
 import { BaseCrudKlass } from './base-crud-klass';
-import { UserAuthBackendDTO } from '@ubs-platform/users-common';
+import { EntityOwnershipDTO, UserAuthBackendDTO } from '@ubs-platform/users-common';
 import { IRepositoryWrap } from './repository-wrap';
+import { EntityOwnership } from 'apps/users/src/domain/entity-ownership.schema';
 
 export abstract class BaseCrudService<
     MODEL,
@@ -13,10 +14,10 @@ export abstract class BaseCrudService<
     OUTPUT,
     SEARCH,
 > extends BaseCrudKlass {
+
     constructor(public m: IRepositoryWrap<MODEL, ID, any>) {
         super();
     }
-
     abstract generateNewModel(): MODEL;
     abstract getIdFieldNameFromInput(i: INPUT): ID;
     abstract getIdFieldNameFromModel(i: MODEL): ID;
@@ -71,11 +72,11 @@ export abstract class BaseCrudService<
     async create(input: INPUT, user?: UserAuthBackendDTO): Promise<OUTPUT> {
         let newModel = this.generateNewModel();
         await this.moveIntoModel(newModel, input);
-        await this.beforeCreateOrEdit(newModel, 'CREATE', user);
+        await this.beforeCreateOrEdit(newModel, input, 'CREATE', user);
         await this.m.saveModel(newModel);
         // await (newModel as HydratedDocument<MODEL, {}, unknown>).save();
         const out = await this.toOutput(newModel);
-        await this.afterCreate(out, user);
+        await this.afterCreate(out, input, user);
         return out;
     }
 
@@ -89,7 +90,7 @@ export abstract class BaseCrudService<
             input,
         );
 
-        await this.beforeCreateOrEdit(newModel, 'EDIT', user);
+        await this.beforeCreateOrEdit(newModel, input, 'EDIT', user);
 
         await this.m.saveModel(newModel);
 
@@ -102,10 +103,11 @@ export abstract class BaseCrudService<
         return this.toOutput(ac as MODEL);
     }
 
-    async afterCreate(m: OUTPUT, user?: UserAuthBackendDTO) {}
+    async afterCreate(m: OUTPUT, input: INPUT, user?: UserAuthBackendDTO) {}
 
     async beforeCreateOrEdit(
-        i: MODEL,
+        model: MODEL,
+        input: INPUT,
         mode: 'EDIT' | 'CREATE',
         user?: UserAuthBackendDTO,
     ) {}
