@@ -3,19 +3,24 @@ import * as fs from 'node:fs';
 import * as fsPromises from 'node:fs/promises';
 import { IpBlockerService } from './ip-blocker.service';
 import { parseSingleLine } from './nginx-access-log-regex';
+import { getIpBlockerConfig } from './ip-blocker.config';
 
 @Injectable()
 export class LogWatcherService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(LogWatcherService.name);
+  private readonly config = getIpBlockerConfig();
   private watcher?: fs.FSWatcher;
   private readTimeout?: NodeJS.Timeout;
 
   constructor(private readonly ipBlockerService: IpBlockerService) {}
 
   onModuleInit(): void {
-    const accessLogPath =
-      process.env['IP_BLOCKER_ACCESS_LOG_PATH'] ??
-      process.env['NGINX_ACCESS_LOG_PATH'];
+    if (!this.config.logWatcherEnabled) {
+      this.logger.log('Log watcher is disabled by configuration.');
+      return;
+    }
+
+    const accessLogPath = this.config.accessLogPath;
 
     if (!accessLogPath) {
       this.logger.warn(
@@ -45,7 +50,7 @@ export class LogWatcherService implements OnModuleInit, OnModuleDestroy {
             error instanceof Error ? error.message : String(error);
           this.logger.warn(`Failed to process access log line: ${message}`);
         });
-      }, 100);
+      }, this.config.logReadDebounceMs);
     });
 
     this.logger.log(`Log watcher started for: ${accessLogPath}`);

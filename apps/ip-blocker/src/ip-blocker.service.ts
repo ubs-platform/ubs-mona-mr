@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ActiveBan, ActiveBanDoc, BanStatus } from './model/entity-property.schema';
 import { FirewallAdapterService } from './firewall-adapter.service';
+import { getIpBlockerConfig } from './ip-blocker.config';
 
 const PENALTY_DURATION_BASE_MS = 5000;
 const PENALTY_DURATION_MAX_MS = 7 * 24 * 60 * 60 * 1000;
@@ -27,6 +28,7 @@ export interface HealthResult {
 @Injectable()
 export class IpBlockerService implements OnModuleInit {
   private readonly logger = new Logger(IpBlockerService.name);
+  private readonly config = getIpBlockerConfig();
 
   constructor(
     @InjectModel(ActiveBan.name)
@@ -35,6 +37,11 @@ export class IpBlockerService implements OnModuleInit {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    if (!this.config.startupSyncEnabled) {
+      this.logger.log('Startup sync is disabled by configuration.');
+      return;
+    }
+
     await this.syncStartupState();
   }
 

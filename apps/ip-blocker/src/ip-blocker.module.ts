@@ -5,13 +5,13 @@ import { IpBlockerService } from './ip-blocker.service';
 import { ActiveBan, ActiveBanSchema } from './model/entity-property.schema';
 import { FirewallAdapterService } from './firewall-adapter.service';
 import { LogWatcherService } from './log-watcher.service';
+import { getIpBlockerConfig } from './ip-blocker.config';
+
+const ipBlockerConfig = getIpBlockerConfig();
 
 @Module({
   imports: [
-    MongooseModule.forRoot(
-      process.env['IP_BLOCKER_MONGODB_URI'] ??
-        'mongodb://localhost:27017/ip-blocker',
-    ),
+    MongooseModule.forRoot(ipBlockerConfig.mongodbUri),
     MongooseModule.forFeature([
       {
         name: ActiveBan.name,

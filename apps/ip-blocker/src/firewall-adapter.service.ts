@@ -1,20 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import { getIpBlockerConfig } from './ip-blocker.config';
 
 const execAsync = promisify(exec);
 
 @Injectable()
 export class FirewallAdapterService {
   private readonly logger = new Logger(FirewallAdapterService.name);
-
-  private get isFirewallEnabled(): boolean {
-    const value = process.env['IP_BLOCKER_FIREWALL_ENABLED'];
-    if (value == null) {
-      return true;
-    }
-    return value.toLowerCase() !== 'false';
-  }
+  private readonly config = getIpBlockerConfig();
 
   async banIp(ipAddress: string): Promise<void> {
     await this.runIptables(`iptables -I FORWARD -s ${ipAddress} -j DROP`);
@@ -25,7 +19,7 @@ export class FirewallAdapterService {
   }
 
   private async runIptables(command: string): Promise<void> {
-    if (!this.isFirewallEnabled) {
+    if (!this.config.firewallEnabled) {
       this.logger.log(`Firewall disabled, skipped: ${command}`);
       return;
     }
