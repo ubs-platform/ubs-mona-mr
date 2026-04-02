@@ -28,6 +28,7 @@
     "xr:extend-lib": "node ./tools/xr.js extend-lib",
     "rebuild-xr": "cd ./tools/src && tsc",
     "start": "tools/devserve.sh",
+    "start-nowatch": "tools/devnowatch.sh",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/apps/ubs-mona-mr/main",
