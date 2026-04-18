@@ -60,7 +60,7 @@ export class EntityOwnershipGroupController {
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         // Only users with global admin role can create EOGs
-        this.assertHasUserGroupCapability(currentUser, id, ['OWNER', "EDITOR", "META_EDIT", "ONLY_EDIT_MEMBER_CAPABILITIES", "VIEWER"]);
+        await this.assertHasUserGroupCapability(currentUser, id, ['OWNER', "EDITOR", "META_EDIT", "ONLY_EDIT_MEMBER_CAPABILITIES", "VIEWER"]);
         return await this.eogService.getByIdPublic(id);
     }
 
@@ -133,7 +133,7 @@ export class EntityOwnershipGroupController {
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         // Only users with global admin role can create EOGs
-        this.assertHasUserGroupCapability(currentUser, eogMetaDto.id, ['OWNER', "EDITOR", "META_EDIT"]);
+        await this.assertHasUserGroupCapability(currentUser, eogMetaDto.id, ['OWNER', "EDITOR", "META_EDIT"]);
 
         return await this.eogService.editMeta(eogMetaDto);
     }
