@@ -91,6 +91,15 @@
         "tsConfigPath": "apps/files/tsconfig.app.json"
       }
     },
+    "ip-blocker": {
+      "type": "application",
+      "root": "apps/ip-blocker",
+      "entryFile": "main",
+      "sourceRoot": "apps/ip-blocker/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/ip-blocker/tsconfig.app.json"
+      }
+    },
     "loadbalanced-proxy": {
       "type": "library",
       "root": "libs/loadbalanced-proxy",
