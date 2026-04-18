@@ -3,29 +3,29 @@ import { UserMessage } from '../model/user-message.model';
 import { UserMessageService } from '../service/user-message.service';
 import { ClientKafka, MessagePattern } from '@nestjs/microservices';
 import {
-    BaseCrudControllerGenerator,
+    BaseCrudController,
     ControllerConfiguration,
+    CrudControllerConfig,
 } from '@ubs-platform/crud-base';
 import {
     IUserMessageDto,
     IUserMessageSearch,
 } from '@ubs-platform/feedback-common';
 
-const config: ControllerConfiguration = {
+@Controller('user-message')
+@CrudControllerConfig({
     authorization: {
         ADD: { needsAuthenticated: false },
         ALL: { roles: ['ADMIN'] },
     },
-};
-
-@Controller('user-message')
-export class UserMessageController extends BaseCrudControllerGenerator<
+})
+export class UserMessageController extends BaseCrudController<
     UserMessage,
     string,
     IUserMessageDto,
     IUserMessageDto,
     IUserMessageSearch
->(config) {
+> {
     constructor(
         private userMsgService: UserMessageService,
         @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,

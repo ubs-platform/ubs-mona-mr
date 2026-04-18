@@ -5,19 +5,17 @@ import {
     EmailTemplateDTO,
     EmailTemplateSearch,
 } from '@ubs-platform/notify-common';
-import { BaseCrudControllerGenerator } from '@ubs-platform/crud-base';
+import { BaseCrudController, CrudControllerConfig } from '@ubs-platform/crud-base';
 
-const config = {
-    authorization: { ALL: { needsAuthenticated: true, roles: ['ADMIN'] } },
-};
 @Controller('email-template')
-export class EmailTemplateController extends BaseCrudControllerGenerator<
+@CrudControllerConfig({ authorization: { ALL: { needsAuthenticated: true, roles: ['ADMIN'] } } })
+export class EmailTemplateController extends BaseCrudController<
     EmailTemplate,
     string,
     EmailTemplateDTO,
     EmailTemplateDTO,
     EmailTemplateSearch
->(config) {
+> {
     constructor(service: EmailTemplateService) {
         super(service);
     }
