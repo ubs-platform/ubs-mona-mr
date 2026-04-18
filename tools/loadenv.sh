@@ -1,6 +1,6 @@
 for var in "$@"; do
     if [ -f $var ]; then
-        export $(cat $var | xargs)
+        export $(cat $var | grep -v '^#' | xargs)
     else
         echo "File $var does not exist. Skipping"
     fi
