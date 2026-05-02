@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { Project } from 'ts-morph';
+import { ClassDeclaration, Project } from 'ts-morph';
 import {
     RestApiCollection,
     RestApiMethod,
@@ -89,7 +89,25 @@ export class ControllerScanner {
             // const collection : RestApiCollection = {
             //     methods:
             // }
-
+            // const modules : ClassDeclaration[] = typescriptFile.getClasses().filter((c) => c.getDecorator('Module'));
+            // const controllersFromModules = modules.flatMap((m) => {
+            //     const controllerDecorator = m.getDecorator('Module');
+            //     const controllersArray = controllerDecorator
+            //         ?.(getArguments()[0] as any)
+            //         .getProperty('controllers')
+            //         ?.getInitializer()
+            //         ?.asKindOrThrow(
+            //             246, // SyntaxKind.ArrayLiteralExpression
+            //         );
+            //     if (controllersArray) {
+            //         return controllersArray
+            //             .getElements()
+            //             .map((e) => e.getText().replace(/['"`]/g, ''));
+            //     }
+            //     return [];
+            // });
+            
+            
             typescriptFile.getClasses().forEach((tsClass) => {
                 const itIsController = tsClass.getDecorator('Controller');
 
