@@ -18,9 +18,10 @@ type InlineOpts = {
 
 export function inlineTypeText(
   type: Type,
-  ctxNode: Node,
+  ctxNode: Node | null | undefined,
   opts: InlineOpts = {}
 ): string {
+  const ctx = ctxNode ?? undefined;
   const {
     maxDepth = 2,
     unwrapPromises = false,
@@ -36,10 +37,10 @@ export function inlineTypeText(
       if (awaited) t = awaited;
     }
     if (t.isString() || t.isNumber() || t.isBoolean() || t.isUndefined() || t.isNull() || t.isEnumLiteral() || t.isEnum() || t.isStringLiteral() || t.isNumberLiteral() || t.isBooleanLiteral()) {
-      return t.getText(ctxNode, flags);
+      return t.getText(ctx, flags);
     }
     // Derinlik biterse normal getText
-    if (depth < 0) return t.getText(ctxNode, flags);
+    if (depth < 0) return t.getText(ctx, flags);
 
     // Union / Intersection
     if (t.isUnion())
@@ -66,7 +67,7 @@ export function inlineTypeText(
     }
 
     // Döngü yakalama
-    if (seen.has(t)) return t.getText(ctxNode, flags);
+    if (seen.has(t)) return t.getText(ctx, flags);
     seen.add(t);
 
     // Sınıf / interface / type alias gibi adlı tiplerde özellikleri açalım
@@ -113,7 +114,7 @@ export function inlineTypeText(
       });
 
       // Eğer hiç alan yoksa, fallback: normal yaz
-      if (fields.length === 0) return t.getText(ctxNode, flags);
+      if (fields.length === 0) return t.getText(ctx, flags);
 
       const parts = fields.map((p) => {
         const name = p.getName();
@@ -143,7 +144,7 @@ export function inlineTypeText(
     }
 
     // Diğer her şey için default yazım
-    return t.getText(ctxNode, flags);
+    return t.getText(ctx, flags);
   }
 
   return go(type, maxDepth);

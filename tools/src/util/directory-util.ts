@@ -56,29 +56,55 @@ export class DirectoryUtil {
         let current: string | null | undefined = folderPath;
         while (current) {
             try {
-                const fileList = await FileSystem.readdir(current);
-                for (let index = 0; index < fileList.length; index++) {
-                    const fileName = fileList[index];
-                    const fullPath = path.join(current, fileName);
-                    const fileInfo = await FileSystem.stat(fullPath);
-                    if (fileInfo.isDirectory()) {
-                        onQueue.push(fullPath);
-                    } else if (fileInfo.isFile()) {
-                        await fileAction(fullPath);
+                if (current.includes("/node_modules/") || current.includes("/.angular/") || current.includes("/.nx/")) {
+                } else {
+                    const fileList = await FileSystem.readdir(current);
+                    for (let index = 0; index < fileList.length; index++) {
+                        const fileName = fileList[index];
+                        const fullPath = path.join(current, fileName);
+                        const fileInfo = await FileSystem.stat(fullPath);
+                        if (fileInfo.isDirectory()) {
+                            onQueue.push(fullPath);
+                        } else if (fileInfo.isFile()) {
+                            await fileAction(fullPath);
+                        }
                     }
                 }
+
             } catch (error) {
                 console.warn(
                     strColor(
                         COLORS.BgYellow,
                         'An error occured while reading file: ' +
-                            current +
-                            '\nSo we skip this',
+                        current +
+                        '\nSo we skip this',
                     ),
                 );
             }
 
             current = onQueue.pop();
         }
+    }
+
+
+    static async listFolderNamesNoRecursive(folderPath: string) {
+        const folderNames: string[] = [];
+        
+        return FileSystem.readdir(folderPath, { withFileTypes: true }).then((entries) => {
+            for (const entry of entries) {
+                if (entry.isDirectory()) {
+                    folderNames.push(entry.name);
+                }
+            }
+            return folderNames;
+        }).catch((err) => {
+            console.error(
+                strColor(
+                    COLORS.BgRed,
+                    'Could not read directory: ' + folderPath + '\n' + err,
+                ),
+            );
+            throw err;
+        });
     }
 }

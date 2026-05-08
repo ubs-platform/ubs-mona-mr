@@ -16,6 +16,7 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": false,
+    "types": ["node"]
   },
   "exclude": ["dist/**/*", "node_modules", "**/*.spec.ts"],
 }

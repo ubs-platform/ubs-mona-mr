@@ -1,6 +1,7 @@
-import { ParameterDeclaration, SourceFile, StringLiteral, Symbol, Type } from "ts-morph";
+import { Decorator, ParameterDeclaration, SourceFile, StringLiteral, Symbol, Type } from "ts-morph";
 import { RestPrimitiveTypeInfo } from "./api.data.js";
 import { ts } from "ts-morph";
+import path from "path";
 
 export class TypescriptNestUtils {
 
@@ -29,7 +30,7 @@ export class TypescriptNestUtils {
       if (decl) {
         const sourceFile = decl.getSourceFile();
         if (!sourceFile.isFromExternalLibrary()) {
-          importedFrom = sourceFile.getFilePath();
+          importedFrom = this.pathRelativeToRootProject(sourceFile.getFilePath());
         } else {
           importedFrom = sourceFile.getBaseNameWithoutExtension();
         }
@@ -73,7 +74,7 @@ export class TypescriptNestUtils {
     ];
   }
 
-  private static propertiesFromType(type) {
+  public static propertiesFromType(type) {
     const properties = type.getProperties();
     return properties.map((prop) => {
       const propName = prop.getName();
@@ -87,7 +88,7 @@ export class TypescriptNestUtils {
           if (decl) {
             const sourceFile = decl.getSourceFile();
             if (!sourceFile.isFromExternalLibrary()) {
-              importedFrom = sourceFile.getFilePath();
+              importedFrom = TypescriptNestUtils.pathRelativeToRootProject(sourceFile.getFilePath());
             }
           }
         }
@@ -102,7 +103,11 @@ export class TypescriptNestUtils {
     });
   }
 
-  public static firstParameterAsString(restMethodDecorator) {
+  private static pathRelativeToRootProject(sourceFile: string): string | undefined {
+    return path.relative(process.cwd(), sourceFile);
+  }
+
+  public static firstParameterAsString(restMethodDecorator: Decorator) {
     const firstParam = restMethodDecorator.getArguments()[0];
     let path = "";
     if (firstParam instanceof StringLiteral) {

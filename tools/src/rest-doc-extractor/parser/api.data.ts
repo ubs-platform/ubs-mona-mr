@@ -10,20 +10,22 @@ export interface RestPrimitiveTypeInfo {
 
 export interface RestObjectTypeInfo {
   // parameterName: string;
-  typeNode: TsMorph.Type,
-  typeName: string;
-  importedFrom: string;
+  typeNode: TsMorph.Type | null,
+  typeName: string | null;
+  importedFrom: string | null;
   typeExpandedText: string;
 }
 
 export interface RestApiMethod {
   path: string;
+  applicationModuleName: string;
   methodName: string;
   methodType: string; // "Get" | "Put" | "Delete" | "Post";
+  description?: string;
   responseType?: RestObjectTypeInfo;
   queryParameters: RestPrimitiveTypeInfo[];
   pathParameters: RestPrimitiveTypeInfo[];
-  requestBody: RestObjectTypeInfo;
+  requestBody?: RestObjectTypeInfo;
 }
 
 export interface RestApiCollection {

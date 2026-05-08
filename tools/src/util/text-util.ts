@@ -26,6 +26,8 @@ export class TextUtil {
     ) {
         await DirectoryUtil.circulateFilesRecursive(path, async (filePath) => {
             let content = await FileSystem.readFile(filePath, 'utf8');
+            let changed = false;
+
             for (let index = 0; index < replaceTextRecipes.length; index++) {
                 const replaceRecipe = replaceTextRecipes[index];
                 let replaceWith: ReplaceInstruction = '';
@@ -39,9 +41,11 @@ export class TextUtil {
                         replaceRecipe.finding,
                         replaceWith,
                     );
+                    changed = true;
                 }
             }
-            await FileSystem.writeFile(filePath, content, 'utf8');
+            if (changed)
+                await FileSystem.writeFile(filePath, content, 'utf8');
         });
     }
 
