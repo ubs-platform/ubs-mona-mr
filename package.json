@@ -61,6 +61,7 @@
     "@types/bcrypt": "^5.0.2",
     "axios": "^1.7.9",
     "bcrypt": "^6.0.0",
+    "commander": "^14.0.3",
     "comment-json": "^4.2.5",
     "crypto-promise": "^2.1.0",
     "detect-port": "^2.1.0",
