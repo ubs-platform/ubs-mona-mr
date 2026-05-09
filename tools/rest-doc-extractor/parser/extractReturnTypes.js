@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.inlineTypeText = inlineTypeText;
 const ts_morph_1 = require("ts-morph");
 function inlineTypeText(type, ctxNode, opts = {}) {
+    const ctx = ctxNode ?? undefined;
     const { maxDepth = 2, unwrapPromises = false, includePrivate = false, flags = ts_morph_1.ts.TypeFormatFlags.NoTruncation, } = opts;
     const seen = new Set();
     function go(t, depth) {
@@ -12,10 +13,10 @@ function inlineTypeText(type, ctxNode, opts = {}) {
                 t = awaited;
         }
         if (t.isString() || t.isNumber() || t.isBoolean() || t.isUndefined() || t.isNull() || t.isEnumLiteral() || t.isEnum() || t.isStringLiteral() || t.isNumberLiteral() || t.isBooleanLiteral()) {
-            return t.getText(ctxNode, flags);
+            return t.getText(ctx, flags);
         }
         if (depth < 0)
-            return t.getText(ctxNode, flags);
+            return t.getText(ctx, flags);
         if (t.isUnion())
             return t
                 .getUnionTypes()
@@ -36,7 +37,7 @@ function inlineTypeText(type, ctxNode, opts = {}) {
             return `[${elems.join(", ")}]`;
         }
         if (seen.has(t))
-            return t.getText(ctxNode, flags);
+            return t.getText(ctx, flags);
         seen.add(t);
         const sym = t.getSymbol() ?? t.getAliasSymbol();
         const decls = sym?.getDeclarations() ?? [];
@@ -65,7 +66,7 @@ function inlineTypeText(type, ctxNode, opts = {}) {
                 return true;
             });
             if (fields.length === 0)
-                return t.getText(ctxNode, flags);
+                return t.getText(ctx, flags);
             const parts = fields.map((p) => {
                 const name = p.getName();
                 const valueDecl = p.getValueDeclaration() ?? p.getDeclarations()[0] ?? ctxNode;
@@ -88,7 +89,7 @@ function inlineTypeText(type, ctxNode, opts = {}) {
             const ret = go(sig.getReturnType(), depth - 1);
             return `(${params}) => ${ret}`;
         }
-        return t.getText(ctxNode, flags);
+        return t.getText(ctx, flags);
     }
     return go(type, maxDepth);
 }

@@ -12,7 +12,7 @@ class RestApiAngularClientGen {
     static async generate(workDir, paket, exportPath) {
         const mainPath = workDir;
         console.info('Project directory: ' + mainPath);
-        const byProject = controller_scanner_1.ControllerScanner.scanAllControllers(mainPath);
+        const byProject = await controller_scanner_1.ControllerScanner.scanAllControllers(mainPath);
         const exportPathEdited = exportPath ? exportPath : `${mainPath}/xr-generated/angular-services/${paket.packageObject.name}`;
         await directory_util_1.DirectoryUtil.ensureDirectory(exportPathEdited);
         const projKeys = Object.keys(byProject);

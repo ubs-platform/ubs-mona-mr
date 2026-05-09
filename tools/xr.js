@@ -1,89 +1,75 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const commander_1 = require("commander");
 const colors_1 = require("./util/colors");
 const all_libraries_builder_1 = require("./operation/all-libraries-builder");
 const iksir_package_1 = require("./data/iksir-package");
 const nest_cli_wrap_1 = require("./operation/nest-cli-wrap");
 const rest_api_doc_gen_1 = require("./operation/rest-api-doc-gen");
 const rest_api_angular_client_gen_1 = require("./operation/rest-api-angular-client-gen");
+const rest_api_nestjs_client_gen_1 = require("./operation/rest-api-nestjs-client-gen");
 console.info(`
 ▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖▗▄▄▖ 
 ▐▛▚▞▜▌▐▌ ▐▌▐▛▚▖▐▌▐▌ ▐▌ ▝▚▞▘ ▐▌ ▐▌
 ▐▌  ▐▌▐▌ ▐▌▐▌ ▝▜▌▐▛▀▜▌  ▐▌  ▐▛▀▚▖
 ▐▌  ▐▌▝▚▄▞▘▐▌  ▐▌▐▌ ▐▌▗▞▘▝▚▖▐▌ ▐▌
-MonaXr for Mona5    H. Can Gündüz`);
-const actionList = {
-    'generate-ngx-services': {
-        info: "Generates Angular HttpClient services from REST API controllers in the current project",
-        action: async (workDir, targetDirectory) => {
-            const paket = await iksir_package_1.IksirPackage.scanRoot(workDir);
-            await rest_api_angular_client_gen_1.RestApiAngularClientGen.generate(workDir, paket, targetDirectory);
-        },
-    },
-    'generate-rest-doc': {
-        info: 'Generates REST API documentation from source codes',
-        action: async () => {
-            await rest_api_doc_gen_1.RestApiDocGen.generate();
-        },
-    },
-    'publish-libs': {
-        info: 'Builds libraries and pushes into NPM Registry',
-        action: async (workDir) => {
-            const paket = await iksir_package_1.IksirPackage.scanRoot(workDir);
-            const paketBuilder = new all_libraries_builder_1.AllLibrariesBuilder(paket);
-            await paketBuilder.initiateBuildPublish({ publishNpm: true });
-        },
-    },
-    'patch-libs': {
-        info: "Builds libraries and patches them into another directory (like your project's node_modules directory)",
-        action: async (workDir, targetDirectory) => {
-            if (targetDirectory) {
-                const paket = await iksir_package_1.IksirPackage.scanRoot(workDir);
-                const paketBuilder = new all_libraries_builder_1.AllLibrariesBuilder(paket);
-                await paketBuilder.initiateBuildPublish({
-                    patchAnotherDirectory: true,
-                    patchTarget: targetDirectory,
-                });
-            }
-            else {
-                throw 'Target directory is needed. If you want to patch your another project that uses Mona, that directory should end with node_modules. More details, use "npm run xr:help"';
-            }
-        },
-    },
-    'extend-lib': {
-        info: 'Makes a nestjs library compitable for xr (extend-lib ./libs/library-name)',
-        action: async (workDir, targetDirectory) => {
-            if (targetDirectory) {
-                const a = await new nest_cli_wrap_1.NestJsCliWrap(workDir);
-                await a.checkPrefixIsSame();
-                await a.extendLib(targetDirectory);
-            }
-            else {
-                throw "Target directory is needed. Usually it is 'libs/library-name'";
-            }
-        },
-    },
-    help: {
-        info: 'Prints actions and parameters that can be used for monaxr command',
-        action: async (params) => {
-            console.info('MonaXr  is a tool that helps compile and publish their auxiliary libraries safely and quickly. This is not a replacement for "Nestjs CLI". It just helps with more orderly development in the Mona repository');
-            console.info('Usage: npm run xr [COMMAND] [Extra Parameters]');
-            console.info('Available Commands:\n', Object.entries(actionList)
-                .map(([key, val]) => '\t' + key + ' => ' + val.info)
-                .join('\n'));
-        },
-    },
-};
-const [node, file, action, ...parameters] = process.argv;
+MonaXr for Mona5            H.C.G`);
+const program = new commander_1.Command();
 const workingDirectory = process.cwd();
+program
+    .name('xr')
+    .description('MonaXr — Mona5 için yardımcı geliştirme aracı')
+    .version('1.0.0');
+program
+    .command('generate-ngx-services [targetDirectory]')
+    .description('Projedeki REST API controller\'larından Angular HttpClient servisleri üretir')
+    .action(async (targetDirectory) => {
+    const paket = await iksir_package_1.IksirPackage.scanRoot(workingDirectory);
+    await rest_api_angular_client_gen_1.RestApiAngularClientGen.generate(workingDirectory, paket, targetDirectory);
+});
+program
+    .command('generate-nestjs-services [targetDirectory]')
+    .description('Projedeki REST API controller\'larından NestJS HttpService client servisleri üretir')
+    .action(async (targetDirectory) => {
+    const paket = await iksir_package_1.IksirPackage.scanRoot(workingDirectory);
+    await rest_api_nestjs_client_gen_1.RestApiNestjsClientGen.generate(workingDirectory, paket, targetDirectory);
+});
+program
+    .command('generate-rest-doc')
+    .description('Kaynak kodlardan REST API dokümantasyonu üretir')
+    .action(async () => {
+    await rest_api_doc_gen_1.RestApiDocGen.generate();
+});
+program
+    .command('publish-libs')
+    .description('Kütüphaneleri derler ve NPM Registry\'ye gönderir')
+    .action(async () => {
+    const paket = await iksir_package_1.IksirPackage.scanRoot(workingDirectory);
+    const paketBuilder = new all_libraries_builder_1.AllLibrariesBuilder(paket);
+    await paketBuilder.initiateBuildPublish({ publishNpm: true });
+});
+program
+    .command('patch-libs <targetDirectory>')
+    .description('Kütüphaneleri derler ve başka bir dizine (ör. node_modules) kopyalar')
+    .action(async (targetDirectory) => {
+    const paket = await iksir_package_1.IksirPackage.scanRoot(workingDirectory);
+    const paketBuilder = new all_libraries_builder_1.AllLibrariesBuilder(paket);
+    await paketBuilder.initiateBuildPublish({
+        patchAnotherDirectory: true,
+        patchTarget: targetDirectory,
+    });
+});
+program
+    .command('extend-lib <targetDirectory>')
+    .description('NestJS kütüphanesini xr ile uyumlu hale getirir (ör. extend-lib ./libs/library-name)')
+    .action(async (targetDirectory) => {
+    const a = new nest_cli_wrap_1.NestJsCliWrap(workingDirectory);
+    await a.checkPrefixIsSame();
+    await a.extendLib(targetDirectory);
+});
 console.info('Working directory is ' + workingDirectory);
-let actionObj = actionList[action];
-if (actionObj == null) {
-    console.warn((0, colors_1.strColor)(colors_1.COLORS.FgYellow, `${action} action is not found. You can review the available commands`));
-    actionObj = actionList['help'];
-}
-actionObj
-    .action(workingDirectory, ...parameters)
+program
+    .parseAsync(process.argv)
     .then(() => {
     console.info((0, colors_1.strColor)(colors_1.COLORS.FgGreen, 'It seems there is no problem'));
 })

@@ -1,7 +1,11 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TypescriptNestUtils = void 0;
 const ts_morph_1 = require("ts-morph");
+const path_1 = __importDefault(require("path"));
 class TypescriptNestUtils {
     static extractFromPromise(t) {
         const returnTypeName = t.getSymbol()?.getName();
@@ -23,7 +27,7 @@ class TypescriptNestUtils {
             if (decl) {
                 const sourceFile = decl.getSourceFile();
                 if (!sourceFile.isFromExternalLibrary()) {
-                    importedFrom = sourceFile.getFilePath();
+                    importedFrom = this.pathRelativeToRootProject(sourceFile.getFilePath());
                 }
                 else {
                     importedFrom = sourceFile.getBaseNameWithoutExtension();
@@ -66,7 +70,7 @@ class TypescriptNestUtils {
                     if (decl) {
                         const sourceFile = decl.getSourceFile();
                         if (!sourceFile.isFromExternalLibrary()) {
-                            importedFrom = sourceFile.getFilePath();
+                            importedFrom = TypescriptNestUtils.pathRelativeToRootProject(sourceFile.getFilePath());
                         }
                     }
                 }
@@ -78,6 +82,9 @@ class TypescriptNestUtils {
                 typeName: propType.getText(),
             };
         });
+    }
+    static pathRelativeToRootProject(sourceFile) {
+        return path_1.default.relative(process.cwd(), sourceFile);
     }
     static firstParameterAsString(restMethodDecorator) {
         const firstParam = restMethodDecorator.getArguments()[0];

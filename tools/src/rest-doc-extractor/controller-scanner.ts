@@ -543,7 +543,7 @@ export class ControllerScanner {
                 globalPrefix = this.extractGlobalPrefixFromSourceFile(mainSourceFile.getFullText());
                 // exec(`kdialog --msgbox 'Global prefix aranıyor: ${mainSourceFile.getFilePath()} bulundu: ${globalPrefix}'`);
             }
-            exec(`kdialog --msgbox 'Uygulama: ${appName} için controllerlar taranıyor. Global prefix: ${globalPrefix}'`);
+            // exec(`kdialog --msgbox 'Uygulama: ${appName} için controllerlar taranıyor. Global prefix: ${globalPrefix}'`);
             // Modülleri app sınıflarında iterate et, controller/import aramasını tüm proje sınıflarında yap
             this.circulateControllerClassesFromModuleClasses(appClasses, allProjectClasses, (controllerClass) => {
                 collections.push({

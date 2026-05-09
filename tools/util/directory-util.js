@@ -69,16 +69,20 @@ class DirectoryUtil {
         let current = folderPath;
         while (current) {
             try {
-                const fileList = await FileSystem.readdir(current);
-                for (let index = 0; index < fileList.length; index++) {
-                    const fileName = fileList[index];
-                    const fullPath = path.join(current, fileName);
-                    const fileInfo = await FileSystem.stat(fullPath);
-                    if (fileInfo.isDirectory()) {
-                        onQueue.push(fullPath);
-                    }
-                    else if (fileInfo.isFile()) {
-                        await fileAction(fullPath);
+                if (current.includes("/node_modules/") || current.includes("/.angular/") || current.includes("/.nx/")) {
+                }
+                else {
+                    const fileList = await FileSystem.readdir(current);
+                    for (let index = 0; index < fileList.length; index++) {
+                        const fileName = fileList[index];
+                        const fullPath = path.join(current, fileName);
+                        const fileInfo = await FileSystem.stat(fullPath);
+                        if (fileInfo.isDirectory()) {
+                            onQueue.push(fullPath);
+                        }
+                        else if (fileInfo.isFile()) {
+                            await fileAction(fullPath);
+                        }
                     }
                 }
             }
@@ -89,6 +93,20 @@ class DirectoryUtil {
             }
             current = onQueue.pop();
         }
+    }
+    static async listFolderNamesNoRecursive(folderPath) {
+        const folderNames = [];
+        return FileSystem.readdir(folderPath, { withFileTypes: true }).then((entries) => {
+            for (const entry of entries) {
+                if (entry.isDirectory()) {
+                    folderNames.push(entry.name);
+                }
+            }
+            return folderNames;
+        }).catch((err) => {
+            console.error((0, colors_1.strColor)(colors_1.COLORS.BgRed, 'Could not read directory: ' + folderPath + '\n' + err));
+            throw err;
+        });
     }
 }
 exports.DirectoryUtil = DirectoryUtil;

@@ -40,6 +40,7 @@ class TextUtil {
     static async replaceText(path, replaceTextRecipes) {
         await directory_util_1.DirectoryUtil.circulateFilesRecursive(path, async (filePath) => {
             let content = await FileSystem.readFile(filePath, 'utf8');
+            let changed = false;
             for (let index = 0; index < replaceTextRecipes.length; index++) {
                 const replaceRecipe = replaceTextRecipes[index];
                 let replaceWith = '';
@@ -51,9 +52,11 @@ class TextUtil {
                 }
                 if (replaceWith != null && replaceWith != undefined) {
                     content = content.replaceAll(replaceRecipe.finding, replaceWith);
+                    changed = true;
                 }
             }
-            await FileSystem.writeFile(filePath, content, 'utf8');
+            if (changed)
+                await FileSystem.writeFile(filePath, content, 'utf8');
         });
     }
     static async findByRegex(path, findings) {

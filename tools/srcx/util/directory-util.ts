@@ -1,0 +1,84 @@
+import * as FileSystem from 'fs/promises';
+import * as path from 'path';
+import { strColor, COLORS } from './colors';
+
+export class DirectoryUtil {
+    /**
+     * List all files in the folder recursively
+     * @param folderPath
+     * @returns the list that contains full file paths
+     */
+    static async listAllFiles(folderPath: string) {
+        const allFileList: string[] = [];
+        await this.circulateFilesRecursive(folderPath, (a) => {
+            allFileList.push(a);
+        });
+        return allFileList;
+    }
+
+    static async ensureDirectory(...filePath: string[]) {
+        const dirPath = path.join(...filePath);
+        try {
+            await FileSystem.mkdir(dirPath, { recursive: true });
+        } catch (err) {
+            console.error(
+                strColor(
+                    COLORS.BgRed,
+                    'Could not create directory: ' + dirPath + '\n' + err,
+                ),
+            );
+            throw err;
+        }
+    }
+    static async directoryExists(...filePath: string[]): Promise<boolean> {
+        try {
+            await FileSystem.access(
+                path.join(...filePath),
+                FileSystem.constants.F_OK,
+            );
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    /**
+     * Circulates files in the folder recursively
+     * @param folderPath
+     * @method fileAction if encounters a file, that will called with file full path
+     */
+    static async circulateFilesRecursive(
+        folderPath: string,
+        fileAction: (fileName: string) => PromiseLike<void> | void,
+    ) {
+        const onQueue: string[] = [];
+
+        let current: string | null | undefined = folderPath;
+        while (current) {
+            try {
+                const fileList = await FileSystem.readdir(current);
+                for (let index = 0; index < fileList.length; index++) {
+                    const fileName = fileList[index];
+                    const fullPath = path.join(current, fileName);
+                    const fileInfo = await FileSystem.stat(fullPath);
+                    if (fileInfo.isDirectory()) {
+                        onQueue.push(fullPath);
+                    } else if (fileInfo.isFile()) {
+                        await fileAction(fullPath);
+                    }
+                }
+            } catch (error) {
+                console.warn(
+                    strColor(
+                        COLORS.BgYellow,
+                        'An error occured while reading file: ' +
+                            current +
+                            '\nSo we skip this',
+                    ),
+                );
+            }
+
+            current = onQueue.pop();
+        }
+    }
+}

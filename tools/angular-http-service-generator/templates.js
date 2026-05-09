@@ -101,7 +101,7 @@ function typeNameAlone(tn) {
 }
 function replaceWorkPathWithPackageName(importPath, workDir, libraryPackageName) {
     const workingLibraryName = /libs\/([a-zA-Z-_]*)/g.exec(importPath)?.[1];
-    if (importPath.startsWith(workDir) && workingLibraryName) {
+    if (workingLibraryName && (importPath.startsWith(workDir) || importPath.startsWith('libs/'))) {
         return `${libraryPackageName}/${workingLibraryName}`;
     }
     return importPath;
