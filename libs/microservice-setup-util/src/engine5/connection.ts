@@ -6,6 +6,7 @@ import {
     Payload,
     CtRequest,
     CtEvent,
+    CtResponseError,
 } from './payload';
 import { encode, decode } from '@msgpack/msgpack';
 import { DynamicQueue } from '@ubs-platform/dynamic-queue';
@@ -206,6 +207,15 @@ export class Engine5Connection {
 
             this.ongoingRequestsToComplete[messageId] = (response: Payload) => {
                 clearTimeout(timeout);
+                if (response.Command === CtResponseError) {
+                    const errorSide = response.ResponseErrorSide || 'E5';
+                    const errorMessage = `Response error from ${
+                        errorSide === 'E5' ? 'server' : 'client'
+                    }: ${response.Content}`;
+                    console.error(errorMessage);
+                    reject(new Error(errorMessage));
+                    return;
+                }
                 try {
                     const result = response.Content
                         ? this.parseData(response.Content)
@@ -512,6 +522,13 @@ export class Engine5Connection {
             this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!](
                 decoded,
             );
+        } else if (decoded.Command === CtResponseError) {
+            const errorSide = decoded.ResponseErrorSide || 'E5';
+            const errorMessage = `Response error from ${
+                errorSide === 'E5' ? 'server' : 'client'
+            }: ${decoded.Content}`;
+            console.error(errorMessage);
+                this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!](decoded);
         }
     }
 

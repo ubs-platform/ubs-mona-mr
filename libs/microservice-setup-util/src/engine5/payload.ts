@@ -7,7 +7,9 @@ export const CtResponse = "RESPONSE";
 export const CtListen = "LISTEN";
 export const CtClose = "CLOSE";
 export const CtConnectError = "CONNECT_ERROR";
-
+export const CtResponseError = "RESPONSE_ERROR";
+export const CtResponseErrorSideE5 = "E5";
+export const CtResponseErrorSideClient = "CLIENT";
 
 export type CommandType =
   | typeof CtConnect
@@ -18,8 +20,10 @@ export type CommandType =
   | typeof CtResponse
   | typeof CtListen
   | typeof CtClose
-  | typeof CtConnectError;
+  | typeof CtConnectError
+  | typeof CtResponseError;
 
+export type ErrorSide = typeof CtResponseErrorSideE5 | typeof CtResponseErrorSideClient;
 export interface Payload {
   Command: CommandType;
   Content?: string;
@@ -29,4 +33,5 @@ export interface Payload {
   ResponseOfMessageId?: string;
   InstanceGroup?: string;
   AuthKey?: string;
+  ResponseErrorSide?: ErrorSide;
 }
