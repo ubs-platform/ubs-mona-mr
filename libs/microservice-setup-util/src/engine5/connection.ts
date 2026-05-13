@@ -209,9 +209,8 @@ export class Engine5Connection {
                 clearTimeout(timeout);
                 if (response.Command === CtResponseError) {
                     const errorSide = response.ResponseErrorSide || 'E5';
-                    const errorMessage = `Response error from ${
-                        errorSide === 'E5' ? 'server' : 'client'
-                    }: ${response.Content}`;
+                    const errorMessage = `Response error from ${errorSide === 'E5' ? 'server' : 'client'
+                        }: ${response.Content}`;
                     console.error(errorMessage);
                     reject(new Error(errorMessage));
                     return;
@@ -414,12 +413,12 @@ export class Engine5Connection {
                 if (this.tlsOptions?.rejectUnauthorized === false) {
                     console.warn(
                         'TLS authorization warning (ignored by configuration): ' +
-                            tlsSocket.authorizationError,
+                        tlsSocket.authorizationError,
                     );
                 } else {
                     console.error(
                         'TLS authorization error: ' +
-                            tlsSocket.authorizationError,
+                        tlsSocket.authorizationError,
                     );
                     this.tcpClient.destroy();
                     return;
@@ -519,16 +518,15 @@ export class Engine5Connection {
                 console.error(ex);
             }
         } else if (decoded.Command == CtResponse) {
-            this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!](
+            await this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!](
                 decoded,
             );
         } else if (decoded.Command === CtResponseError) {
             const errorSide = decoded.ResponseErrorSide || 'E5';
-            const errorMessage = `Response error from ${
-                errorSide === 'E5' ? 'server' : 'client'
-            }: ${decoded.Content}`;
+            const errorMessage = `Response error from ${errorSide === 'E5' ? 'server' : 'client'
+                }: ${decoded.Content}`;
             console.error(errorMessage);
-                this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!](decoded);
+            await this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!](decoded);
         }
     }
 

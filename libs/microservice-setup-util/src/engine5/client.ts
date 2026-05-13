@@ -27,16 +27,16 @@ export class E5NestClient {
             authKey: process.env.E5_AUTH_SECRET || undefined,
             tlsOptions: tlsEnabled
                 ? {
-                      key: fs.readFileSync(
-                          process.env.E5_KEY_PATH || './certs/client.key',
-                      ),
-                      cert: fs.readFileSync(
-                          process.env.E5_CERT_PATH || './certs/client.crt',
-                      ),
-                      ca: fs.readFileSync(
-                          process.env.E5_CA_PATH || './certs/ca.crt',
-                      ),
-                  }
+                    key: fs.readFileSync(
+                        process.env.E5_KEY_PATH || './certs/client.key',
+                    ),
+                    cert: fs.readFileSync(
+                        process.env.E5_CERT_PATH || './certs/client.crt',
+                    ),
+                    ca: fs.readFileSync(
+                        process.env.E5_CA_PATH || './certs/ca.crt',
+                    ),
+                }
                 : undefined,
         });
         this.connection.init();
@@ -71,6 +71,8 @@ export class E5NestClient {
             this.connection.sendRequest(pattern, data).then((result) => {
                 a.next(result as TResult);
                 a.complete();
+            }).catch((err) => {
+                a.error(err);
             });
         });
     }
