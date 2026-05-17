@@ -4,7 +4,7 @@ import { Optional } from '@ubs-platform/crud-base-common/utils';
 import { Document, Model, Types } from 'mongoose';
 import {
     EntityOwnershipGroup,
-    UserCapability,
+    GroupUserCapability,
 } from '@ubs-platform/users-entity-mongo';
 import { EntityOwnershipGroupMapper } from '../mapper/entity-ownership-group.mapper';
 import {
@@ -88,7 +88,7 @@ export class EntityOwnershipGroupService {
         });
     }
 
-    private capabilityToDto(a: UserCapability): EOGUserCapabilityDTO {
+    private capabilityToDto(a: GroupUserCapability): EOGUserCapabilityDTO {
         return {
             userId: a.userId!,
             entityCapabilities: a.entityCapabilities?.map((ec) => ({

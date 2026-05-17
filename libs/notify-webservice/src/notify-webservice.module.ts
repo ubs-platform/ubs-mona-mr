@@ -7,7 +7,6 @@ import { GlobalVariableController } from './controller/global-variable.controlle
 import { EmailController } from './controller/email-operation.controller';
 import { EmailTemplateService } from './service/email-template.service';
 import { GlobalVariableService } from './service/global-variable.service';
-import { GlobalVariableApplierService } from './service/global-variable-applier.service';
 import { EmailService } from './service/email.service';
 
 @Module({
@@ -28,7 +27,7 @@ import { EmailService } from './service/email.service';
     }),
   ],
   controllers: [EmailTemplateController, GlobalVariableController, EmailController],
-  providers: [EmailTemplateService, GlobalVariableService, GlobalVariableApplierService, EmailService],
+  providers: [EmailTemplateService, GlobalVariableService, EmailService],
   exports: [EmailTemplateService, GlobalVariableService, EmailService],
 })
 export class NotifyWebserviceModule {}

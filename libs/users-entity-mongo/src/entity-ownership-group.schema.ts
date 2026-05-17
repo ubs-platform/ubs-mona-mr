@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { GroupCapability } from '@ubs-platform/users-common';
 import { EntityOwnershipGroupEntityCapability } from './entity-ownership-group-entity-capability';
 
-export class UserCapability {
+export class GroupUserCapability {
     userId?: string;
     // capability?: string;
     groupCapability: GroupCapability;
@@ -20,8 +20,8 @@ export class UserCapability {
 export class EntityOwnershipGroup {
     _id?: any;
 
-    @Prop([UserCapability])
-    userCapabilities: UserCapability[];
+    @Prop([GroupUserCapability])
+    userCapabilities: GroupUserCapability[];
 
     /**
      * Group name of the ownership group. Can be used for best reading
