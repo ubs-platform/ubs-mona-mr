@@ -234,6 +234,104 @@
       "compilerOptions": {
         "tsConfigPath": "libs/users-roles/tsconfig.lib.json"
       }
+    },
+    "users-webservice": {
+      "type": "library",
+      "root": "libs/users-webservice",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-webservice/src",
+      "compilerOptions": { "tsConfigPath": "libs/users-webservice/tsconfig.lib.json" }
+    },
+    "users-entity-mongo": {
+      "type": "library",
+      "root": "libs/users-entity-mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-entity-mongo/src",
+      "compilerOptions": { "tsConfigPath": "libs/users-entity-mongo/tsconfig.lib.json" }
+    },
+    "social-webservice": {
+      "type": "library",
+      "root": "libs/social-webservice",
+      "entryFile": "index",
+      "sourceRoot": "libs/social-webservice/src",
+      "compilerOptions": { "tsConfigPath": "libs/social-webservice/tsconfig.lib.json" }
+    },
+    "social-entity-mongo": {
+      "type": "library",
+      "root": "libs/social-entity-mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/social-entity-mongo/src",
+      "compilerOptions": { "tsConfigPath": "libs/social-entity-mongo/tsconfig.lib.json" }
+    },
+    "notify-webservice": {
+      "type": "library",
+      "root": "libs/notify-webservice",
+      "entryFile": "index",
+      "sourceRoot": "libs/notify-webservice/src",
+      "compilerOptions": { "tsConfigPath": "libs/notify-webservice/tsconfig.lib.json" }
+    },
+    "notify-entity-mongo": {
+      "type": "library",
+      "root": "libs/notify-entity-mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/notify-entity-mongo/src",
+      "compilerOptions": { "tsConfigPath": "libs/notify-entity-mongo/tsconfig.lib.json" }
+    },
+    "feedback-webservice": {
+      "type": "library",
+      "root": "libs/feedback-webservice",
+      "entryFile": "index",
+      "sourceRoot": "libs/feedback-webservice/src",
+      "compilerOptions": { "tsConfigPath": "libs/feedback-webservice/tsconfig.lib.json" }
+    },
+    "feedback-entity-mongo": {
+      "type": "library",
+      "root": "libs/feedback-entity-mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/feedback-entity-mongo/src",
+      "compilerOptions": { "tsConfigPath": "libs/feedback-entity-mongo/tsconfig.lib.json" }
+    },
+    "files-webservice": {
+      "type": "library",
+      "root": "libs/files-webservice",
+      "entryFile": "index",
+      "sourceRoot": "libs/files-webservice/src",
+      "compilerOptions": { "tsConfigPath": "libs/files-webservice/tsconfig.lib.json" }
+    },
+    "files-entity-mongo": {
+      "type": "library",
+      "root": "libs/files-entity-mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/files-entity-mongo/src",
+      "compilerOptions": { "tsConfigPath": "libs/files-entity-mongo/tsconfig.lib.json" }
+    },
+    "superlama-webservice": {
+      "type": "library",
+      "root": "libs/superlama-webservice",
+      "entryFile": "index",
+      "sourceRoot": "libs/superlama-webservice/src",
+      "compilerOptions": { "tsConfigPath": "libs/superlama-webservice/tsconfig.lib.json" }
+    },
+    "superlama-entity-mongo": {
+      "type": "library",
+      "root": "libs/superlama-entity-mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/superlama-entity-mongo/src",
+      "compilerOptions": { "tsConfigPath": "libs/superlama-entity-mongo/tsconfig.lib.json" }
+    },
+    "ip-blocker-webservice": {
+      "type": "library",
+      "root": "libs/ip-blocker-webservice",
+      "entryFile": "index",
+      "sourceRoot": "libs/ip-blocker-webservice/src",
+      "compilerOptions": { "tsConfigPath": "libs/ip-blocker-webservice/tsconfig.lib.json" }
+    },
+    "ip-blocker-entity-mongo": {
+      "type": "library",
+      "root": "libs/ip-blocker-entity-mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/ip-blocker-entity-mongo/src",
+      "compilerOptions": { "tsConfigPath": "libs/ip-blocker-entity-mongo/tsconfig.lib.json" }
     }
   }
 }

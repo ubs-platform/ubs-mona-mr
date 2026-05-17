@@ -1,0 +1,19 @@
+{
+    "name": "@ubs-platform/superlama-webservice",
+    "version": "1.0.0",
+    "description": "",
+    "repository": {
+        "url": "https://github.com/ubs-platform/ubs-mona-mr"
+    },
+    "homepage": "https://github.com/ubs-platform/ubs-mona-mr",
+    "iksir": {
+        "type": "LIBRARY",
+        "libraryMode": "EMBEDDED",
+        "buildSubFolder": ""
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC"
+}

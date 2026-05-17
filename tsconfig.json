@@ -103,7 +103,35 @@
       ],
       "@ubs-platform/users-roles": [
         "libs/users-roles/src"
-      ]
+      ],
+      "@ubs-platform/users-webservice": ["libs/users-webservice/src"],
+      "@ubs-platform/users-webservice/*": ["libs/users-webservice/src/*"],
+      "@ubs-platform/users-entity-mongo": ["libs/users-entity-mongo/src"],
+      "@ubs-platform/users-entity-mongo/*": ["libs/users-entity-mongo/src/*"],
+      "@ubs-platform/social-webservice": ["libs/social-webservice/src"],
+      "@ubs-platform/social-webservice/*": ["libs/social-webservice/src/*"],
+      "@ubs-platform/social-entity-mongo": ["libs/social-entity-mongo/src"],
+      "@ubs-platform/social-entity-mongo/*": ["libs/social-entity-mongo/src/*"],
+      "@ubs-platform/notify-webservice": ["libs/notify-webservice/src"],
+      "@ubs-platform/notify-webservice/*": ["libs/notify-webservice/src/*"],
+      "@ubs-platform/notify-entity-mongo": ["libs/notify-entity-mongo/src"],
+      "@ubs-platform/notify-entity-mongo/*": ["libs/notify-entity-mongo/src/*"],
+      "@ubs-platform/feedback-webservice": ["libs/feedback-webservice/src"],
+      "@ubs-platform/feedback-webservice/*": ["libs/feedback-webservice/src/*"],
+      "@ubs-platform/feedback-entity-mongo": ["libs/feedback-entity-mongo/src"],
+      "@ubs-platform/feedback-entity-mongo/*": ["libs/feedback-entity-mongo/src/*"],
+      "@ubs-platform/files-webservice": ["libs/files-webservice/src"],
+      "@ubs-platform/files-webservice/*": ["libs/files-webservice/src/*"],
+      "@ubs-platform/files-entity-mongo": ["libs/files-entity-mongo/src"],
+      "@ubs-platform/files-entity-mongo/*": ["libs/files-entity-mongo/src/*"],
+      "@ubs-platform/superlama-webservice": ["libs/superlama-webservice/src"],
+      "@ubs-platform/superlama-webservice/*": ["libs/superlama-webservice/src/*"],
+      "@ubs-platform/superlama-entity-mongo": ["libs/superlama-entity-mongo/src"],
+      "@ubs-platform/superlama-entity-mongo/*": ["libs/superlama-entity-mongo/src/*"],
+      "@ubs-platform/ip-blocker-webservice": ["libs/ip-blocker-webservice/src"],
+      "@ubs-platform/ip-blocker-webservice/*": ["libs/ip-blocker-webservice/src/*"],
+      "@ubs-platform/ip-blocker-entity-mongo": ["libs/ip-blocker-entity-mongo/src"],
+      "@ubs-platform/ip-blocker-entity-mongo/*": ["libs/ip-blocker-entity-mongo/src/*"]
     }
   }
 }
