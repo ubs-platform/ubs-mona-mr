@@ -2,11 +2,9 @@
     "extends": "../../tsconfig.json",
     "compilerOptions": {
         "declaration": true,
-        "outDir": "../../dist/libs/social-common"
+        "outDir": "../../dist/libs/social-webservice"
     },
-    "include": [
-        "src/**/*"
-    ],
+    "include": ["src/**/*"],
     "exclude": [
         "node_modules",
         "dist",
