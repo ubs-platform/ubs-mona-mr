@@ -58,7 +58,7 @@ import {
     UploadedFile,
 } from '@blazity/nest-file-fastify';
 import { randomUUID } from 'crypto';
-import { E5NestClient } from '@ubs-platform/microservice-setup-util';
+import { E5NestClient, MICROSERVICE_CLIENT } from '@ubs-platform/microservice-setup-util';
 import { env } from 'process';
 @Controller('file')
 export class ImageFileController {
@@ -99,7 +99,7 @@ export class ImageFileController {
     cacheClearTimeoutPtr: NodeJS.Timeout | null;
     constructor(
         private fservice: FileService,
-        @Inject('KafkaClient') private e5: E5NestClient,
+        @Inject(MICROSERVICE_CLIENT) private e5: E5NestClient,
     ) { }
 
     @Put('/volatility')

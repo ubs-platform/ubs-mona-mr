@@ -1,30 +1,15 @@
 import {
-    Body,
     Controller,
-    Get,
     HttpException,
     HttpStatus,
-    Inject,
-    Param,
-    Post,
-    Put,
-    UploadedFile,
-    UseGuards,
-    Headers,
-    UseInterceptors,
 } from '@nestjs/common';
 import {
-    ClientKafka,
     EventPattern,
     MessagePattern,
 } from '@nestjs/microservices';
 import { UserService } from '../services/user.service';
-import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
-import { CurrentUser } from '../local-current-user-decorator';
-import { EmailChangeRequestService } from '../services/email-change-request.service';
 import {
     UserAuthBackendDTO,
-    UserRegisterDTO,
 } from '@ubs-platform/users-common';
 import { CacheManagerService } from '@ubs-platform/cache-manager';
 
@@ -33,14 +18,9 @@ export class UserMicroserviceController {
     CACHE_PREFIX_MSCTRL = 'usermsctrl';
     constructor(
         private userService: UserService,
-        @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
         private cacheman: CacheManagerService,
     ) {
-        // this.kafkaClient.emit('register-category', {
-        //     category: 'PROFILE_PHOTO',
-        //     serviceTcpHost: process.env['U_USERS_MONA_INTERNAL_COM_HOST'],
-        //     serviceTcpPort: process.env['U_USERS_MONA_INTERNAL_COM_PORT'],
-        // });
+
     }
 
     @MessagePattern('file-upload-PROFILE_PHOTO')

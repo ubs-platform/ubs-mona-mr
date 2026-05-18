@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ClientsModule } from '@nestjs/microservices';
 import { UserMicroserviceHelperModule } from '@ubs-platform/users-microservice-helper';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { MicroservicesCommonModule, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { SocialEntityMongoModule } from '@ubs-platform/social-entity-mongo';
 import { CommentController } from './controller/comment.controller';
 import { CommentAdminController } from './controller/comment-admin.controller';
@@ -18,7 +18,9 @@ import { UserIntercept } from './guard/UserIntercept';
   imports: [
     SocialEntityMongoModule,
     UserMicroserviceHelperModule,
-    ClientsModule.register([MicroserviceSetupUtil.setupClient('', 'KafkaClient')]),
+    MicroservicesCommonModule
+    // ClientsModule.register([MicroserviceSetupUtil.setupClient('', 'KafkaClient')]),
+    // MicroservicesCommonModule
   ],
   controllers: [
     CommentController,

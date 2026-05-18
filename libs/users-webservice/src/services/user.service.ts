@@ -31,12 +31,13 @@ import { UserKafkaEvents } from '@ubs-platform/users-consts';
 import { MongooseSearchUtil } from '@ubs-platform/crud-base';
 import { UserAdminSearch } from 'libs/users-common/src/user-admin-search.dto';
 import { exec } from 'child_process';
+import { MICROSERVICE_CLIENT } from '@ubs-platform/microservice-setup-util';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectModel(User.name) private userModel: Model<User>,
-        @Inject('KAFKA_CLIENT') private client: ClientKafka,
+        @Inject(MICROSERVICE_CLIENT) private client: ClientKafka,
         private emailService: EmailService,
         private userCommonService: UserCommonService,
     ) {

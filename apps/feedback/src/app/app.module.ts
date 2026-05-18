@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { FeedbackWebserviceModule } from '@ubs-platform/feedback-webservice';
+import { MicroservicesCommonModule } from 'libs/microservice-setup-util/src/microservices-common.module';
 
 @Module({
     imports: [
@@ -13,6 +14,13 @@ import { FeedbackWebserviceModule } from '@ubs-platform/feedback-webservice';
             },
         ),
         FeedbackWebserviceModule,
+        MicroservicesCommonModule
+
     ],
+    exports: [
+        MicroservicesCommonModule
+    ],
+    controllers: [],
+    providers: [],
 })
 export class AppModule {}

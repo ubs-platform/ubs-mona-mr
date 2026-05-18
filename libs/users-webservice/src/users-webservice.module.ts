@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ClientsModule } from '@nestjs/microservices';
 import { CacheManagerModule } from '@ubs-platform/cache-manager';
 import { BackendJwtUtilsExportModule } from '@ubs-platform/users-microservice-helper';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { MICROSERVICE_CLIENT, MicroservicesCommonModule, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { UsersEntityMongoModule } from '@ubs-platform/users-entity-mongo';
 import { UserController } from './web/user.controller';
 import { AuthController } from './web/auth.controller';
@@ -33,7 +33,8 @@ import { EntityOwnershipGroupMapper } from './mapper/entity-ownership-group.mapp
     UsersEntityMongoModule,
     CacheManagerModule,
     ...BackendJwtUtilsExportModule,
-    ClientsModule.register([MicroserviceSetupUtil.setupClient('', 'KAFKA_CLIENT')]),
+    MicroservicesCommonModule
+    // ClientsModule.register([MicroserviceSetupUtil.setupClient('', MICROSERVICE_CLIENT)]),
   ],
   controllers: [
     UserController,

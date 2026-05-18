@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ScheduleModule } from '@nestjs/schedule';
 import { FilesWebserviceModule } from '@ubs-platform/files-webservice';
+import { MicroservicesCommonModule } from 'libs/microservice-setup-util/src/microservices-common.module';
 
 @Module({
     imports: [
@@ -14,6 +15,9 @@ import { FilesWebserviceModule } from '@ubs-platform/files-webservice';
             },
         ),
         FilesWebserviceModule,
+
+    ],
+    exports: [
     ],
 })
 export class AppModule {}

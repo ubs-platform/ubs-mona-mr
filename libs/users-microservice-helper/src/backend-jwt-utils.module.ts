@@ -5,7 +5,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { UserService } from './service/user.service';
 import { EntityOwnershipService } from './service/entity-ownership.service';
 import { EntityOwnershipGroupClientService } from './service/entity-ownership-group-client.service';
-import { E5NestClient, E5NestServer, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { E5NestClient, E5NestServer, MicroservicesCommonModule, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 // import { JwtStrategy } from './strategies/jwt.strategy';
 export const INTERNAL_COMMUNICATION = {
     port: parseInt(process.env['U_USERS_MONA_INTERNAL_COM_PORT'] || '0'),
@@ -18,8 +18,8 @@ export const INTERNAL_COMMUNICATION = {
     exports: [UserService, EntityOwnershipService, EntityOwnershipGroupClientService],
     imports: [
         ...BackendJwtUtilsExportModule,
-
-        ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KAFKA_CLIENT")])
+        MicroservicesCommonModule
+        // ClientsModule.register([MicroserviceSetupUtil.setupClient("", "KAFKA_CLIENT")])
     ],
 })
 export class UserMicroserviceHelperModule { }

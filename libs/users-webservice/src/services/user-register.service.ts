@@ -15,7 +15,6 @@ import {
     UserRegisterDTO,
 } from '@ubs-platform/users-common';
 import { UserMapper } from '../mapper/user.mapper';
-import { Mode } from 'fs';
 import { randomUUID } from 'crypto';
 import { UserCommonService } from './user-common.service';
 import { UserService } from './user.service';
@@ -26,9 +25,7 @@ export class UserRegisterService {
     constructor(
         @InjectModel(UserCandiate.name)
         private userCandiateModel: Model<UserCandiate>,
-        // private userModel: Model<User>,
         private userService: UserService,
-        // @Inject('KAFKA_CLIENT') private client: ClientKafka,
         private emailService: EmailService,
         private userCommon: UserCommonService,
     ) {}

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ClientsModule } from '@nestjs/microservices';
 import { ScheduleModule } from '@nestjs/schedule';
 import { UserMicroserviceHelperModule } from '@ubs-platform/users-microservice-helper';
-import { MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
+import { MicroservicesCommonModule, MicroserviceSetupUtil } from '@ubs-platform/microservice-setup-util';
 import { SuperlamaEntityMongoModule } from '@ubs-platform/superlama-entity-mongo';
 import { RealtimeChatController } from './controller/realtime-chat.controller';
 import { SessionController } from './controller/user-sessions.controlller';
@@ -18,7 +18,7 @@ import { ChatMessageMapper } from './mapper/chat-message.mapper';
     SuperlamaEntityMongoModule,
     ScheduleModule,
     UserMicroserviceHelperModule,
-    ClientsModule.register([MicroserviceSetupUtil.setupClient('', 'KAFKA_CLIENT')]),
+    MicroservicesCommonModule
   ],
   controllers: [RealtimeChatController, SessionController, LlmModelsController],
   providers: [
@@ -30,4 +30,4 @@ import { ChatMessageMapper } from './mapper/chat-message.mapper';
   ],
   exports: [RealtimeChatService, SessionService, LlmOperationService],
 })
-export class SuperlamaWebserviceModule {}
+export class SuperlamaWebserviceModule { }

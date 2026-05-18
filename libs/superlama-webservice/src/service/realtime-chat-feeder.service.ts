@@ -17,6 +17,7 @@ import { ClientKafka } from '@nestjs/microservices';
 import { Cron } from '@nestjs/schedule';
 import { exec } from 'child_process';
 import { ChatResponse } from 'ollama';
+import { MICROSERVICE_CLIENT } from '@ubs-platform/microservice-setup-util';
 
 @Injectable()
 export class RealtimeChatFeederService {
@@ -29,7 +30,7 @@ export class RealtimeChatFeederService {
         private chatSessionModel: Model<ChatSession>,
         private chatMapper: ChatMessageMapper,
         private llmOpService: LlmOperationService,
-        @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
+        @Inject(MICROSERVICE_CLIENT) private kafkaClient: ClientKafka,
     ) {}
 
     @Cron('*/5 * * * * *')

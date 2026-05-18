@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { MicroservicesCommonModule } from '@ubs-platform/microservice-setup-util';
 import { NotifyWebserviceModule } from '@ubs-platform/notify-webservice';
 
 @Module({
@@ -13,6 +14,9 @@ import { NotifyWebserviceModule } from '@ubs-platform/notify-webservice';
             },
         ),
         NotifyWebserviceModule,
+
+    ],
+    exports: [
     ],
 })
 export class AppModule {}

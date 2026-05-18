@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SocialWebserviceModule } from '@ubs-platform/social-webservice';
+import { MicroservicesCommonModule } from 'libs/microservice-setup-util/src/microservices-common.module';
 
 @Module({
     imports: [
@@ -13,6 +14,10 @@ import { SocialWebserviceModule } from '@ubs-platform/social-webservice';
             },
         ),
         SocialWebserviceModule,
+
+    ],
+    exports: [
+        
     ],
 })
 export class AppModule {}

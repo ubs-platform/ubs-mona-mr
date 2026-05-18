@@ -3,14 +3,15 @@ import { ClientKafka } from '@nestjs/microservices';
 import { EmailDto } from '@ubs-platform/notify-common';
 import { UserMessage } from '@ubs-platform/feedback-entity-mongo';
 import { IUserMessageDto } from '@ubs-platform/feedback-common';
+import { MICROSERVICE_CLIENT } from '@ubs-platform/microservice-setup-util';
 
 @Injectable()
 export class EmailService {
     readonly DEFAULT_LANGUAGE = process.env.UNOTIFY_DEFAULT_LANGUAGE || 'en-us';
     constructor(
-        @Inject('KAFKA_CLIENT')
+        @Inject(MICROSERVICE_CLIENT)
         private eventClient: ClientKafka,
-    ) {}
+    ) { }
 
     private async sendEmail(body: EmailDto) {
         console.info('Sending email to: ' + body.to);
