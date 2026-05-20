@@ -3,12 +3,13 @@ import { ClientKafka } from '@nestjs/microservices';
 import { EmailDto } from '@ubs-platform/notify-common';
 import { UserMessage } from '../model/user-message.model';
 import { IUserMessageDto } from '@ubs-platform/feedback-common';
+import { MICROSERVICE_CLIENT } from 'libs/microservice-setup-util/src/consts';
 
 @Injectable()
 export class EmailService {
     readonly DEFAULT_LANGUAGE = process.env.UNOTIFY_DEFAULT_LANGUAGE || 'en-us';
     constructor(
-        @Inject('KAFKA_CLIENT')
+        @Inject(MICROSERVICE_CLIENT) 
         private eventClient: ClientKafka,
     ) {}
 

@@ -1,0 +1,15 @@
+{
+    "extends": "../../tsconfig.json",
+    "compilerOptions": {
+        "declaration": true,
+        "outDir": "../../dist/libs/ip-blocker-entity-mongo"
+    },
+    "include": ["src/**/*"],
+    "exclude": [
+        "node_modules",
+        "dist",
+        "test",
+        "**/*spec.ts",
+        "@ubs-platform/**"
+    ]
+}

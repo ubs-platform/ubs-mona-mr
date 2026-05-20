@@ -11,6 +11,7 @@ import {
     IUserMessageDto,
     IUserMessageSearch,
 } from '@ubs-platform/feedback-common';
+import { MICROSERVICE_CLIENT } from 'libs/microservice-setup-util/src/consts';
 
 @Controller('user-message')
 @CrudControllerConfig({
@@ -28,7 +29,7 @@ export class UserMessageController extends BaseCrudController<
 > {
     constructor(
         private userMsgService: UserMessageService,
-        @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
+        @Inject(MICROSERVICE_CLIENT) private kafkaClient: ClientKafka,
     ) {
         super(userMsgService);
 

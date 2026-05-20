@@ -135,6 +135,7 @@
       "^@ubs-platform/crud-base(|/.*)$": "<rootDir>/libs/crud-base/src/$1",
       "^@ubs-platform/crud-base-common(|/.*)$": "<rootDir>/libs/crud-base-common/src/$1",
       "^@ubs-platform/dynamic-queue(|/.*)$": "<rootDir>/libs/dynamic-queue/src/$1",
+      "^@ubs-platform/entity-base(|/.*)$": "<rootDir>/libs/entity-base/src/$1",
       "^@ubs-platform/feedback-common(|/.*)$": "<rootDir>/libs/feedback-common/src/$1",
       "^@ubs-platform/file-helper(|/.*)$": "<rootDir>/libs/file-helper/src/$1",
       "^@ubs-platform/loadbalanced-proxy(|/.*)$": "<rootDir>/libs/loadbalanced-proxy/src/$1",

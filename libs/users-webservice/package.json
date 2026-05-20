@@ -1,0 +1,19 @@
+{
+    "name": "@ubs-platform/users-webservice",
+    "version": "1.0.0",
+    "description": "",
+    "repository": {
+        "url": "https://github.com/ubs-platform/ubs-mona-mr"
+    },
+    "homepage": "https://github.com/ubs-platform/ubs-mona-mr",
+    "iksir": {
+        "type": "LIBRARY",
+        "libraryMode": "PEER",
+        "buildSubFolder": ""
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "",
+    "license": "ISC"
+}

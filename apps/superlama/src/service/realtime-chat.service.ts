@@ -1,19 +1,13 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ChatMessage } from '../model/chat-message-model';
 import { Model } from 'mongoose';
-import { ChatSession, ChatSessionDoc } from '../model/chat-session.model';
+import { ChatSession } from '../model/chat-session.model';
 import {
-    ChatMessageDTO,
-    ChatMessageStreamDTO,
     UserSendingMessageDto,
 } from '@ubs-platform/superlama-common';
 import { UserDTO } from '@ubs-platform/users-common';
 import { ChatMessageMapper } from '../mapper/chat-message.mapper';
-import { Subject } from 'rxjs';
-import { LlmOperationService } from './llm-operation.service';
-import { ClientKafka } from '@nestjs/microservices';
-import { RealtimeChatFeederService } from './realtime-chat-feeder.service';
 
 @Injectable()
 export class RealtimeChatService {
@@ -25,10 +19,7 @@ export class RealtimeChatService {
         @InjectModel(ChatSession.name)
         private chatSessionModel: Model<ChatSession>,
         private chatMapper: ChatMessageMapper,
-        private llmOpService: LlmOperationService,
-        @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
-        private realChatFeeder: RealtimeChatFeederService,
-    ) {}
+    ) { }
 
     async insertUserMessage(dto: UserSendingMessageDto, user: UserDTO) {
         let session: ChatSession;

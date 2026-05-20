@@ -3,13 +3,14 @@ import { ClientKafka } from '@nestjs/microservices';
 import { EmailDto } from '../dto/email.dto';
 import { UserDTO, UserFullDto } from '@ubs-platform/users-common';
 import { User } from '../domain/user.model';
+import { MICROSERVICE_CLIENT } from 'libs/microservice-setup-util/src/consts';
 
 @Injectable()
 export class EmailService {
     constructor(
-        @Inject('KAFKA_CLIENT')
+        @Inject(MICROSERVICE_CLIENT)
         private eventClient: ClientKafka,
-    ) {}
+    ) { }
 
     sendEmail(
         user: UserDTO | UserFullDto | User,

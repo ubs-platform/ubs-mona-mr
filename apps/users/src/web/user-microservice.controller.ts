@@ -27,13 +27,15 @@ import {
     UserRegisterDTO,
 } from '@ubs-platform/users-common';
 import { CacheManagerService } from '@ubs-platform/cache-manager';
+import { MICROSERVICE_CLIENT } from 'libs/microservice-setup-util/src/consts';
 
 @Controller()
 export class UserMicroserviceController {
     CACHE_PREFIX_MSCTRL = 'usermsctrl';
     constructor(
         private userService: UserService,
-        @Inject('KAFKA_CLIENT') private kafkaClient: ClientKafka,
+        @Inject(MICROSERVICE_CLIENT)
+        private kafkaClient: ClientKafka,
         private cacheman: CacheManagerService,
     ) {
         // this.kafkaClient.emit('register-category', {

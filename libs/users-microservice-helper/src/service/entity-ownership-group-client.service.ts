@@ -1,5 +1,6 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ClientProxy, ClientKafka, ClientRMQ } from '@nestjs/microservices';
+import { MICROSERVICE_CLIENT } from '@ubs-platform/microservice-setup-util';
 import {
     EntityOwnershipDTO,
     EntityOwnershipInsertCapabiltyDTO,
@@ -22,7 +23,7 @@ import { Observable } from 'rxjs';
 @Injectable()
 export class EntityOwnershipGroupClientService {
     constructor(
-        @Inject('KAFKA_CLIENT')
+        @Inject(MICROSERVICE_CLIENT)
         private kafkaClient: ClientProxy | ClientKafka | ClientRMQ,
     ) { }
 
