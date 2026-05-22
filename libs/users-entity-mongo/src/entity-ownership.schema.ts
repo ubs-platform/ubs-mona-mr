@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { BaseEntity } from '@ubs-platform/entity-base';
 
 export class UserCapability {
     userId?: string;
@@ -9,7 +10,7 @@ export class UserCapability {
 }
 
 @Schema({ autoIndex: true, timestamps: true })
-export class EntityOwnership {
+export class EntityOwnership extends BaseEntity {
     _id?: any;
 
     /**

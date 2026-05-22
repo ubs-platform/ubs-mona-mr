@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EmailChangeRequest } from '@ubs-platform/users-entity-mongo';
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectBaseRepository, IBaseRepository, QueryOperators } from '@ubs-platform/entity-base';
 import { User } from '@ubs-platform/users-entity-mongo';
 import { UserService } from './user.service';
 import { CryptoOp } from '../util/crypto-op';
@@ -11,16 +10,16 @@ import { Cron } from '@nestjs/schedule';
 @Injectable()
 export class EmailChangeRequestService {
     constructor(
-        @InjectModel(EmailChangeRequest.name)
-        private echReq: Model<EmailChangeRequest>,
+        @InjectBaseRepository(EmailChangeRequest)
+        private echReqRepository: IBaseRepository<EmailChangeRequest>,
         private userService: UserService,
         private emailService: EmailService,
     ) {}
 
     @Cron('* */5 * * * *')
     async handleCron() {
-        await this.echReq.deleteMany({
-            expireAfter: { $lt: new Date().toISOString() },
+        await this.echReqRepository.deleteMany({
+            expireAfter: QueryOperators.LessThan(new Date()),
         });
     }
 
@@ -28,10 +27,8 @@ export class EmailChangeRequestService {
         userId: string,
         newEmail: string,
     ): Promise<{ approveId: string }> {
-        this.echReq.deleteMany({
-            expireAfter: {
-                $lt: new Date(),
-            },
+        await this.echReqRepository.deleteMany({
+            expireAfter: QueryOperators.LessThan(new Date()),
         });
         if (
             (await this.userService.findByEmailExcludeUserId(newEmail, userId))
@@ -41,17 +38,18 @@ export class EmailChangeRequestService {
         }
         const exp = new Date();
         exp.setMinutes(exp.getMinutes() + 2);
-        let ech = new this.echReq();
-        ech.newEmail = newEmail;
-        ech.userId = userId;
         const code = Math.floor(100000 + Math.random() * 900000).toString();
-        ech.code = await CryptoOp.encryptPassword(code); // TODO: Randomize and send email
+        const encryptedCode = await CryptoOp.encryptPassword(code); // TODO: Randomize and send email
 
-        ech.expireAfter = exp;
-        ech = await ech.save();
+        const ech = await this.echReqRepository.create({
+            newEmail,
+            userId,
+            code: encryptedCode,
+            expireAfter: exp,
+        });
         await this.sendMail(userId, newEmail, code);
 
-        return { approveId: ech.id };
+        return { approveId: ech.id! };
     }
 
     private async sendMail(userId: string, newEmail: string, code: string) {
@@ -70,8 +68,8 @@ export class EmailChangeRequestService {
         approvementId: string,
         code: string,
     ) {
-        const exist = await this.echReq.findOne({
-            _id: approvementId,
+        const exist = await this.echReqRepository.findOne({
+            id: approvementId,
             userId: userId,
         });
         console.info('Current email change refresh', exist);

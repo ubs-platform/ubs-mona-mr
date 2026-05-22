@@ -4,8 +4,6 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, ObjectId } from 'mongoose';
 import { User } from '@ubs-platform/users-entity-mongo';
 // const Cyripto = require("crypto-promise")
 import { UserMapper } from '../mapper/user.mapper';
@@ -32,11 +30,13 @@ import { MongooseSearchUtil } from '@ubs-platform/crud-base';
 import { UserAdminSearch } from 'libs/users-common/src/user-admin-search.dto';
 import { exec } from 'child_process';
 import { MICROSERVICE_CLIENT } from '@ubs-platform/microservice-setup-util';
+import { InjectBaseRepository, IBaseRepository, QueryOperators } from '@ubs-platform/entity-base';
+import { RawSearchResult } from '@ubs-platform/crud-base-common/search-result';
 
 @Injectable()
 export class UserService {
     constructor(
-        @InjectModel(User.name) private userModel: Model<User>,
+        @InjectBaseRepository(User) private userRepository: IBaseRepository<User>,
         @Inject(MICROSERVICE_CLIENT) private client: ClientKafka,
         private emailService: EmailService,
         private userCommonService: UserCommonService,
@@ -45,19 +45,42 @@ export class UserService {
     }
 
     async fetchAllUsers() {
-        return (await this.userModel.find()).map((a) =>
+        return (await this.userRepository.findAll()).map((a) =>
             UserMapper.toAuthBackendDto(a),
         );
     }
 
     async fetchAllUsersPaginated(uas: UserAdminSearch) {
-        return (
-            await MongooseSearchUtil.modelSearch(this.userModel, uas.size, uas.page, {})
-        ).mapAsync(async (a) => UserMapper.toAuthBackendDto(a));
+        const isSql = (this.userRepository as any).repo !== undefined;
+        if (isSql) {
+            const size = parseInt(uas.size as any) || 10;
+            const page = parseInt(uas.page as any) || 0;
+            const skip = size * page;
+            const [data, total] = await Promise.all([
+                this.userRepository.find({}, { skip, limit: size }),
+                this.userRepository.count({})
+            ]);
+            const maxPagesIndex = size ? Math.max(0, Math.ceil(total / size) - 1) : 0;
+            const searchResult = new RawSearchResult<User>(
+                data,
+                page,
+                size,
+                total,
+                maxPagesIndex,
+                maxPagesIndex === page,
+                page === 0
+            );
+            return searchResult.map((a) => UserMapper.toAuthBackendDto(a));
+        } else {
+            const rawModel = (this.userRepository as any).model;
+            return (
+                await MongooseSearchUtil.modelSearch(rawModel, uas.size, uas.page, {})
+            ).mapAsync(async (a: any) => UserMapper.toAuthBackendDto(a));
+        }
     }
 
     async fetchUserGeneralInformation(user: UserGeneralInfoDTO) {
-        const userExist = await this.userModel.findById(user.id);
+        const userExist = await this.userRepository.findById(user.id!);
         console.info(userExist);
         if (userExist) {
             return UserMapper.toGeneralDto(userExist);
@@ -67,7 +90,7 @@ export class UserService {
     }
 
     async changePasswordLogged(id: string, pwChange: PasswordChangeDto) {
-        const u = await this.userModel.findById(id);
+        const u = await this.userRepository.findById(id);
 
         if (u) {
             if (
@@ -81,7 +104,7 @@ export class UserService {
                 u.passwordEncyripted = await CryptoOp.encryptPassword(
                     pwChange.newPassword,
                 );
-                await u.save();
+                await this.userRepository.save(u);
                 await this.sendPasswordChangedMail(u);
                 return UserMapper.toAuthDto(u);
             }
@@ -91,11 +114,11 @@ export class UserService {
     }
 
     async changePasswordForgor(id: string, newPassword: string) {
-        const u = await this.userModel.findById(id);
+        const u = await this.userRepository.findById(id);
 
         if (u) {
             u.passwordEncyripted = await CryptoOp.encryptPassword(newPassword);
-            await u.save();
+            await this.userRepository.save(u);
             await this.sendPasswordChangedMail(u);
             return UserMapper.toAuthDto(u);
         } else {
@@ -121,32 +144,24 @@ export class UserService {
         encryptPassword = true,
     ) {
         await this.userCommonService.assertUserInfoValid(user);
-        const u = new this.userModel();
+        const u = {} as User;
         await UserMapper.createFrom(u, user, encryptPassword);
-        await u.save();
+        const saved = await this.userRepository.save(u);
 
-        return UserMapper.toAuthDto(u);
+        return UserMapper.toAuthDto(saved);
     }
 
     async changeEmail(userId: any, newEmail: string) {
-        const user = await this.userModel.findById(userId);
+        const user = await this.userRepository.findById(userId);
         if (user) {
             user.primaryEmail = newEmail;
-            await user.save();
+            await this.userRepository.save(user);
             return UserMapper.toAuthDto(user);
         }
     }
 
     async findUserByLogin(userLogin: UserAuth): Promise<UserDTO | null> {
         let realUser: UserDTO | null = null;
-        // const userUname = await this.userCommonService.findByUsername(
-        //     userLogin.login,
-        // );
-        // if (userUname.length) {
-        //     realUser = userUname[0];
-        // } else {
-
-        // }
         const userEmail = await this.userCommonService.findByUsernameOrEmail(
             userLogin.login,
             userLogin.login,
@@ -160,36 +175,28 @@ export class UserService {
     async findByEmailExcludeUserId(
         primaryEmail: string,
         userIdExclude: any,
-    ): Promise<UserDTO[]> {
-        return await this.userModel.find({
+    ): Promise<User[]> {
+        return await this.userRepository.find({
             primaryEmail: primaryEmail,
-            _id: {
-                $ne: userIdExclude,
-            },
+            id: QueryOperators.NotEqual(userIdExclude),
         });
     }
 
     private async findByEmailPwHash(
         primaryEmail: string,
         pwHash: string,
-    ): Promise<UserDTO[]> {
-        return await this.userModel.find({
+    ): Promise<User[]> {
+        return await this.userRepository.find({
             primaryEmail: primaryEmail,
             passwordEncyripted: pwHash,
         });
     }
 
     public async findUserWithPassword(username: UserAuth): Promise<UserDTO> {
-        const us = await this.userModel.findOne({
-            $and: [
-                {
-                    $or: [
-                        { username: username.login },
-                        { primaryEmail: username.login },
-                    ],
-                },
-            ],
-        });
+        const us = await this.userRepository.findOne([
+            { username: username.login },
+            { primaryEmail: username.login },
+        ]);
 
         if (us) {
             if (
@@ -208,22 +215,22 @@ export class UserService {
     }
 
     async removeRole(userId: string, role: string): Promise<void> {
-        const u = await this.userModel.findById(userId);
+        const u = await this.userRepository.findById(userId);
         if (u) {
             const roleIndex = u.roles.indexOf(role);
             if (roleIndex > -1) {
                 u.roles.splice(roleIndex, 1);
-                await u.save();
+                await this.userRepository.save(u);
             }
         }
     }
 
     async insertRole(userId: string, role: string): Promise<void> {
-        const u = await this.userModel.findById(userId);
+        const u = await this.userRepository.findById(userId);
         if (u) {
             if (!u.roles.includes(role)) {
                 u.roles.push(role);
-                await u.save();
+                await this.userRepository.save(u);
             }
         }
     }
@@ -232,16 +239,15 @@ export class UserService {
         userId: string,
         role: string,
     ): Promise<boolean> {
-        return (
-            (await this.userModel.countDocuments({
-                id: userId,
-                roles: ['ADMIN', role],
-            })) > 0
-        );
+        const u = await this.userRepository.findById(userId);
+        if (u) {
+            return u.roles?.includes('ADMIN') || u.roles?.includes(role);
+        }
+        return false;
     }
 
     async findFullInfo(id: any): Promise<UserFullDto> {
-        return UserMapper.toFullDto((await this.userModel.findById(id))!);
+        return UserMapper.toFullDto((await this.userRepository.findById(id))!);
     }
 
     async findUserAuth(id: any): Promise<UserDTO> {
@@ -249,11 +255,11 @@ export class UserService {
     }
 
     private async findByIdRaw(id: any) {
-        return (await this.userModel.findById(id))!;
+        return (await this.userRepository.findById(id))!;
     }
 
     async findUserAuthBackend(id: any): Promise<UserAuthBackendDTO | null> {
-        const u = await this.userModel.findById(id);
+        const u = await this.userRepository.findById(id);
         if (u && u.active && !u.suspended) {
             return UserMapper.toAuthBackendDto(u);
         } else {
@@ -272,33 +278,28 @@ export class UserService {
         ) {
             throw 'email-is-using-already';
         }
-        // if (user.roles.includes('ADMIN')) {
-        //   data.roles = ['ADMIN'];
-        //   data.active = true;
-        //   data.suspended = false;
-        // }
-        const user = new this.userModel();
+        const user = {} as User;
         await UserMapper.userFullFromUser(user, data);
-        await user.save();
+        await this.userRepository.save(user);
         UserMapper.toAuthDto(user);
     }
 
-    async findById(id: ObjectId | string) {
+    async findById(id: any) {
         return UserMapper.toFullDto(await this.findByIdRaw(id));
     }
 
     async editUserFullInformation(data: UserFullDto) {
         if (
-            (await this.findByEmailExcludeUserId(data.primaryEmail, data._id))
+            (await this.findByEmailExcludeUserId(data.primaryEmail, data._id!))
                 .length
         ) {
             throw 'email-is-using-already';
         }
-        const user = await this.userModel.findById(data._id);
+        const user = await this.userRepository.findById(data._id!);
         console.info(user);
         if (user) {
             await UserMapper.userFullFromUser(user, data);
-            await user.save();
+            await this.userRepository.save(user);
             UserMapper.toAuthDto(user);
         } else {
             throw 'not.found';
@@ -306,7 +307,7 @@ export class UserService {
     }
 
     async editUserGeneralInformation(data: UserGeneralInfoDTO, id: any) {
-        const user = await this.userModel.findById(id);
+        const user = await this.userRepository.findById(id);
         console.info(user);
         if (user) {
             UserMapper.userFromGeneralInfo(user, data);
@@ -317,34 +318,25 @@ export class UserService {
         }
     }
 
-    private async saveUserWithEditEvent(
-        user: import('mongoose').Document<unknown, {}, User> &
-            User & { _id: import('mongoose').Types.ObjectId } & { __v: number },
-    ) {
-        await user.save();
-        const uDto = UserMapper.toAuthDto(user);
+    private async saveUserWithEditEvent(user: User) {
+        const saved = await this.userRepository.save(user);
+        const uDto = UserMapper.toAuthDto(saved);
         this.client.emit(UserKafkaEvents.USER_EDITED, uDto);
         return uDto;
     }
 
     async deleteUser(id: any) {
-        const user = await this.userModel.findById(id);
+        const user = await this.userRepository.findById(id);
         if (user) {
-            // UserMapper.userFromGeneralInfo(user, data);
-            await user.deleteOne();
+            await this.userRepository.delete(id);
             return UserMapper.toGeneralDto(user);
-            // UserMapper.toAuthDto(user);
         } else {
             return null;
         }
     }
 
     async initOperation() {
-        // const kyle =await this.userModel.findOne({username: "kyle"}).exec()
-        // kyle!.passwordEncyripted = await CryptoOp.encryptPassword("kyle");
-        // await kyle!.save()
-        // return
-        const count = await this.userModel.countDocuments();
+        const count = await this.userRepository.count({});
         if (count == 0) {
             const user = {
                 username: process.env['UBS_USERS_INITIAL_USERNAME'] || 'kyle',
@@ -371,7 +363,6 @@ export class UserService {
                 "Don't forget to change these informations before production.",
             );
             console.info(user);
-            // }
         }
     }
 }

@@ -1,5 +1,5 @@
 export interface QueryOperator {
-  __op: 'in' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'between';
+  __op: 'in' | 'gt' | 'gte' | 'lt' | 'lte' | 'like' | 'between' | 'ne';
   val: any;
 }
 
@@ -11,6 +11,7 @@ export const QueryOperators = {
   LessThanOrEqual: (val: any): QueryOperator => ({ __op: 'lte', val }),
   Like: (val: string): QueryOperator => ({ __op: 'like', val }),
   Between: (from: any, to: any): QueryOperator => ({ __op: 'between', val: [from, to] }),
+  NotEqual: (val: any): QueryOperator => ({ __op: 'ne', val }),
 };
 
 export function isQueryOperator(val: any): val is QueryOperator {
@@ -20,41 +21,48 @@ export function isQueryOperator(val: any): val is QueryOperator {
 export function parseMongoQuery(query: any): any {
   if (!query || typeof query !== 'object') return query;
   if (Array.isArray(query)) {
+    if (query.length > 0 && query.every(item => item && typeof item === 'object' && !(item instanceof Date) && !(item instanceof RegExp))) {
+      return { $or: query.map(parseMongoQuery) };
+    }
     return query.map(parseMongoQuery);
   }
   const result: any = {};
   for (const key of Object.keys(query)) {
     const val = query[key];
+    const actualKey = key === 'id' ? '_id' : key;
     if (isQueryOperator(val)) {
       switch (val.__op) {
         case 'in':
-          result[key] = { $in: val.val };
+          result[actualKey] = { $in: val.val };
           break;
         case 'gt':
-          result[key] = { $gt: val.val };
+          result[actualKey] = { $gt: val.val };
           break;
         case 'gte':
-          result[key] = { $gte: val.val };
+          result[actualKey] = { $gte: val.val };
           break;
         case 'lt':
-          result[key] = { $lt: val.val };
+          result[actualKey] = { $lt: val.val };
           break;
         case 'lte':
-          result[key] = { $lte: val.val };
+          result[actualKey] = { $lte: val.val };
           break;
         case 'like':
-          result[key] = { $regex: new RegExp(val.val, 'i') };
+          result[actualKey] = { $regex: new RegExp(val.val, 'i') };
           break;
         case 'between':
-          result[key] = { $gte: val.val[0], $lte: val.val[1] };
+          result[actualKey] = { $gte: val.val[0], $lte: val.val[1] };
+          break;
+        case 'ne':
+          result[actualKey] = { $ne: val.val };
           break;
         default:
-          result[key] = val;
+          result[actualKey] = val;
       }
     } else if (val && typeof val === 'object' && !(val instanceof Date) && !(val instanceof RegExp)) {
-      result[key] = parseMongoQuery(val);
+      result[actualKey] = parseMongoQuery(val);
     } else {
-      result[key] = val;
+      result[actualKey] = val;
     }
   }
   return result;
@@ -91,6 +99,9 @@ export function parseSqlQuery(query: any, typeormOperators: any): any {
         case 'between':
           result[key] = typeormOperators.Between(val.val[0], val.val[1]);
           break;
+        case 'ne':
+          result[key] = typeormOperators.Not(val.val);
+          break;
         default:
           result[key] = val;
       }
@@ -102,3 +113,4 @@ export function parseSqlQuery(query: any, typeormOperators: any): any {
   }
   return result;
 }
+

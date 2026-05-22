@@ -3,12 +3,10 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectBaseRepository, IBaseRepository, QueryOperators } from '@ubs-platform/entity-base';
 import { User } from '@ubs-platform/users-entity-mongo';
 import { EmailService } from './email.service';
-import { UserCandiate, UserCandiateDoc } from '@ubs-platform/users-entity-mongo';
-import { Model, ObjectId } from 'mongoose';
-import { retry } from 'rxjs';
+import { UserCandiate } from '@ubs-platform/users-entity-mongo';
 import {
     ErrorInformations,
     UBSUsersErrorConsts,
@@ -23,8 +21,8 @@ import { Cron } from '@nestjs/schedule';
 @Injectable()
 export class UserRegisterService {
     constructor(
-        @InjectModel(UserCandiate.name)
-        private userCandiateModel: Model<UserCandiate>,
+        @InjectBaseRepository(UserCandiate)
+        private userCandiateRepository: IBaseRepository<UserCandiate>,
         private userService: UserService,
         private emailService: EmailService,
         private userCommon: UserCommonService,
@@ -32,8 +30,8 @@ export class UserRegisterService {
 
     @Cron('* */5 * * * *')
     async handleCron() {
-        await this.userCandiateModel.deleteMany({
-            expireDate: { $lt: new Date().toISOString() },
+        await this.userCandiateRepository.deleteMany({
+            expireDate: QueryOperators.LessThan(new Date()),
         });
     }
 
@@ -56,7 +54,7 @@ export class UserRegisterService {
 
     async enableUser(activationKey: string) {
         if (activationKey) {
-            const u = await this.userCandiateModel.findOne({ activationKey });
+            const u = await this.userCandiateRepository.findOne({ activationKey });
             if (u) {
                 await this.userService.saveNewUser(
                     {
@@ -71,11 +69,7 @@ export class UserRegisterService {
                     },
                     false,
                 );
-                await u.deleteOne();
-                //todo: userCandiate to user
-                // u.active = true;
-                // u.activationKey = '';
-                // u.save();
+                await this.userCandiateRepository.delete(u.id!);
             } else {
                 throw new NotFoundException();
             }
@@ -83,28 +77,29 @@ export class UserRegisterService {
     }
 
     async renewOrCheckOld(id?: string) {
-        let a = id ? await this.userCandiateModel.findById(id) : null;
+        let a = id ? await this.userCandiateRepository.findById(id) : null;
         if (!a) {
-            a = new this.userCandiateModel();
+            const newCand: Partial<UserCandiate> = {};
+            this.setExpireDate(newCand as any, 0, 2);
+            a = await this.userCandiateRepository.create(newCand);
+        } else {
+            this.setExpireDate(a, 0, 2);
+            a = await this.userCandiateRepository.save(a);
         }
-
-        this.setExpireDate(a, 0, 2);
-
-        a = await a.save();
         return await UserMapper.toCandiateDto(a);
     }
 
     async register(uregister: UserRegisterDTO, origin: string) {
         await this.assertUserInfoValid(uregister);
 
-        let a = await this.userCandiateModel.findById(uregister.registerId);
+        let a = await this.userCandiateRepository.findById(uregister.registerId);
         if (a) {
             await UserMapper.transferToCandiateEntity(a, uregister);
 
             a.activationKey = randomUUID();
             this.setExpireDate(a, 0, 7);
-            await a.save();
-            await this.sendRegisteredEmail(a, a.activationKey, origin);
+            a = await this.userCandiateRepository.save(a);
+            await this.sendRegisteredEmail(a, a.activationKey!, origin);
 
             return UserMapper.toCandiateDto(a);
         } else {
@@ -139,13 +134,16 @@ export class UserRegisterService {
 
         await this.userCommon.assertUserInfoValid(uregister);
 
-        const us = await this.userCandiateModel.find({
-            $or: [
-                { username: uregister.username },
-                { primaryEmail: uregister.primaryEmail },
-            ],
-            _id: { $ne: uregister.registerId },
-        });
+        const us = await this.userCandiateRepository.find([
+            {
+                username: uregister.username,
+                id: QueryOperators.NotEqual(uregister.registerId),
+            },
+            {
+                primaryEmail: uregister.primaryEmail,
+                id: QueryOperators.NotEqual(uregister.registerId),
+            },
+        ]);
         if (us.length) {
             if (us[0].username == uregister.username) {
                 throw new ErrorInformations(

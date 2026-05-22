@@ -70,4 +70,16 @@ export class MongoBaseRepository<T extends IBaseEntity, OPTIONS = any> extends B
     const result = await this.model.findByIdAndDelete(id, options as any).exec();
     return result !== null;
   }
+
+  async count(query: any, options?: OPTIONS): Promise<number> {
+    const parsed = parseMongoQuery(query);
+    return this.model.countDocuments(parsed, options as any).exec();
+  }
+
+  async deleteMany(query: any, options?: OPTIONS): Promise<boolean> {
+    const parsed = parseMongoQuery(query);
+    const result = await this.model.deleteMany(parsed, options as any).exec();
+    return result !== null && result.deletedCount !== undefined && result.deletedCount > 0;
+  }
 }
+

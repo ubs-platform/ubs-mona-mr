@@ -7,21 +7,24 @@ import {
     ErrorInformations,
     UBSUsersErrorConsts,
 } from '@ubs-platform/users-common';
+import { InjectBaseRepository, IBaseRepository } from '@ubs-platform/entity-base';
 import { User } from '@ubs-platform/users-entity-mongo';
 import { EmailService } from './email.service';
-import { Model } from 'mongoose';
 import { UserMapper } from '../mapper/user.mapper';
 @Injectable()
 export class UserCommonService {
-    constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+    constructor(
+        @InjectBaseRepository(User) private readonly userRepository: IBaseRepository<User>,
+    ) {}
 
     async findByUsernameOrEmail(
         username: string,
         email: string,
     ): Promise<UserDTO[]> {
-        const us = await this.userModel.find({
-            $or: [{ username: username }, { primaryEmail: email }],
-        });
+        const us = await this.userRepository.find([
+            { username: username },
+            { primaryEmail: email },
+        ]);
         return UserMapper.toDtoList(us);
     }
 

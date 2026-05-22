@@ -27,6 +27,7 @@ export class UserMapper {
         u.surname = user.surname;
         u.localeCode = user.localeCode;
         u._id = user.registerId;
+        u.id = user.registerId;
         return u;
     }
 
@@ -36,10 +37,10 @@ export class UserMapper {
             name: ub.name,
             surname: ub.surname,
             primaryEmail: this.lowerCased(ub.primaryEmail),
-            id: ub._id,
+            id: ub.id || ub._id,
             localeCode: ub.localeCode,
             password: '',
-            registerId: ub._id,
+            registerId: ub.id || ub._id,
         } as UserRegisterDTO;
     }
 
@@ -129,7 +130,8 @@ export class UserMapper {
         user.active = data.active;
         user.localeCode = data.localeCode;
         user.webSites = data.webSites;
-        user._id = data._id;
+        user._id = data._id || (data as any).id;
+        user.id = (data as any).id || data._id;
         return user;
     }
 
@@ -151,7 +153,7 @@ export class UserMapper {
             active: data.active,
             webSites: data.webSites,
             localeCode: data.localeCode,
-            _id: data._id,
+            _id: data.id || data._id,
         };
     }
 
@@ -162,7 +164,7 @@ export class UserMapper {
             surname: ub.surname,
             primaryEmail: this.lowerCased(ub.primaryEmail),
             active: ub.active,
-            id: ub._id,
+            id: ub.id || ub._id,
             suspended: ub.suspended,
             localeCode: ub.localeCode,
             suspendReason: ub.suspendReason,
@@ -177,7 +179,7 @@ export class UserMapper {
             surname: ub.surname,
             primaryEmail: this.lowerCased(ub.primaryEmail),
             active: ub.active,
-            id: ub._id.toString(),
+            id: (ub.id || ub._id)?.toString(),
             suspended: ub.suspended,
             localeCode: ub.localeCode,
             suspendReason: ub.suspendReason,
@@ -197,7 +199,7 @@ export class UserMapper {
             city: ub.city,
             country: ub.country,
             username: ub.username,
-            id: ub._id,
+            id: ub.id || ub._id,
         };
     }
 

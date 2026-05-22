@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { GroupCapability } from '@ubs-platform/users-common';
+import { BaseEntity } from '@ubs-platform/entity-base';
 import { EntityOwnershipGroupEntityCapability } from './entity-ownership-group-entity-capability';
 
 export class GroupUserCapability {
@@ -17,7 +18,7 @@ export class GroupUserCapability {
 }
 
 @Schema()
-export class EntityOwnershipGroup {
+export class EntityOwnershipGroup extends BaseEntity {
     _id?: any;
 
     @Prop([GroupUserCapability])

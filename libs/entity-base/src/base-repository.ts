@@ -9,6 +9,8 @@ export interface IBaseRepository<T extends IBaseEntity, OPTIONS = any> {
   save(item: T, options?: OPTIONS): Promise<T>;
   update(id: string, item: Partial<T>, options?: OPTIONS): Promise<T>;
   delete(id: string, options?: OPTIONS): Promise<boolean>;
+  count(query: any, options?: OPTIONS): Promise<number>;
+  deleteMany(query: any, options?: OPTIONS): Promise<boolean>;
 }
 
 export abstract class BaseRepository<T extends IBaseEntity, OPTIONS = any> implements IBaseRepository<T, OPTIONS> {
@@ -20,4 +22,6 @@ export abstract class BaseRepository<T extends IBaseEntity, OPTIONS = any> imple
   abstract save(item: T, options?: OPTIONS): Promise<T>;
   abstract update(id: string, item: Partial<T>, options?: OPTIONS): Promise<T>;
   abstract delete(id: string, options?: OPTIONS): Promise<boolean>;
+  abstract count(query: any, options?: OPTIONS): Promise<number>;
+  abstract deleteMany(query: any, options?: OPTIONS): Promise<boolean>;
 }

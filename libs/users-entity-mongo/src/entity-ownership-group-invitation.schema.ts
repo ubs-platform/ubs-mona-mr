@@ -1,9 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { GroupCapability } from '@ubs-platform/users-common';
+import { BaseEntity } from '@ubs-platform/entity-base';
 import { EntityOwnershipGroupEntityCapability } from './entity-ownership-group-entity-capability';
 
 @Schema()
-export class EntityOwnershipGroupInvitation {
+export class EntityOwnershipGroupInvitation extends BaseEntity {
     _id?: any;
 
     @Prop(String)

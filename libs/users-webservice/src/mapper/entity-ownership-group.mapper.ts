@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { EntityOwnershipGroup } from '@ubs-platform/users-entity-mongo';
 import {
     EntityOwnershipGroupCommonDTO,
@@ -11,8 +9,6 @@ import { UserService } from '../services/user.service';
 @Injectable()
 export class EntityOwnershipGroupMapper {
     constructor(
-        @InjectModel(EntityOwnershipGroup.name)
-        private eogModel: Model<EntityOwnershipGroup>,
         private userServiceLocal: UserService,
     ) {}
 
@@ -21,7 +17,7 @@ export class EntityOwnershipGroupMapper {
         currentUserId: string,
     ) {
         const user = await this.userServiceLocal.findById(currentUserId);
-        return new this.eogModel({
+        return {
             name: eogDto.name,
             description: eogDto.description,
             userCapabilities: [
@@ -32,7 +28,7 @@ export class EntityOwnershipGroupMapper {
                     groupCapability: 'OWNER',
                 },
             ],
-        });
+        } as any;
     }
 
     async editExisting(
@@ -47,15 +43,9 @@ export class EntityOwnershipGroupMapper {
 
     toDto(eog: EntityOwnershipGroup) {
         return {
-            id: eog._id.toString(),
+            id: (eog.id || eog._id).toString(),
             name: eog.name,
             description: eog.description,
-            // userCapabilities: eog.userCapabilities.map((a) => ({
-            //     userId: a.userId,
-            //     entityCapabilities: a.entityCapabilities,
-            //     groupCapability: a.groupCapability,
-            //     userFullName: a.userFullName,
-            // })),
         } as EntityOwnershipGroupCommonDTO;
     }
 }

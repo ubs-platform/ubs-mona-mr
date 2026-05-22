@@ -59,4 +59,28 @@ export class SqlBaseRepository<T extends IBaseEntity, OPTIONS = any> extends Bas
     const result = await this.repo.delete(id, options);
     return result.affected !== undefined && result.affected > 0;
   }
+
+  async count(query: any, options?: OPTIONS): Promise<number> {
+    let typeormOps: any = null;
+    try {
+      typeormOps = require('typeorm');
+    } catch (e) {
+      throw new Error('TypeORM is not installed, cannot use SqlBaseRepository');
+    }
+    const parsed = parseSqlQuery(query, typeormOps);
+    return this.repo.count({ where: parsed, ...options });
+  }
+
+  async deleteMany(query: any, options?: OPTIONS): Promise<boolean> {
+    let typeormOps: any = null;
+    try {
+      typeormOps = require('typeorm');
+    } catch (e) {
+      throw new Error('TypeORM is not installed, cannot use SqlBaseRepository');
+    }
+    const parsed = parseSqlQuery(query, typeormOps);
+    const result = await this.repo.delete(parsed, options);
+    return result.affected !== undefined && result.affected > 0;
+  }
 }
+

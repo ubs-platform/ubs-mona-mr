@@ -1,15 +1,11 @@
 import { EntityOwnershipDTO } from '@ubs-platform/users-common';
 import { EntityOwnership } from '@ubs-platform/users-entity-mongo';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import e from 'express';
+
 @Injectable()
 export class EntityOwnershipMapper {
-    constructor(
-        @InjectModel(EntityOwnership.name)
-        private model: Model<EntityOwnership>,
-    ) {}
+    constructor() {}
+
     toDto(entityOwnership: EntityOwnership) {
         return {
             entityGroup: entityOwnership.entityGroup,
@@ -25,7 +21,7 @@ export class EntityOwnershipMapper {
     }
 
     toEntity(entityOwnership: EntityOwnershipDTO) {
-        return new this.model({
+        return {
             entityGroup: entityOwnership.entityGroup,
             entityId: entityOwnership.entityId,
             entityName: entityOwnership.entityName,
@@ -37,21 +33,13 @@ export class EntityOwnershipMapper {
                     capability: a.capability,
                 };
             }),
-        });
+        } as any;
     }
 
     toEntityEditWithMembers(
         existingEntity: EntityOwnership,
         entityOwnership: EntityOwnershipDTO,
     ) {
-        // existingEntity.fileUploadAllowedFormats =
-        //   entityOwnership.fileUploadAllowedFormats;
-        // existingEntity.fileUploadMaxLengthBytes =
-        //   entityOwnership.fileUploadMaxLengthBytes;
-        // existingEntity.entityGroup = entityOwnership.entityGroup;
-        // existingEntity.entityId = entityOwnership.entityId;
-        // existingEntity.entityName = entityOwnership.entityName;
-        // existingEntity.overriderRoles = entityOwnership.overriderRoles;
         existingEntity.entityOwnershipGroupId =
             entityOwnership.entityOwnershipGroupId;
         existingEntity.userCapabilities = entityOwnership.userCapabilities;
@@ -70,14 +58,6 @@ export class EntityOwnershipMapper {
         existingEntity: EntityOwnership,
         entityOwnership: EntityOwnershipDTO,
     ) {
-        // existingEntity.fileUploadAllowedFormats =
-        //   entityOwnership.fileUploadAllowedFormats;
-        // existingEntity.fileUploadMaxLengthBytes =
-        //   entityOwnership.fileUploadMaxLengthBytes;
-        // existingEntity.entityGroup = entityOwnership.entityGroup;
-        // existingEntity.entityId = entityOwnership.entityId;
-        // existingEntity.entityName = entityOwnership.entityName;
-        // existingEntity.overriderRoles = entityOwnership.overriderRoles;
         existingEntity.entityOwnershipGroupId =
             entityOwnership.entityOwnershipGroupId;
         existingEntity.userCapabilities = entityOwnership.userCapabilities;

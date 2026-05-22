@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { BaseEntity } from '@ubs-platform/entity-base';
 import { randomUUID } from 'crypto';
 
 @Schema()
-export class PwResetRequest {
+export class PwResetRequest extends BaseEntity {
   @Prop({
     type: String,
     default: function genUUID() {

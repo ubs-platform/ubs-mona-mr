@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { BaseEntity } from '@ubs-platform/entity-base';
 
 @Schema()
-export class UserCandiate {
+export class UserCandiate extends BaseEntity {
     _id?: any;
 
     @Prop(String)
