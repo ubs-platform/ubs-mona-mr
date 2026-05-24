@@ -89,6 +89,12 @@
       "@ubs-platform/files-webservice/*": [
         "libs/files-webservice/src/*"
       ],
+      "@ubs-platform/greenhat-entity-mongo": [
+        "libs/greenhat-entity-mongo/src"
+      ],
+      "@ubs-platform/greenhat-entity-mongo/*": [
+        "libs/greenhat-entity-mongo/src/*"
+      ],
       "@ubs-platform/ip-blocker-entity-mongo": [
         "libs/ip-blocker-entity-mongo/src"
       ],

@@ -136,6 +136,15 @@
         "tsConfigPath": "libs/files-webservice/tsconfig.lib.json"
       }
     },
+    "greenhat-entity-mongo": {
+      "type": "library",
+      "root": "libs/greenhat-entity-mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/greenhat-entity-mongo/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/greenhat-entity-mongo/tsconfig.lib.json"
+      }
+    },
     "ip-blocker": {
       "type": "application",
       "root": "apps/ip-blocker",

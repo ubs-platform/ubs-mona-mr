@@ -138,6 +138,7 @@
       "^@ubs-platform/entity-base(|/.*)$": "<rootDir>/libs/entity-base/src/$1",
       "^@ubs-platform/feedback-common(|/.*)$": "<rootDir>/libs/feedback-common/src/$1",
       "^@ubs-platform/file-helper(|/.*)$": "<rootDir>/libs/file-helper/src/$1",
+      "^@ubs-platform/greenhat-entity-mongo(|/.*)$": "<rootDir>/libs/greenhat-entity-mongo/src/$1",
       "^@ubs-platform/loadbalanced-proxy(|/.*)$": "<rootDir>/libs/loadbalanced-proxy/src/$1",
       "^@ubs-platform/microservice-setup-util(|/.*)$": "<rootDir>/libs/microservice-setup-util/src/$1",
       "^@ubs-platform/notify-common(|/.*)$": "<rootDir>/libs/notify-common/src/$1",
