@@ -136,6 +136,15 @@
         "tsConfigPath": "libs/files-webservice/tsconfig.lib.json"
       }
     },
+    "greenhat": {
+      "type": "application",
+      "root": "apps/greenhat",
+      "entryFile": "main",
+      "sourceRoot": "apps/greenhat/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/greenhat/tsconfig.app.json"
+      }
+    },
     "greenhat-entity-mongo": {
       "type": "library",
       "root": "libs/greenhat-entity-mongo",

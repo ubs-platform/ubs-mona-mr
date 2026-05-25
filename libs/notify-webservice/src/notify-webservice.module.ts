@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { BackendJwtUtilsModule } from '@ubs-platform/users-microservice-helper';
+import { UserMicroserviceHelperModule } from '@ubs-platform/users-microservice-helper';
 import { NotifyEntityMongoModule } from '@ubs-platform/notify-entity-mongo';
 import { EmailTemplateController } from './controller/email-template.controller';
 import { GlobalVariableController } from './controller/global-variable.controller';
@@ -12,7 +12,7 @@ import { EmailService } from './service/email.service';
 @Module({
   imports: [
     NotifyEntityMongoModule,
-    BackendJwtUtilsModule,
+    UserMicroserviceHelperModule,
     MailerModule.forRoot({
       transport: `smtp://${process.env.UNOTIFY_MAIL_SERVER_UNAME}:${
         process.env.UNOTIFY_MAIL_SERVER_PW

@@ -8,13 +8,14 @@ import { DocumentService } from './service/document.service';
 import { ProjectService } from './service/project.service';
 
 @Module({
-  imports: [
-    GreenhatEntityMongoModule,
-    UserMicroserviceHelperModule,
-    MicroservicesCommonModule,
-  ],
-  controllers: [ProjectController, DocumentController],
-  providers: [ProjectService, DocumentService],
-  exports: [ProjectService, DocumentService],
+    imports: [
+        UserMicroserviceHelperModule,
+        GreenhatEntityMongoModule,
+        UserMicroserviceHelperModule,
+        MicroservicesCommonModule,
+    ],
+    controllers: [ProjectController, DocumentController],
+    providers: [ProjectService, DocumentService],
+    exports: [ProjectService, DocumentService],
 })
-export class GreenhatWebserviceModule {}
+export class GreenhatWebserviceModule { }
