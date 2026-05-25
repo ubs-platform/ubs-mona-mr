@@ -1,0 +1,13 @@
+{
+  "name": "@ubs-platform/greenhat-common",
+  "repository": {
+    "url": "https://github.com/ubs-platform/ubs-mona-mr"
+  },
+  "homepage": "https://github.com/ubs-platform/ubs-mona-mr",
+  "version": "1.0.0",
+  "iksir": {
+    "type": "LIBRARY",
+    "libraryMode": "PEER",
+    "buildSubFolder": ""
+  }
+}

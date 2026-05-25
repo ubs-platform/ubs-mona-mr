@@ -9,6 +9,7 @@ import { FeedbackWebserviceModule } from '@ubs-platform/feedback-webservice';
 import { FilesWebserviceModule } from '@ubs-platform/files-webservice';
 import { SuperlamaWebserviceModule } from '@ubs-platform/superlama-webservice';
 import { IpBlockerWebserviceModule } from '@ubs-platform/ip-blocker-webservice';
+import { GreenhatWebserviceModule } from '@ubs-platform/greenhat-webservice';
 
 @Module({
     imports: [
@@ -28,6 +29,7 @@ import { IpBlockerWebserviceModule } from '@ubs-platform/ip-blocker-webservice';
         FilesWebserviceModule,
         SuperlamaWebserviceModule,
         IpBlockerWebserviceModule,
+        GreenhatWebserviceModule,
     ],
     controllers: [DevMonolithController],
     providers: [],

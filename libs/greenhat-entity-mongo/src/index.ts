@@ -1,3 +1,5 @@
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 
@@ -9,7 +11,7 @@ export class DocProject {
   _id!: Types.ObjectId;
 
   // URL veya kısa tanımlayıcı için (benzersiz)
-  @Prop({ type: String, required: true, unique: true, index: true })
+  @Prop({ type: String, required: true })
   slug!: string;
 
   @Prop({ type: String, required: true })
@@ -27,10 +29,34 @@ export class DocProject {
 
   @Prop({ type: String })
   updatedBy?: string;
+
+  @Prop({ type: Boolean, default: false, index: true })
+  deactivated: boolean = false;
 }
 
 export type DocProjectDoc = HydratedDocument<DocProject>;
 export const DocProjectSchema = SchemaFactory.createForClass(DocProject);
+DocProjectSchema.index(
+  { slug: 1 },
+  { unique: true, partialFilterExpression: { deactivated: false } },
+);
+
+@Schema({ _id: false })
+export class DocLocalizedContent {
+  @Prop({ type: String, enum: ['text'], default: 'text' })
+  type: 'text' = 'text';
+
+  @Prop({ type: String, default: '' })
+  content: string = '';
+
+  @Prop({ type: String })
+  updatedBy?: string;
+
+  @Prop({ type: Date })
+  updatedAt?: Date;
+}
+export const DocLocalizedContentSchema =
+  SchemaFactory.createForClass(DocLocalizedContent);
 
 /**
  * Article: Ağaç yapısındaki asıl düğüm
@@ -52,63 +78,68 @@ export class DocArticle {
   path!: string;
 
   @Prop({ type: String, required: true })
-  title!: string;
+  slug!: string;
 
-  // İçerik tipi basit tutuldu (MVP)
-  @Prop({ type: String, enum: ['markdown', 'html'], default: 'markdown' })
-  contentType!: 'markdown' | 'html';
+  @Prop({ type: String, required: true })
+  name!: string;
 
-  // Ana metin içeriği
-  @Prop({ type: String, default: '' })
-  content: string = '';
+  @Prop({ type: String, required: true, index: true })
+  nameLower!: string;
 
-  // Yayın durumu
-  @Prop({ type: String, enum: ['draft', 'published'], default: 'draft', index: true })
-  status: 'draft' | 'published' = 'draft';
+  @Prop({ type: Map, of: String, default: {} })
+  titlesByLocale: Map<string, string> = new Map();
 
-  @Prop({ type: Date, default: null })
-  publishedAt: Date | null = null;
+  @Prop({ type: Map, of: DocLocalizedContentSchema, default: {} })
+  contentsByLocale: Map<string, DocLocalizedContent> = new Map();
 
-  // Kardeş sıralaması (aynı parent altındaki order)
-  @Prop({ type: Number, default: 0 })
-  order: number = 0;
-
-  // Parent zinciri: [rootId, ..., directParentId]
+  // Parent chain: [rootId, ..., directParentId]
   @Prop({ type: [Types.ObjectId], default: [] })
   ancestors: Types.ObjectId[] = [];
-
-  // Hızlı filtreleme için opsiyonel etiketler
-  @Prop({ type: [String], default: [] })
-  tags: string[] = [];
-
-  // Mevcut file servisteki dosya kimliği (opsiyonel)
-  @Prop({ type: String, default: null })
-  coverFileId: string | null = null;
-
-  @Prop({ type: [String], default: [] })
-  attachmentFileIds: string[] = [];
 
   @Prop({ type: String, required: true })
   createdBy!: string;
 
   @Prop({ type: String })
   updatedBy?: string;
+
+  @Prop({ type: Boolean, default: false, index: true })
+  deactivated: boolean = false;
 }
 
 export type DocArticleDoc = HydratedDocument<DocArticle>;
 export const DocArticleSchema = SchemaFactory.createForClass(DocArticle);
 
-// Aynı proje içinde path benzersiz olsun
-DocArticleSchema.index({ projectId: 1, path: 1 }, { unique: true });
+// Path uniqueness is kept on active docs.
+DocArticleSchema.index(
+  { projectId: 1, path: 1 },
+  { unique: true, partialFilterExpression: { deactivated: false } },
+);
 
-// Parent altında listeleme + sıralama
-DocArticleSchema.index({ projectId: 1, parentId: 1, order: 1 });
+// Case-insensitive name uniqueness via normalized field.
+DocArticleSchema.index(
+  { projectId: 1, nameLower: 1 },
+  { unique: true, partialFilterExpression: { deactivated: false } },
+);
 
-// Subtree sorguları için
+// Parent listing.
+DocArticleSchema.index({ projectId: 1, parentId: 1 });
+
+// Subtree queries.
 DocArticleSchema.index({ projectId: 1, ancestors: 1 });
 
-// Basit metin araması
-DocArticleSchema.index({ title: 'text', content: 'text', tags: 'text' });
+// Text search over name and localized titles.
+DocArticleSchema.index({ name: 'text', titlesByLocale: 'text' });
+
+@Module({
+  imports: [
+    MongooseModule.forFeature([
+      { name: DocProject.name, schema: DocProjectSchema },
+      { name: DocArticle.name, schema: DocArticleSchema },
+    ]),
+  ],
+  exports: [MongooseModule],
+})
+export class GreenhatEntityMongoModule {}
 
 /**
  * Opsiyonel, hafif revision tablosu (istersen sonradan açarsın)

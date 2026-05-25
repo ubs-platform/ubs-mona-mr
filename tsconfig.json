@@ -95,6 +95,18 @@
       "@ubs-platform/greenhat-entity-mongo/*": [
         "libs/greenhat-entity-mongo/src/*"
       ],
+      "@ubs-platform/greenhat-common": [
+        "libs/greenhat-common/src"
+      ],
+      "@ubs-platform/greenhat-common/*": [
+        "libs/greenhat-common/src/*"
+      ],
+      "@ubs-platform/greenhat-webservice": [
+        "libs/greenhat-webservice/src"
+      ],
+      "@ubs-platform/greenhat-webservice/*": [
+        "libs/greenhat-webservice/src/*"
+      ],
       "@ubs-platform/ip-blocker-entity-mongo": [
         "libs/ip-blocker-entity-mongo/src"
       ],
