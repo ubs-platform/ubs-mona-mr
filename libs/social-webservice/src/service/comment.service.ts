@@ -197,6 +197,7 @@ export class CommentService {
                 ...(commentSearch.childEntityName
                     ? { childEntityName: commentSearch.childEntityName }
                     : {}),
+                    // TODO: Eğer özellikle belirtilirse child yorumları da getirelim ama default olarak getirme. Kitap sahibi yorumlara bakarken childler gözden kaçıyor...
                 ...(commentSearch.childOfCommentId
                     ? {
                         childOfCommentId: commentSearch.childOfCommentId,
