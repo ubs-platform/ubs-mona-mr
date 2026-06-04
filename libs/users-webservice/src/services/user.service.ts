@@ -35,13 +35,30 @@ import { MICROSERVICE_CLIENT } from '@ubs-platform/microservice-setup-util';
 
 @Injectable()
 export class UserService {
+    private static initInProgress = false;
+    private static initCompleted = false;
+
     constructor(
         @InjectModel(User.name) private userModel: Model<User>,
         @Inject(MICROSERVICE_CLIENT) private client: ClientKafka,
         private emailService: EmailService,
         private userCommonService: UserCommonService,
     ) {
-        this.initOperation();
+        void this.initOperationOncePerProcess();
+    }
+
+    private async initOperationOncePerProcess() {
+        if (UserService.initCompleted || UserService.initInProgress) {
+            return;
+        }
+
+        UserService.initInProgress = true;
+        try {
+            await this.initOperation();
+            UserService.initCompleted = true;
+        } finally {
+            UserService.initInProgress = false;
+        }
     }
 
     async fetchAllUsers() {
