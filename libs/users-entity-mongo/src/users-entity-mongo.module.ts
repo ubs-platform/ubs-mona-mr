@@ -7,6 +7,7 @@ import { PwResetRequest, PwResetRequestSchema } from './pw-reset-request.schema'
 import { EntityOwnership, EntityOwnershipSchema } from './entity-ownership.schema';
 import { EntityOwnershipGroup, EntityOwnershipGroupSchema } from './entity-ownership-group.schema';
 import { EntityOwnershipGroupInvitation, EntityOwnershipGroupInvitationSchema } from './entity-ownership-group-invitation.schema';
+import { ApiKey, ApiKeySchema } from './api-key.schema';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { EntityOwnershipGroupInvitation, EntityOwnershipGroupInvitationSchema } 
       { name: EntityOwnership.name, schema: EntityOwnershipSchema },
       { name: EntityOwnershipGroup.name, schema: EntityOwnershipGroupSchema },
       { name: EntityOwnershipGroupInvitation.name, schema: EntityOwnershipGroupInvitationSchema },
+      { name: ApiKey.name, schema: ApiKeySchema },
     ]),
   ],
   exports: [MongooseModule],

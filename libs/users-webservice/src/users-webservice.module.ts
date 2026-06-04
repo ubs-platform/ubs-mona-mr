@@ -14,6 +14,7 @@ import { UserRegisterController } from './web/user-registration.controller';
 import { EntityOwnershipGroupMicroserviceController } from './web/entity-ownership-group-microservice.controller';
 import { EntityOwnershipGroupController } from './web/entity-ownership-group.controller';
 import { EntityOwnershipGroupMemberController } from './web/entity-ownership-group-member.controller';
+import { ApiKeyController } from './web/api-key.controller';
 import { UserService } from './services/user.service';
 import { UserCommonService } from './services/user-common.service';
 import { UserRegisterService } from './services/user-register.service';
@@ -23,6 +24,7 @@ import { PasswordResetService } from './services/password-reset.service';
 import { EmailService } from './services/email.service';
 import { EntityOwnershipService } from './services/entity-ownership.service';
 import { EntityOwnershipGroupService } from './services/entity-ownership-group.service';
+import { ApiKeyService } from './services/api-key.service';
 import { JwtAuthLocalGuard } from './guard/jwt-local.guard';
 import { JwtLocalStrategy } from './strategies/jwt-local-strategy';
 import { EntityOwnershipMapper } from './mapper/entity-ownership.mapper';
@@ -47,6 +49,7 @@ import { EntityOwnershipGroupMapper } from './mapper/entity-ownership-group.mapp
     EntityOwnershipGroupMicroserviceController,
     EntityOwnershipGroupController,
     EntityOwnershipGroupMemberController,
+    ApiKeyController,
   ],
   providers: [
     UserService,
@@ -62,6 +65,7 @@ import { EntityOwnershipGroupMapper } from './mapper/entity-ownership-group.mapp
     EntityOwnershipMapper,
     EntityOwnershipGroupService,
     EntityOwnershipGroupMapper,
+    ApiKeyService,
   ],
   exports: [UserService, UserCommonService, AuthService, EntityOwnershipService, EntityOwnershipGroupService],
 })
