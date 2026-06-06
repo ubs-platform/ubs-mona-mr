@@ -16,6 +16,7 @@ import {
 
 @Injectable()
 export class ApiKeyService {
+
     private readonly logger = new Logger(ApiKeyService.name, { timestamp: true });
 
     /** Minimum interval (ms) between lastUsedAt writes to avoid write storms */
@@ -24,9 +25,13 @@ export class ApiKeyService {
     constructor(
         @InjectModel(ApiKey.name)
         private apiKeyModel: Model<ApiKey>,
-    ) {}
+    ) { }
 
     // ─── Create ────────────────────────────────────────────────────────────────
+   async findById(keyId: string): Promise<ApiKeyDTO | null> {
+        const doc = await this.apiKeyModel.findById(keyId).lean().exec();
+        return doc ? this.toDTO(doc) : null;
+    }
 
     async create(
         requestingUserId: string,
@@ -78,7 +83,7 @@ export class ApiKeyService {
 
     async revoke(requestingUserId: string, keyId: string): Promise<void> {
         const doc = await this.apiKeyModel.findById(keyId).exec();
-        this.assertOwnership(doc, requestingUserId, keyId);
+        await this.assertOwnership(doc, requestingUserId, keyId);
         await this.apiKeyModel.updateOne({ _id: keyId }, { active: false });
         this.logger.log(`API key revoked: ${keyId} by user ${requestingUserId}`);
     }
@@ -87,7 +92,7 @@ export class ApiKeyService {
 
     async delete(requestingUserId: string, keyId: string): Promise<void> {
         const doc = await this.apiKeyModel.findById(keyId).exec();
-        this.assertOwnership(doc, requestingUserId, keyId);
+        await this.assertOwnership(doc, requestingUserId, keyId);
         await this.apiKeyModel.deleteOne({ _id: keyId });
         this.logger.log(`API key deleted: ${keyId} by user ${requestingUserId}`);
     }
@@ -122,25 +127,13 @@ export class ApiKeyService {
         return crypto.createHash('sha256').update(rawKey).digest('hex');
     }
 
-    private assertOwnership(
-        doc: ApiKey | null,
-        requestingUserId: string,
-        keyId: string,
-    ): void {
-        if (!doc) {
-            throw new NotFoundException(`API key not found: ${keyId}`);
-        }
-        if (doc.userId !== requestingUserId) {
-            throw new ForbiddenException('You do not own this API key');
-        }
-    }
 
     private updateLastUsedThrottled(doc: { _id: any; lastUsedAt?: Date }): void {
         const now = new Date();
         if (
             !doc.lastUsedAt ||
             now.getTime() - doc.lastUsedAt.getTime() >
-                ApiKeyService.LAST_USED_WRITE_THROTTLE_MS
+            ApiKeyService.LAST_USED_WRITE_THROTTLE_MS
         ) {
             this.apiKeyModel
                 .updateOne({ _id: doc._id }, { lastUsedAt: now })
