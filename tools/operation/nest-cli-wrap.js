@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.NestJsCliWrap = void 0;
 const json_util_1 = require("../util/json-util");
 const colors_1 = require("../util/colors");
+const exec_util_1 = require("../util/exec-util");
 const FileSystem = __importStar(require("fs/promises"));
 const path_1 = __importDefault(require("path"));
 class NestJsCliWrap {
@@ -84,6 +85,14 @@ class NestJsCliWrap {
         console.info((0, colors_1.strColor)(colors_1.COLORS.BgYellow, "If you don't want to push to NPM Registry, set iksir.libraryMode to 'EMBEDDED' in package.json"));
         console.info((0, colors_1.strColor)(colors_1.COLORS.BgYellow, `And if another libraries is being imported, tsc will compile with others. So you should set iksir.buildSubFolder to '${libName}/src'`));
         await json_util_1.JsonUtil.writeJson(libNodePackage, libPackageJsonPath);
+    }
+    async generateLib(name) {
+        const configs = await this.readConfig();
+        const nestPrefix = configs.nestCliJson['defaultLibraryPrefix'] || '@app';
+        console.info((0, colors_1.strColor)(colors_1.COLORS.FgCyan, `Generating library: ${name} with prefix ${nestPrefix}`));
+        await exec_util_1.ExecUtil.exec(`node node_modules/@angular-devkit/schematics-cli/bin/schematics.js @nestjs/schematics:library --name=${name} --prefix=${nestPrefix} --no-interactive`);
+        await this.checkPrefixIsSame();
+        await this.extendLib(`libs/${name}`);
     }
 }
 exports.NestJsCliWrap = NestJsCliWrap;

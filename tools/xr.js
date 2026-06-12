@@ -67,6 +67,13 @@ program
     await a.checkPrefixIsSame();
     await a.extendLib(targetDirectory);
 });
+program
+    .command('generate-lib <libName>')
+    .description('Yeni bir NestJS kütüphanesi oluşturur ve xr ile uyumlu hale getirir')
+    .action(async (libName) => {
+    const a = new nest_cli_wrap_1.NestJsCliWrap(workingDirectory);
+    await a.generateLib(libName);
+});
 console.info('Working directory is ' + workingDirectory);
 program
     .parseAsync(process.argv)

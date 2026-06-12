@@ -4,4 +4,5 @@ export declare class NestJsCliWrap {
     checkPrefixIsSame(): Promise<void>;
     private readConfig;
     extendLib(libPath: string): Promise<void>;
+    generateLib(name: string): Promise<void>;
 }
