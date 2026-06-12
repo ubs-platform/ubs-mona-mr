@@ -90,6 +90,15 @@ export class NestJsCliWrap {
         //     `node node_modules/@nestjs/schematics/dist/index.js --name=${name} --source-root="${this.workingDirectory}" --no-dry-run --no-skip-import --language="ts" --spec --no-flat --spec-file-suffix="spec"`,
         // );
     }
+
+    async generateLib(name: string) {
+        const configs = await this.readConfig();
+        const nestPrefix = configs.nestCliJson['defaultLibraryPrefix'] || '@app';
+        console.info(strColor(COLORS.FgCyan, `Generating library: ${name} with prefix ${nestPrefix}`));
+        await ExecUtil.exec(`node node_modules/@angular-devkit/schematics-cli/bin/schematics.js @nestjs/schematics:library --name=${name} --prefix=${nestPrefix} --no-interactive`);
+        await this.checkPrefixIsSame();
+        await this.extendLib(`libs/${name}`);
+    }
 }
 
 // const wrp = new NestJsCliWrap(
