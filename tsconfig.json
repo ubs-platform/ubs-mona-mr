@@ -2,7 +2,8 @@
   "exclude": [
     "./tools",
     "./infrastructure",
-    "./dist"
+    "./dist",
+    "./xr-generated"
   ],
   "compilerOptions": {
     "module": "commonjs",
@@ -194,11 +195,23 @@
       "@ubs-platform/users-consts": [
         "libs/users-consts/src"
       ],
+      "@ubs-platform/users-entity-common": [
+        "libs/users-entity-common/src"
+      ],
+      "@ubs-platform/users-entity-common/*": [
+        "libs/users-entity-common/src/*"
+      ],
       "@ubs-platform/users-entity-mongo": [
         "libs/users-entity-mongo/src"
       ],
       "@ubs-platform/users-entity-mongo/*": [
         "libs/users-entity-mongo/src/*"
+      ],
+      "@ubs-platform/users-entity-sql": [
+        "libs/users-entity-sql/src"
+      ],
+      "@ubs-platform/users-entity-sql/*": [
+        "libs/users-entity-sql/src/*"
       ],
       "@ubs-platform/users-microservice-helper": [
         "libs/users-microservice-helper/src"

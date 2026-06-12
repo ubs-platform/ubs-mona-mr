@@ -58,6 +58,7 @@
     "@nestjs/platform-fastify": "^11.0.11",
     "@nestjs/schedule": "^5.0.1",
     "@nestjs/serve-static": "^5.0.1",
+    "@nestjs/typeorm": "^11.0.1",
     "@types/bcrypt": "^5.0.2",
     "axios": "^1.7.9",
     "bcrypt": "^6.0.0",
@@ -74,7 +75,8 @@
     "passport-local": "^1.0.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "typeorm": "^1.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -130,9 +132,6 @@
       "^@app/users-roles(|/.*)$": "<rootDir>/libs/users-roles/src/$1",
       "^@mona/users-common(|/.*)$": "<rootDir>/libs/users-common/src/$1",
       "^@mona/users-microservice-helper(|/.*)$": "<rootDir>/libs/users-microservice-helper/src/$1",
-      "^@ubs-platform/users-common(|/.*)$": "<rootDir>/libs/users-common/src/$1",
-      "^@ubs-platform/users-microservice-helper(|/.*)$": "<rootDir>/libs/users-microservice-helper/src/$1",
-      "^@ubs-platform/users-roles(|/.*)$": "<rootDir>/libs/users-roles/src/$1",
       "^@mona/users/core/users-core(|/.*)$": "<rootDir>/libs/users-core/src/$1",
       "^@ubs-platform/cache-manager(|/.*)$": "<rootDir>/libs/cache-manager/src/$1",
       "^@ubs-platform/crud-base(|/.*)$": "<rootDir>/libs/crud-base/src/$1",
@@ -141,8 +140,8 @@
       "^@ubs-platform/entity-base(|/.*)$": "<rootDir>/libs/entity-base/src/$1",
       "^@ubs-platform/feedback-common(|/.*)$": "<rootDir>/libs/feedback-common/src/$1",
       "^@ubs-platform/file-helper(|/.*)$": "<rootDir>/libs/file-helper/src/$1",
-      "^@ubs-platform/greenhat-entity-mongo(|/.*)$": "<rootDir>/libs/greenhat-entity-mongo/src/$1",
       "^@ubs-platform/greenhat-common(|/.*)$": "<rootDir>/libs/greenhat-common/src/$1",
+      "^@ubs-platform/greenhat-entity-mongo(|/.*)$": "<rootDir>/libs/greenhat-entity-mongo/src/$1",
       "^@ubs-platform/greenhat-webservice(|/.*)$": "<rootDir>/libs/greenhat-webservice/src/$1",
       "^@ubs-platform/loadbalanced-proxy(|/.*)$": "<rootDir>/libs/loadbalanced-proxy/src/$1",
       "^@ubs-platform/microservice-setup-util(|/.*)$": "<rootDir>/libs/microservice-setup-util/src/$1",
@@ -150,8 +149,13 @@
       "^@ubs-platform/social-common(|/.*)$": "<rootDir>/libs/social-common/src/$1",
       "^@ubs-platform/social-consts(|/.*)$": "<rootDir>/libs/social-consts/src/$1",
       "^@ubs-platform/superlama-common(|/.*)$": "<rootDir>/libs/superlama-common/src/$1",
+      "^@ubs-platform/users-common(|/.*)$": "<rootDir>/libs/users-common/src/$1",
       "^@ubs-platform/users-consts(|/.*)$": "<rootDir>/libs/users-consts/src/$1",
       "^@ubs-platform/users-consts/users-consts(|/.*)$": "<rootDir>/libs/users-consts/src/$1",
+      "^@ubs-platform/users-entity-common(|/.*)$": "<rootDir>/libs/users-entity-common/src/$1",
+      "^@ubs-platform/users-entity-sql(|/.*)$": "<rootDir>/libs/users-entity-sql/src/$1",
+      "^@ubs-platform/users-microservice-helper(|/.*)$": "<rootDir>/libs/users-microservice-helper/src/$1",
+      "^@ubs-platform/users-roles(|/.*)$": "<rootDir>/libs/users-roles/src/$1",
       "^mona/core(|/.*)$": "<rootDir>/libs/core/src/$1"
     }
   }

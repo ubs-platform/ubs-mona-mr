@@ -352,6 +352,15 @@
         "tsConfigPath": "libs/users-core/tsconfig.lib.json"
       }
     },
+    "users-entity-common": {
+      "type": "library",
+      "root": "libs/users-entity-common",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-entity-common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-entity-common/tsconfig.lib.json"
+      }
+    },
     "users-entity-mongo": {
       "type": "library",
       "root": "libs/users-entity-mongo",
@@ -359,6 +368,15 @@
       "sourceRoot": "libs/users-entity-mongo/src",
       "compilerOptions": {
         "tsConfigPath": "libs/users-entity-mongo/tsconfig.lib.json"
+      }
+    },
+    "users-entity-sql": {
+      "type": "library",
+      "root": "libs/users-entity-sql",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-entity-sql/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-entity-sql/tsconfig.lib.json"
       }
     },
     "users-microservice-helper": {

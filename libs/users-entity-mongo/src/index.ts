@@ -7,3 +7,4 @@ export * from './entity-ownership-group.schema';
 export * from './entity-ownership-group-invitation.schema';
 export * from './entity-ownership-group-entity-capability';
 export * from './users-entity-mongo.module';
+export * from './repositories/base-mongo-repository';
