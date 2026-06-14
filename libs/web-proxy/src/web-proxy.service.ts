@@ -22,7 +22,16 @@ export class WebProxyService implements NestMiddleware {
             // Safely forwards payloads if NestJS body-parser is enabled
             on: {
                 proxyReq: (proxyReq, req: any) => {
-                    
+
+                    // When we self-handle the response to rewrite paths, we need
+                    // plain (uncompressed) content. Removing Accept-Encoding forces
+                    // the target to respond without gzip/br/deflate, so we don't
+                    // have to decompress manually and the browser won't see a
+                    // mismatched Content-Encoding header.
+                    if (htmlPathPrefix) {
+                        proxyReq.removeHeader('accept-encoding');
+                    }
+
                     if (req.body) {
                         const bodyData = JSON.stringify(req.body);
                         if (!proxyReq.getHeader('Content-Type') || proxyReq.getHeader('Content-Type') === 'application/json') {

@@ -8,9 +8,17 @@ import { exec } from 'child_process';
 const config: WebProxyConfig = {
   targets: [
     {
+      target: 'https://lotus.tetakent.com/', // Lotus uygulamasının auth microservice URL'si
+      changeOrigin: true, // Lotus uygulaması için changeOrigin gerekli
+      pathRewrite: { '^/lotus': '' }, // /lotus/foo → http://lotus.tetakent.com/api/auth/foo
+      activatePath: '/lotus/', // Bu proxy sadece /lotus/* path'leri için aktif olur
+      htmlPathPrefix: '/lotus/', // HTML/CSS/JS içindeki mutlak path'leri yeniden yaz
+    },
+
+    {
       target: 'http://localhost:5502/',
       changeOrigin: false, // Localhost hedefler için changeOrigin genellikle gerekmez
-      activatePath: '/ut', // Bu proxy sadece /ut/* path'leri için aktif olur
+      activatePath: '/ut/', // Bu proxy sadece /ut/* path'leri için aktif olur
       htmlPathPrefix: '/ut/', // HTML/CSS/JS içindeki mutlak path'leri yeniden yaz
     },
     // Test olarak saçma sapan bir repoda undertale oyununun webte çalışan versiyonunu proxy'liyoruz, bu proxy ile bütün canavarları kesip sans ile kapışacağım ve ruhumu chara'ya satacağım: PS: Vazgeçtim tetakent.com'u deneyeceğim...
@@ -18,8 +26,8 @@ const config: WebProxyConfig = {
       target: 'https://tetakent.com/',
       changeOrigin: true,
       pathRewrite: { '^/tetakent': '/' }, // /tetakent/foo → https://tetakent.com/foo
-      activatePath: '/tetakent', // Bu proxy sadece /tetakent/* path'leri için aktif olur
-      htmlPathPrefix: '/tetakent', // HTML/CSS/JS içindeki mutlak path'leri yeniden yaz
+      activatePath: '/tetakent/', // Bu proxy sadece /tetakent/* path'leri için aktif olur
+      // htmlPathPrefix: '/tetakent/', // HTML/CSS/JS içindeki mutlak path'leri yeniden yaz
     },
 
     // İkinci uygulama için örnek:
