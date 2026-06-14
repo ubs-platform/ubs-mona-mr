@@ -235,6 +235,15 @@
         "tsConfigPath": "libs/notify-webservice/tsconfig.lib.json"
       }
     },
+    "proxy": {
+      "type": "application",
+      "root": "apps/proxy",
+      "entryFile": "main",
+      "sourceRoot": "apps/proxy/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/proxy/tsconfig.app.json"
+      }
+    },
     "social": {
       "type": "application",
       "root": "apps/social",
@@ -386,6 +395,15 @@
       "sourceRoot": "libs/users-webservice/src",
       "compilerOptions": {
         "tsConfigPath": "libs/users-webservice/tsconfig.lib.json"
+      }
+    },
+    "web-proxy": {
+      "type": "library",
+      "root": "libs/web-proxy",
+      "entryFile": "index",
+      "sourceRoot": "libs/web-proxy/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/web-proxy/tsconfig.lib.json"
       }
     }
   }

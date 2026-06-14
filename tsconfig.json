@@ -211,6 +211,12 @@
       ],
       "@ubs-platform/users-webservice/*": [
         "libs/users-webservice/src/*"
+      ],
+      "@ubs-platform/web-proxy": [
+        "libs/web-proxy/src"
+      ],
+      "@ubs-platform/web-proxy/*": [
+        "libs/web-proxy/src/*"
       ]
     }
   }
