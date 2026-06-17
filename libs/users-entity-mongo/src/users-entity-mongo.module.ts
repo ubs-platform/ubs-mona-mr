@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from './user.model';
-import { UserCandiate, UserCandiateSchema } from './user-candiate.model';
-import { EmailChangeRequest, EmailChangeRequestSchema } from './email-change-request.schema';
-import { PwResetRequest, PwResetRequestSchema } from './pw-reset-request.schema';
-import { EntityOwnership, EntityOwnershipSchema } from './entity-ownership.schema';
-import { EntityOwnershipGroup, EntityOwnershipGroupSchema } from './entity-ownership-group.schema';
-import { EntityOwnershipGroupInvitation, EntityOwnershipGroupInvitationSchema } from './entity-ownership-group-invitation.schema';
+import { User, UserSchema } from './entity/user.model';
+import { UserCandiate, UserCandiateSchema } from './entity/user-candiate.model';
+import { EmailChangeRequest, EmailChangeRequestSchema } from './entity/email-change-request.schema';
+import { PwResetRequest, PwResetRequestSchema } from './entity/pw-reset-request.schema';
+import { EntityOwnership, EntityOwnershipSchema } from './entity/entity-ownership.schema';
+import { EntityOwnershipGroup, EntityOwnershipGroupSchema } from './entity/entity-ownership-group.schema';
+import { EntityOwnershipGroupInvitation, EntityOwnershipGroupInvitationSchema } from './entity/entity-ownership-group-invitation.schema';
 
 @Module({
   imports: [

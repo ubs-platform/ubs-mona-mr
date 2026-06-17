@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
 import { Document, Model, Types } from 'mongoose';
 import {
+    EntityOwnerGroupQueryHelper,
     EntityOwnershipGroup,
     GroupUserCapability,
 } from '@ubs-platform/users-entity-mongo';
@@ -38,6 +39,7 @@ export class EntityOwnershipGroupService {
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
         timestamp: true,
     });
+    eogQueryHelper: EntityOwnerGroupQueryHelper;
 
     constructor(
         @InjectModel(EntityOwnershipGroup.name)
@@ -49,10 +51,12 @@ export class EntityOwnershipGroupService {
         private emailService: EmailService,
         @InjectModel(EntityOwnership.name)
         private eoModel: Model<EntityOwnership>,
-    ) {}
+    ) {
+        this.eogQueryHelper = new EntityOwnerGroupQueryHelper(eogModel);
+    }
 
     async deleteGroup(id: string) {
-        await this.eogModel.findByIdAndDelete(id).exec();
+        await this.eogQueryHelper.delete(id);
     }
 
     async createGroup(
@@ -66,18 +70,18 @@ export class EntityOwnershipGroupService {
     }
 
     async editMeta(data: EntityOwnershipGroupMetaDTO) {
-        const a = await this.eogModel.findById(data.id).exec();
+        const a = await this.eogQueryHelper.findById(data.id);
         if (!a) {
             throw new Error('EntityOwnershipGroup not found');
         }
         a.name = data.name;
         a.description = data.description;
-        await a.save();
+        await this.eogQueryHelper.save(a);
         return this.mapper.toDto(a);
     }
 
     async fetchUsersInGroup(id: string): Promise<EOGUserCapabilityDTO[]> {
-        const found = await this.eogModel.findById(id).exec();
+        const found = await this.eogQueryHelper.findById(id);
 
         if (!found) {
             throw new Error('EntityOwnershipGroup not found');
@@ -129,7 +133,7 @@ export class EntityOwnershipGroupService {
     }
 
     async getByIdPublic(id: string): Promise<EntityOwnershipGroupCommonDTO> {
-        const entity = await this.eogModel.findById(id).exec();
+        const entity = await this.eogQueryHelper.findById(id);
         if (!entity) {
             throw new NotFoundException('EntityOwnershipGroup');
         }
@@ -137,7 +141,7 @@ export class EntityOwnershipGroupService {
     }
 
     async getById(id: string): Promise<Optional<EntityOwnershipGroup>> {
-        return this.eogModel.findById(id).exec();
+        return this.eogQueryHelper.findById(id);
     }
 
     async searchAll(
@@ -180,35 +184,10 @@ export class EntityOwnershipGroupService {
             | (EntityOwnershipGroupSearchDTO & SearchRequest)
             | undefined,
     ) {
-        const s: any = {};
-        if (searchAndPagination?.description) {
-            s.description = {
-                $regex: new RegExp(searchAndPagination.description, 'i'),
-            };
-        }
-        if (searchAndPagination?.name) {
-            s.name = {
-                $regex: new RegExp(searchAndPagination.name, 'i'),
-            };
-        }
-        if (searchAndPagination?.memberUserId) {
-            s['userCapabilities.userId'] = searchAndPagination.memberUserId;
-        }
-        return s;
+        return this.eogQueryHelper.searchParams(searchAndPagination);
     }
 
-    searchByUserId(
-        userId: string,
-        capacity: string | undefined,
-    ): Promise<EntityOwnershipGroupCommonDTO[]> {
-        return this.eogModel
-            .find({
-                'userCapabilities.userId': userId,
-                'userCapabilities.capability': capacity,
-            })
-            .exec()
-            .then((entities) => entities.map((e) => this.mapper.toDto(e)));
-    }
+
 
     async addUserCapability(
         groupId: string,
@@ -259,7 +238,7 @@ export class EntityOwnershipGroupService {
         groupId: string,
         userCapability: EOGUserCapabilityDTO,
     ): Promise<EntityOwnershipGroupCommonDTO> {
-        const group = await this.eogModel.findById(groupId);
+        const group = await this.getById(groupId);
 
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
