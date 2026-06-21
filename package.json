@@ -151,6 +151,7 @@
       "^@ubs-platform/users-common(|/.*)$": "<rootDir>/libs/users-common/src/$1",
       "^@ubs-platform/users-consts(|/.*)$": "<rootDir>/libs/users-consts/src/$1",
       "^@ubs-platform/users-consts/users-consts(|/.*)$": "<rootDir>/libs/users-consts/src/$1",
+      "^@ubs-platform/users-entity-base(|/.*)$": "<rootDir>/libs/users-entity-base/src/$1",
       "^@ubs-platform/users-microservice-helper(|/.*)$": "<rootDir>/libs/users-microservice-helper/src/$1",
       "^@ubs-platform/users-roles(|/.*)$": "<rootDir>/libs/users-roles/src/$1",
       "^@ubs-platform/web-proxy(|/.*)$": "<rootDir>/libs/web-proxy/src/$1",

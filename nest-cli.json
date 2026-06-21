@@ -361,6 +361,15 @@
         "tsConfigPath": "libs/users-core/tsconfig.lib.json"
       }
     },
+    "users-entity-base": {
+      "type": "library",
+      "root": "libs/users-entity-base",
+      "entryFile": "index",
+      "sourceRoot": "libs/users-entity-base/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/users-entity-base/tsconfig.lib.json"
+      }
+    },
     "users-entity-mongo": {
       "type": "library",
       "root": "libs/users-entity-mongo",

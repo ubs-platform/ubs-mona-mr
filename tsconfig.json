@@ -194,6 +194,12 @@
       "@ubs-platform/users-consts": [
         "libs/users-consts/src"
       ],
+      "@ubs-platform/users-entity-base": [
+        "libs/users-entity-base/src"
+      ],
+      "@ubs-platform/users-entity-base/*": [
+        "libs/users-entity-base/src/*"
+      ],
       "@ubs-platform/users-entity-mongo": [
         "libs/users-entity-mongo/src"
       ],
