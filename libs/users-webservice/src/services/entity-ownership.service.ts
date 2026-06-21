@@ -203,6 +203,7 @@ export class EntityOwnershipService {
         if (foundEntities.length > 0) {
             entity = foundEntities[0];
             this.mapper.toEntityEditWithMembers(entity, eoDto);
+            // TODO: entity.save()'leri de query helper içine alıp tek bir yerde toplamak daha sağlıklı olabilir.
             await entity.save();
         } else {
             throw new Error('EntityOwnership not found for edit.');
