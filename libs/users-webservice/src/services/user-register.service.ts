@@ -6,7 +6,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '@ubs-platform/users-entity-mongo';
 import { EmailService } from './email.service';
-import { UserCandiate, UserCandiateDoc } from '@ubs-platform/users-entity-mongo';
+import { UserCandiate, UserCandiateDoc, UserCandiateQueryHelper } from '@ubs-platform/users-entity-mongo';
 import { Model, ObjectId } from 'mongoose';
 import { retry } from 'rxjs';
 import {
@@ -22,19 +22,21 @@ import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class UserRegisterService {
+    private userCandiateQueryHelper: UserCandiateQueryHelper;
+
     constructor(
         @InjectModel(UserCandiate.name)
         private userCandiateModel: Model<UserCandiate>,
         private userService: UserService,
         private emailService: EmailService,
         private userCommon: UserCommonService,
-    ) {}
+    ) {
+        this.userCandiateQueryHelper = new UserCandiateQueryHelper(userCandiateModel);
+    }
 
     @Cron('* */5 * * * *')
     async handleCron() {
-        await this.userCandiateModel.deleteMany({
-            expireDate: { $lt: new Date().toISOString() },
-        });
+        await this.userCandiateQueryHelper.deleteExpired();
     }
 
     async sendRegisteredEmail(u: UserCandiate, key: string, origin = '') {
@@ -56,7 +58,7 @@ export class UserRegisterService {
 
     async enableUser(activationKey: string) {
         if (activationKey) {
-            const u = await this.userCandiateModel.findOne({ activationKey });
+            const u = await this.userCandiateQueryHelper.findByActivationKey(activationKey);
             if (u) {
                 await this.userService.saveNewUser(
                     {
@@ -83,7 +85,7 @@ export class UserRegisterService {
     }
 
     async renewOrCheckOld(id?: string) {
-        let a = id ? await this.userCandiateModel.findById(id) : null;
+        let a = id ? await this.userCandiateQueryHelper.findById(id) : null;
         if (!a) {
             a = new this.userCandiateModel();
         }
@@ -97,7 +99,7 @@ export class UserRegisterService {
     async register(uregister: UserRegisterDTO, origin: string) {
         await this.assertUserInfoValid(uregister);
 
-        let a = await this.userCandiateModel.findById(uregister.registerId);
+        let a = await this.userCandiateQueryHelper.findById(uregister.registerId);
         if (a) {
             await UserMapper.transferToCandiateEntity(a, uregister);
 
@@ -139,13 +141,11 @@ export class UserRegisterService {
 
         await this.userCommon.assertUserInfoValid(uregister);
 
-        const us = await this.userCandiateModel.find({
-            $or: [
-                { username: uregister.username },
-                { primaryEmail: uregister.primaryEmail },
-            ],
-            _id: { $ne: uregister.registerId },
-        });
+        const us = await this.userCandiateQueryHelper.findByUsernameOrEmailExcludeId(
+            uregister.username,
+            uregister.primaryEmail,
+            uregister.registerId,
+        );
         if (us.length) {
             if (us[0].username == uregister.username) {
                 throw new ErrorInformations(

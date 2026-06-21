@@ -40,4 +40,17 @@ export class UserCandiateQueryHelper extends QueryHelper<UserCandiate | Document
     async findByActivationKey(activationKey: string) {
         return await this.userCandiateModel.findOne({ activationKey }).exec();
     }
+
+    async findByUsernameOrEmailExcludeId(
+        username: string,
+        primaryEmail: string,
+        excludeId: any,
+    ) {
+        return await this.userCandiateModel
+            .find({
+                $or: [{ username }, { primaryEmail }],
+                _id: { $ne: excludeId },
+            })
+            .exec();
+    }
 }

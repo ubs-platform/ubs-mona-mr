@@ -121,4 +121,32 @@ export class EntityOwnershipQueryHelper extends QueryHelper<EntityOwnership | Do
             })
             .exec();
     }
+
+    async findByUserSearchWithEogIds(
+        eo: EntityOwnershipUserSearch,
+        eogIds: any[],
+    ) {
+        return await this.eoModel
+            .find({
+                entityGroup: eo.entityGroup,
+                entityName: eo.entityName,
+                entityId: { $ne: null },
+                $or: [
+                    {
+                        userCapabilities: {
+                            $elemMatch: {
+                                userId: eo.userId,
+                                ...(eo.capabilityAtLeastOne?.length
+                                    ? { capability: { $in: eo.capabilityAtLeastOne } }
+                                    : {}),
+                            },
+                        },
+                    },
+                    ...(eogIds.length
+                        ? [{ entityOwnershipGroupId: { $in: eogIds } }]
+                        : []),
+                ],
+            })
+            .exec();
+    }
 }

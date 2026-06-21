@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { EmailChangeRequest } from '@ubs-platform/users-entity-mongo';
+import { EmailChangeRequest, EmailChangeRequestQueryHelper } from '@ubs-platform/users-entity-mongo';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '@ubs-platform/users-entity-mongo';
@@ -10,29 +10,27 @@ import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class EmailChangeRequestService {
+    private echReqQueryHelper: EmailChangeRequestQueryHelper;
+
     constructor(
         @InjectModel(EmailChangeRequest.name)
         private echReq: Model<EmailChangeRequest>,
         private userService: UserService,
         private emailService: EmailService,
-    ) {}
+    ) {
+        this.echReqQueryHelper = new EmailChangeRequestQueryHelper(echReq);
+    }
 
     @Cron('* */5 * * * *')
     async handleCron() {
-        await this.echReq.deleteMany({
-            expireAfter: { $lt: new Date().toISOString() },
-        });
+        await this.echReqQueryHelper.deleteExpired();
     }
 
     public async insertNewRequest(
         userId: string,
         newEmail: string,
     ): Promise<{ approveId: string }> {
-        this.echReq.deleteMany({
-            expireAfter: {
-                $lt: new Date(),
-            },
-        });
+        this.echReqQueryHelper.deleteExpiredBefore(new Date());
         if (
             (await this.userService.findByEmailExcludeUserId(newEmail, userId))
                 .length
@@ -70,10 +68,7 @@ export class EmailChangeRequestService {
         approvementId: string,
         code: string,
     ) {
-        const exist = await this.echReq.findOne({
-            _id: approvementId,
-            userId: userId,
-        });
+        const exist = await this.echReqQueryHelper.findByIdAndUserId(approvementId, userId);
         console.info('Current email change refresh', exist);
         if (exist) {
             if (new Date() > exist.expireAfter) {

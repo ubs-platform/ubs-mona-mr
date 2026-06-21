@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, ObjectId } from 'mongoose';
-import { User } from '@ubs-platform/users-entity-mongo';
+import { User, UserQueryHelper } from '@ubs-platform/users-entity-mongo';
 // const Cyripto = require("crypto-promise")
 import { UserMapper } from '../mapper/user.mapper';
 import { CryptoOp } from '../util/crypto-op';
@@ -38,12 +38,15 @@ export class UserService {
     private static initInProgress = false;
     private static initCompleted = false;
 
+    private userQueryHelper: UserQueryHelper;
+
     constructor(
         @InjectModel(User.name) private userModel: Model<User>,
         @Inject(MICROSERVICE_CLIENT) private client: ClientKafka,
         private emailService: EmailService,
         private userCommonService: UserCommonService,
     ) {
+        this.userQueryHelper = new UserQueryHelper(userModel);
         void this.initOperationOncePerProcess();
     }
 
@@ -62,7 +65,7 @@ export class UserService {
     }
 
     async fetchAllUsers() {
-        return (await this.userModel.find()).map((a) =>
+        return (await this.userQueryHelper.findAll()).map((a) =>
             UserMapper.toAuthBackendDto(a),
         );
     }
@@ -74,7 +77,7 @@ export class UserService {
     }
 
     async fetchUserGeneralInformation(user: UserGeneralInfoDTO) {
-        const userExist = await this.userModel.findById(user.id);
+        const userExist = await this.userQueryHelper.findById(user.id);
         console.info(userExist);
         if (userExist) {
             return UserMapper.toGeneralDto(userExist);
@@ -84,7 +87,7 @@ export class UserService {
     }
 
     async changePasswordLogged(id: string, pwChange: PasswordChangeDto) {
-        const u = await this.userModel.findById(id);
+        const u = await this.userQueryHelper.findById(id);
 
         if (u) {
             if (
@@ -108,7 +111,7 @@ export class UserService {
     }
 
     async changePasswordForgor(id: string, newPassword: string) {
-        const u = await this.userModel.findById(id);
+        const u = await this.userQueryHelper.findById(id);
 
         if (u) {
             u.passwordEncyripted = await CryptoOp.encryptPassword(newPassword);
@@ -146,7 +149,7 @@ export class UserService {
     }
 
     async changeEmail(userId: any, newEmail: string) {
-        const user = await this.userModel.findById(userId);
+        const user = await this.userQueryHelper.findById(userId);
         if (user) {
             user.primaryEmail = newEmail;
             await user.save();
@@ -178,12 +181,7 @@ export class UserService {
         primaryEmail: string,
         userIdExclude: any,
     ): Promise<UserDTO[]> {
-        return await this.userModel.find({
-            primaryEmail: primaryEmail,
-            _id: {
-                $ne: userIdExclude,
-            },
-        });
+        return await this.userQueryHelper.findByEmailExcludeUserId(primaryEmail, userIdExclude) as UserDTO[];
     }
 
     private async findByEmailPwHash(
@@ -197,16 +195,7 @@ export class UserService {
     }
 
     public async findUserWithPassword(username: UserAuth): Promise<UserDTO> {
-        const us = await this.userModel.findOne({
-            $and: [
-                {
-                    $or: [
-                        { username: username.login },
-                        { primaryEmail: username.login },
-                    ],
-                },
-            ],
-        });
+        const us = await this.userQueryHelper.findOneByLoginOrEmail(username.login);
 
         if (us) {
             if (
@@ -225,7 +214,7 @@ export class UserService {
     }
 
     async removeRole(userId: string, role: string): Promise<void> {
-        const u = await this.userModel.findById(userId);
+        const u = await this.userQueryHelper.findById(userId);
         if (u) {
             const roleIndex = u.roles.indexOf(role);
             if (roleIndex > -1) {
@@ -236,7 +225,7 @@ export class UserService {
     }
 
     async insertRole(userId: string, role: string): Promise<void> {
-        const u = await this.userModel.findById(userId);
+        const u = await this.userQueryHelper.findById(userId);
         if (u) {
             if (!u.roles.includes(role)) {
                 u.roles.push(role);
@@ -249,16 +238,11 @@ export class UserService {
         userId: string,
         role: string,
     ): Promise<boolean> {
-        return (
-            (await this.userModel.countDocuments({
-                id: userId,
-                roles: ['ADMIN', role],
-            })) > 0
-        );
+        return (await this.userQueryHelper.countWithRoles(userId, ['ADMIN', role])) > 0;
     }
 
     async findFullInfo(id: any): Promise<UserFullDto> {
-        return UserMapper.toFullDto((await this.userModel.findById(id))!);
+        return UserMapper.toFullDto((await this.userQueryHelper.findById(id))!);
     }
 
     async findUserAuth(id: any): Promise<UserDTO> {
@@ -266,11 +250,11 @@ export class UserService {
     }
 
     private async findByIdRaw(id: any) {
-        return (await this.userModel.findById(id))!;
+        return (await this.userQueryHelper.findById(id))!;
     }
 
     async findUserAuthBackend(id: any): Promise<UserAuthBackendDTO | null> {
-        const u = await this.userModel.findById(id);
+        const u = await this.userQueryHelper.findById(id);
         if (u && u.active && !u.suspended) {
             return UserMapper.toAuthBackendDto(u);
         } else {
@@ -311,7 +295,7 @@ export class UserService {
         ) {
             throw 'email-is-using-already';
         }
-        const user = await this.userModel.findById(data._id);
+        const user = await this.userQueryHelper.findById(data._id);
         console.info(user);
         if (user) {
             await UserMapper.userFullFromUser(user, data);
@@ -323,7 +307,7 @@ export class UserService {
     }
 
     async editUserGeneralInformation(data: UserGeneralInfoDTO, id: any) {
-        const user = await this.userModel.findById(id);
+        const user = await this.userQueryHelper.findById(id);
         console.info(user);
         if (user) {
             UserMapper.userFromGeneralInfo(user, data);
@@ -345,7 +329,7 @@ export class UserService {
     }
 
     async deleteUser(id: any) {
-        const user = await this.userModel.findById(id);
+        const user = await this.userQueryHelper.findById(id);
         if (user) {
             // UserMapper.userFromGeneralInfo(user, data);
             await user.deleteOne();

@@ -1,8 +1,7 @@
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User } from '@ubs-platform/users-entity-mongo';
-import { PwResetRequest } from '@ubs-platform/users-entity-mongo';
+import { User, PwResetRequest, PwResetRequestQueryHelper } from '@ubs-platform/users-entity-mongo';
 import { UserService } from './user.service';
 import { ClientKafka, ClientProxy } from '@nestjs/microservices';
 import { EmailDto } from '../dto/email.dto';
@@ -14,31 +13,25 @@ import { Cron } from '@nestjs/schedule';
 
 @Injectable()
 export class PasswordResetService {
+    private pwResetQueryHelper: PwResetRequestQueryHelper;
+
     constructor(
         private uservice: UserService,
         @InjectModel(PwResetRequest.name)
         private passwordResetModel: Model<PwResetRequest>,
         private emailService: EmailService,
     ) {
+        this.pwResetQueryHelper = new PwResetRequestQueryHelper(passwordResetModel);
         // this.eventClient.subscribeToResponseOf('email-reset.reply');
     }
 
     async has(id: any) {
-        return (
-            (await this.passwordResetModel.countDocuments({
-                _id: id,
-                expireAfter: {
-                    $gt: new Date(),
-                },
-            })) > 0
-        );
+        return (await this.pwResetQueryHelper.countValid(id)) > 0;
     }
 
     @Cron('* */5 * * * *')
     async handleCron() {
-        await this.passwordResetModel.deleteMany({
-            expireAfter: { $lt: new Date().toISOString() },
-        });
+        await this.pwResetQueryHelper.deleteExpired();
     }
 
     public async insertNewRequest(username: string, origin?: string) {
@@ -48,24 +41,7 @@ export class PasswordResetService {
             login: username,
             password: '',
         });
-        await this.passwordResetModel
-            .deleteMany({
-                //@ts-ignore
-                $or: [
-                    {
-                        expireAfter: {
-                            //removing older requests
-                            $lt: new Date(),
-                        },
-                    },
-                    u?.id
-                        ? {
-                              userId: u.id,
-                          }
-                        : null,
-                ].filter((a) => a),
-            })
-            .exec();
+        await this.pwResetQueryHelper.deleteExpiredAndByUserId(u?.id || null);
         if (u) {
             console.info(u);
 
@@ -81,18 +57,12 @@ export class PasswordResetService {
     }
 
     public async approve(pwResetId: string, newPassword: string) {
-        const exist = await this.passwordResetModel.findOne({
-            _id: pwResetId,
-            expireAfter: {
-                // checking is not past
-                $gt: new Date(),
-            },
-        });
+        const exist = await this.pwResetQueryHelper.findValidById(pwResetId);
         console.info('Current email change refresh', exist);
         if (exist) {
             console.info(exist.userId);
             await this.uservice.changePasswordForgor(exist.userId, newPassword);
-            await this.passwordResetModel.deleteOne({ _id: exist.id });
+            await this.pwResetQueryHelper.deleteById(exist.id);
             // await this.sendPasswordChangedMail(exist.userId);
         } else {
             throw new HttpException('No records found', 404);

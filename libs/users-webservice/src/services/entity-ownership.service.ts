@@ -3,6 +3,7 @@ import { Model } from 'mongoose';
 import {
     EntityOwnership,
     EntityOwnershipDocument,
+    EntityOwnershipQueryHelper,
 } from '@ubs-platform/users-entity-mongo';
 import { InjectModel } from '@nestjs/mongoose';
 import { EntityOwnershipMapper } from '../mapper/entity-ownership.mapper';
@@ -26,6 +27,8 @@ export class EntityOwnershipService {
         timestamp: true,
     });
 
+    private eoQueryHelper: EntityOwnershipQueryHelper;
+
     constructor(
         @InjectModel(EntityOwnership.name)
         private eoModel: Model<EntityOwnership>,
@@ -33,7 +36,9 @@ export class EntityOwnershipService {
         private eogModel: Model<EntityOwnershipGroup>,
         private userService: UserService,
         private mapper: EntityOwnershipMapper,
-    ) { }
+    ) {
+        this.eoQueryHelper = new EntityOwnershipQueryHelper(eoModel);
+    }
 
     public async removeUserCapability(eo: EntityOwnershipUserCheck) {
         const searchKeys: EntityOwnershipSearch = {
@@ -42,24 +47,14 @@ export class EntityOwnershipService {
             entityName: eo.entityName,
         };
 
-        const updateResult = await this.eoModel.updateOne(searchKeys, {
-            $pull: {
-                userCapabilities: {
-                    userId: eo.userId,
-                },
-            },
-        });
-
-        return updateResult;
+        return await this.eoQueryHelper.pullUserCapability(searchKeys, eo.userId);
     }
 
     // Ortak kullanılan multiple entity bulma metodu
     private async findEntitiesBySearchKeys(
         searchKeys: EntityOwnershipSearch,
     ): Promise<EntityOwnership[]> {
-        return await this.eoModel.find(
-            { ...(searchKeys.entityId ? { entityId: searchKeys.entityId } : {}), entityGroup: searchKeys.entityGroup, entityName: searchKeys.entityName }
-        );
+        return await this.eoQueryHelper.findBySearchKeys(searchKeys);
     }
 
     // User capability kontrolü için ortak metod
@@ -263,15 +258,7 @@ export class EntityOwnershipService {
         searchKeys: EntityOwnershipSearch,
         oe: EntityOwnershipInsertCapabiltyDTO,
     ): Promise<void> {
-        const updateResult = await this.eoModel.updateOne(
-            { ...searchKeys, 'userCapabilities.userId': oe.userId },
-            {
-                $set: {
-                    'userCapabilities.$[related].capability': oe.capability,
-                },
-            },
-            { arrayFilters: [{ 'related.userId': oe.userId }] },
-        );
+        const updateResult = await this.eoQueryHelper.updateUserCapability(searchKeys, oe);
 
         if (updateResult.modifiedCount === 0) {
             this.logger.warn('User capability güncellenemedi:', oe);
@@ -365,36 +352,10 @@ export class EntityOwnershipService {
         const eogsByUser = await this.findEntityOwnershipGroupsByUser(eo);
         this.logger.debug('EOGs by user:', eogsByUser.length);
 
-        const eos = await this.eoModel.find({
-            entityGroup: eo.entityGroup,
-            entityName: eo.entityName,
-            entityId: { $ne: null },
-            $or: [
-                {
-                    userCapabilities: {
-                        $elemMatch: {
-                            userId: eo.userId,
-                            ...(eo.capabilityAtLeastOne
-                                ? {
-                                    capability: {
-                                        $in: eo.capabilityAtLeastOne,
-                                    },
-                                }
-                                : {}),
-                        },
-                    },
-                },
-                ...(eogsByUser.length
-                    ? [
-                        {
-                            entityOwnershipGroupId: {
-                                $in: eogsByUser.map((eog) => eog._id),
-                            },
-                        },
-                    ]
-                    : []),
-            ],
-        });
+        const eos = await this.eoQueryHelper.findByUserSearchWithEogIds(
+            eo,
+            eogsByUser.map((eog) => eog._id),
+        );
         // debugger;
         return eos;
     }
@@ -415,25 +376,17 @@ export class EntityOwnershipService {
             );
         }
 
-        const eos = await this.eoModel.find({
-            entityGroup: eo.entityGroup,
-            entityName: eo.entityName,
-            entityId: { $ne: null },
-            entityOwnershipGroupId: eo.entityOwnershipGroupId,
-        });
-        // debugger;
-        return eos.map((a) => a.entityId?.toString()!);
+        return (await this.eoQueryHelper.findByEogIdAndEntityDetails(
+            eo.entityGroup,
+            eo.entityName,
+            eo.entityOwnershipGroupId!,
+        )).map((a) => a.entityId?.toString()!);
     }
 
     async hasOwnershipsByEogId(
         eogId: string,
     ): Promise<boolean> {
-
-        const eos = await this.eoModel.find({
-
-            entityOwnershipGroupId: eogId,
-        });
-        // debugger;
+        const eos = await this.eoQueryHelper.findByEogId(eogId);
         return eos?.length > 0;
     }
 
@@ -453,7 +406,7 @@ export class EntityOwnershipService {
     }
 
     public async deleteOwnership(sk: EntityOwnershipSearch): Promise<void> {
-        await this.eoModel.deleteOne(sk);
+        await this.eoQueryHelper.deleteOne(sk);
     }
 
     // Deprecated - geriye uyumluluk için
