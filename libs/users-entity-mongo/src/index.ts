@@ -8,3 +8,8 @@ export * from './entity/entity-ownership-group-invitation.schema';
 export * from './entity/entity-ownership-group-entity-capability';
 export * from './users-entity-mongo.module';
 export * from './query-helper/entity-owner-group.query-helper';
+export * from './query-helper/user.query-helper';
+export * from './query-helper/entity-ownership.query-helper';
+export * from './query-helper/email-change-request.query-helper';
+export * from './query-helper/pw-reset-request.query-helper';
+export * from './query-helper/user-candiate.query-helper';
