@@ -55,6 +55,7 @@ export class EntityOwnerGroupQueryHelper extends QueryHelper<EntityOwnershipGrou
         userId: string,
         capacity: string | undefined,
     ): Promise<EntityOwnershipGroupCommonDTO[]> {
+        // TODO: Mapperlar için entityler base class yazmak gerekiyor... 
         return this.eogModel
             .find({
                 'userCapabilities.userId': userId,

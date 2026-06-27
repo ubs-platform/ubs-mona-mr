@@ -50,7 +50,7 @@ export class PasswordResetService {
             let ech = new this.passwordResetModel();
             ech.expireAfter = exp;
             ech.userId = u.id;
-            ech = await ech.save();
+            await this.pwResetQueryHelper.save(ech);
             // return { approveId: ech.id };
             this.sendChangePwLink(u, origin!, ech._id);
         }

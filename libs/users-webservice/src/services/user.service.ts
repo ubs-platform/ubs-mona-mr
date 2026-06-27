@@ -101,7 +101,7 @@ export class UserService {
                 u.passwordEncyripted = await CryptoOp.encryptPassword(
                     pwChange.newPassword,
                 );
-                await u.save();
+                await this.userQueryHelper.save(u);
                 await this.sendPasswordChangedMail(u);
                 return UserMapper.toAuthDto(u);
             }
@@ -115,7 +115,7 @@ export class UserService {
 
         if (u) {
             u.passwordEncyripted = await CryptoOp.encryptPassword(newPassword);
-            await u.save();
+            await this.userQueryHelper.save(u);
             await this.sendPasswordChangedMail(u);
             return UserMapper.toAuthDto(u);
         } else {
@@ -143,7 +143,7 @@ export class UserService {
         await this.userCommonService.assertUserInfoValid(user);
         const u = new this.userModel();
         await UserMapper.createFrom(u, user, encryptPassword);
-        await u.save();
+        await this.userQueryHelper.save(u);
 
         return UserMapper.toAuthDto(u);
     }
@@ -152,7 +152,7 @@ export class UserService {
         const user = await this.userQueryHelper.findById(userId);
         if (user) {
             user.primaryEmail = newEmail;
-            await user.save();
+            await this.userQueryHelper.save(user);
             return UserMapper.toAuthDto(user);
         }
     }
@@ -219,7 +219,7 @@ export class UserService {
             const roleIndex = u.roles.indexOf(role);
             if (roleIndex > -1) {
                 u.roles.splice(roleIndex, 1);
-                await u.save();
+                await this.userQueryHelper.save(u);
             }
         }
     }
@@ -229,7 +229,7 @@ export class UserService {
         if (u) {
             if (!u.roles.includes(role)) {
                 u.roles.push(role);
-                await u.save();
+                await this.userQueryHelper.save(u);
             }
         }
     }
@@ -280,7 +280,7 @@ export class UserService {
         // }
         const user = new this.userModel();
         await UserMapper.userFullFromUser(user, data);
-        await user.save();
+        await this.userQueryHelper.save(user);
         UserMapper.toAuthDto(user);
     }
 
@@ -299,7 +299,7 @@ export class UserService {
         console.info(user);
         if (user) {
             await UserMapper.userFullFromUser(user, data);
-            await user.save();
+            await this.userQueryHelper.save(user);
             UserMapper.toAuthDto(user);
         } else {
             throw 'not.found';
@@ -322,7 +322,7 @@ export class UserService {
         user: import('mongoose').Document<unknown, {}, User> &
             User & { _id: import('mongoose').Types.ObjectId } & { __v: number },
     ) {
-        await user.save();
+        await this.userQueryHelper.save(user);
         const uDto = UserMapper.toAuthDto(user);
         this.client.emit(UserKafkaEvents.USER_EDITED, uDto);
         return uDto;

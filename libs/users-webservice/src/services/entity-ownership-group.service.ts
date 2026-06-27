@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
 import { Document, Model, Types } from 'mongoose';
 import {
+    EntityOwnerGroupInvitationQueryHelper,
     EntityOwnerGroupQueryHelper,
     EntityOwnershipGroup,
     GroupUserCapability,
@@ -36,10 +37,12 @@ import { EntityOwnership } from '@ubs-platform/users-entity-mongo';
 
 @Injectable()
 export class EntityOwnershipGroupService {
+
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
         timestamp: true,
     });
     eogQueryHelper: EntityOwnerGroupQueryHelper;
+    eogInvitationQueryHelper: EntityOwnerGroupInvitationQueryHelper;
 
     constructor(
         @InjectModel(EntityOwnershipGroup.name)
@@ -53,6 +56,9 @@ export class EntityOwnershipGroupService {
         private eoModel: Model<EntityOwnership>,
     ) {
         this.eogQueryHelper = new EntityOwnerGroupQueryHelper(eogModel);
+        this.eogInvitationQueryHelper = new EntityOwnerGroupInvitationQueryHelper(
+            eogInvitationModel,
+        );
     }
 
     async deleteGroup(id: string) {
@@ -65,7 +71,7 @@ export class EntityOwnershipGroupService {
     ): Promise<EntityOwnershipGroupCommonDTO> {
         this.logger.debug('EOG CREATE', eogDto.name);
         const entity = await this.mapper.toEntityCreate(eogDto, userId);
-        await entity.save();
+        await this.eogQueryHelper.save(entity);
         return this.mapper.toDto(entity);
     }
 
@@ -218,7 +224,7 @@ export class EntityOwnershipGroupService {
 
         group.userCapabilities = group.userCapabilities || [];
         group.userCapabilities.push(userCapability);
-        await (group as any).save();
+        await this.eogQueryHelper.save(group);
         return this.mapper.toDto(group);
     }
 
@@ -231,7 +237,7 @@ export class EntityOwnershipGroupService {
         group.userCapabilities = group.userCapabilities?.filter(
             (uc) => !(uc.userId === userId),
         );
-        await (group as any).save();
+        await this.eogQueryHelper.save(group);
     }
 
     async updateUserCapability(
@@ -256,7 +262,7 @@ export class EntityOwnershipGroupService {
             userCapability.groupCapability;
         group.markModified('userCapabilities');
         group.markModified('groupCapability');
-        await (group as any).save();
+        await this.eogQueryHelper.save(group);
         return this.mapper.toDto(group);
     }
 
@@ -320,7 +326,7 @@ export class EntityOwnershipGroupService {
             });
         }
 
-        await existingInvite.save();
+        await this.eogInvitationQueryHelper.save(existingInvite);
 
         await this.emailService.sendEmail(
             userInvited,
@@ -463,5 +469,9 @@ export class EntityOwnershipGroupService {
             .then((invitations) =>
                 invitations.map((invite) => this.invitationToDto(invite)),
             );
+    }
+
+    async searchByUserId(userId: string, capability: string | undefined): Promise<EntityOwnershipGroupCommonDTO[]> {
+       return await this.eogQueryHelper.searchByUserId(userId, capability);
     }
 }

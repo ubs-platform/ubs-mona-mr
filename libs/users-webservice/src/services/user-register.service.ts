@@ -92,7 +92,7 @@ export class UserRegisterService {
 
         this.setExpireDate(a, 0, 2);
 
-        a = await a.save();
+        await this.userCandiateQueryHelper.save(a);
         return await UserMapper.toCandiateDto(a);
     }
 
@@ -105,7 +105,7 @@ export class UserRegisterService {
 
             a.activationKey = randomUUID();
             this.setExpireDate(a, 0, 7);
-            await a.save();
+            await this.userCandiateQueryHelper.save(a);
             await this.sendRegisteredEmail(a, a.activationKey, origin);
 
             return UserMapper.toCandiateDto(a);

@@ -46,7 +46,7 @@ export class EmailChangeRequestService {
         ech.code = await CryptoOp.encryptPassword(code); // TODO: Randomize and send email
 
         ech.expireAfter = exp;
-        ech = await ech.save();
+        await this.echReqQueryHelper.save(ech);
         await this.sendMail(userId, newEmail, code);
 
         return { approveId: ech.id };
