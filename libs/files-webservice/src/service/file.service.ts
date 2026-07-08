@@ -6,6 +6,7 @@ import { FileMeta } from '../dto/file-meta';
 import { FileRequest } from '../dto/file-request';
 import * as sharp from 'sharp';
 import { FileVolatileTag } from '../dto/file-volatile-tag';
+import { CacheManagerService } from '@ubs-platform/cache-manager';
 import { Cron } from '@nestjs/schedule';
 import { DynamicQueue } from '@ubs-platform/dynamic-queue';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
@@ -29,13 +30,17 @@ export class FileService {
     private readonly logger = new Logger(FileService.name);
     private readonly dynamicQueue = new DynamicQueue();
 
+    private readonly cacheLiveTime = 5 * 60 * 1000;
+
     constructor(
         @InjectModel(FileModel.name) private fileModel: Model<FileDoc>,
+        private cacheManager: CacheManagerService,
     ) { }
 
     async removeByName(name: string): Promise<void> {
         try {
             await this.fileModel.findOneAndDelete({ name });
+            this.invalidateFileCacheByName(name);
         } catch (error) {
             this.logger.error(`Failed to remove file: ${name}`, error);
         }
@@ -76,38 +81,44 @@ export class FileService {
         name: string,
         widthForImage?: string | number | null,
     ): Promise<FileMeta | null> {
-        const file = await this.findByNamePure(category, name);
+        const parsedWidth = this.parseImageWidth(widthForImage);
+        const normalizedWidth = parsedWidth > 0 ? this.roundImageWidth(parsedWidth) : 0;
+        const cacheKey = `file:${category}:${name}:${normalizedWidth}`;
 
-        if (!file) {
-            return null;
-        }
+        return this.cacheManager.getOrCallAsync<FileMeta | null>(
+            cacheKey,
+            async () => {
+                const file = await this.findByNamePure(category, name);
+                if (!file) return null;
 
-        const fileBin = await this.determineBin(file, widthForImage);
+                const fileBin = await this.determineBin(file, widthForImage);
 
-        // Update lastFetch asynchronously
-        this.dynamicQueue
-            .push(async () => {
-                try {
-                    file.lastFetch = new Date();
-                    await file.save();
-                } catch (error) {
-                    this.logger.error(
-                        `Failed to update lastFetch for ${category}/${name}`,
-                        error,
-                    );
-                }
-            })
-            .output.subscribe({
-                error: (err) => this.logger.error('Queue error:', err),
-            });
+                this.dynamicQueue
+                    .push(async () => {
+                        try {
+                            file.lastFetch = new Date();
+                            await file.save();
+                        } catch (error) {
+                            this.logger.error(
+                                `Failed to update lastFetch for ${category}/${name}`,
+                                error,
+                            );
+                        }
+                    })
+                    .output.subscribe({
+                        error: (err) => this.logger.error('Queue error:', err),
+                    });
 
-        return {
-            id: file._id,
-            file: fileBin,
-            mimetype: file.mimeType,
-            userId: file.userId,
-            needAuthorizationAtView: file.needAuthorizationAtView?.valueOf(),
-        };
+                return {
+                    id: file._id,
+                    file: fileBin,
+                    mimetype: file.mimeType,
+                    userId: file.userId,
+                    needAuthorizationAtView: file.needAuthorizationAtView?.valueOf(),
+                };
+            },
+            { livetime: this.cacheLiveTime, livetimeExtending: 'ON_GET' },
+        );
     }
 
     private async determineBin(
@@ -200,6 +211,16 @@ export class FileService {
         );
     }
 
+    private invalidateFileCache(category: string, name: string): void {
+        const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        this.cacheManager.invalidateRegex(new RegExp(`^file:${esc(category)}:${esc(name)}:`));
+    }
+
+    private invalidateFileCacheByName(name: string): void {
+        const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        this.cacheManager.invalidateRegex(new RegExp(`^file:[^:]+:${esc(name)}:`));
+    }
+
     private findByNamePure(category: string, name: string) {
         this.logger.debug(`Finding file: ${category}/${name}`);
         return this.fileModel.findOne({ name, category });
@@ -241,6 +262,7 @@ export class FileService {
             );
 
             await fileDoc.save();
+            this.invalidateFileCache(optimizedRequest.category, optimizedRequest.name);
             const remaining = optimizedRequest.size - fileBuffer.length;
             return remaining;
         } catch (error) {

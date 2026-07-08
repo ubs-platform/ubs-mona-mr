@@ -28,13 +28,7 @@ import {
 } from '@ubs-platform/users-common';
 import * as FileSystem from 'fs/promises';
 import {
-    ClientKafka,
-    ClientProxy,
-    ClientProxyFactory,
-    ClientRMQ,
     MessagePattern,
-    TcpClientOptions,
-    Transport,
 } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import {
@@ -49,7 +43,6 @@ import {
 import { FileVolatileTag } from '../dto/file-volatile-tag';
 import { FileVolatilityIssue } from '../dto/file-volatility-issue';
 import { EntityPropertyService } from '../service/entity-property.service';
-import { clearTimeout } from 'timers';
 import { FastifyReply } from 'fastify';
 import {
     FileFieldsInterceptor,
@@ -57,12 +50,9 @@ import {
     MemoryStorageFile,
     UploadedFile,
 } from '@blazity/nest-file-fastify';
-import { randomUUID } from 'crypto';
 import { E5NestClient, MICROSERVICE_CLIENT } from '@ubs-platform/microservice-setup-util';
-import { env } from 'process';
 @Controller('file')
 export class ImageFileController {
-    clients: { [key: string]: ClientProxy | ClientKafka | ClientRMQ } = {};
     potentialMalicousMimeTypes = [
         'application/x-msdownload',
         // 'application/octet-stream',
@@ -92,11 +82,6 @@ export class ImageFileController {
     ];
 
 
-    readonly mqServiceType: 'ENGINE5' | 'KAFKA' = process.env[
-        'NX_MICROSERVICE_TYPE'
-    ] as any;
-
-    cacheClearTimeoutPtr: NodeJS.Timeout | null;
     constructor(
         private fservice: FileService,
         @Inject(MICROSERVICE_CLIENT) private e5: E5NestClient,
@@ -153,14 +138,13 @@ export class ImageFileController {
             params.objectId,
         );
         if (fil && fil.needAuthorizationAtView) {
-            const client = await this.createClient("file-get-" + params.category);
             const allow = await lastValueFrom(
-                client.send(
+                this.e5.send(
                     "file-get-" + params.category,
                     {
                         userId: user?.id,
                         objectId: params.objectId,
-                        roles: user!.roles,
+                        roles: user?.roles,
                     } as UploadFileCategoryRequest,
                 ));
             return allow;
@@ -182,14 +166,13 @@ export class ImageFileController {
             width,
         );
         if (fil && fil.needAuthorizationAtView) {
-            const client = await this.createClient("file-get-" + params.category);
             const allow = await lastValueFrom(
-                client.send(
+                this.e5.send(
                     "file-get-" + params.category,
                     {
                         userId: user?.id,
                         objectId: params.name,
-                        roles: user!.roles,
+                        roles: user?.roles,
                     } as UploadFileCategoryRequest,
                 ));
             if (!allow) {
@@ -229,7 +212,7 @@ export class ImageFileController {
         //  = await lastValueFrom(
         //   client.send(topic)
         // );
-        const maxLimitBytes = categoryResponse.maxLimitBytes! | 1000000;
+        const maxLimitBytes = categoryResponse.maxLimitBytes ?? 1000000;
         if (categoryResponse.category && categoryResponse.name) {
             console.info(file);
             this.assertFileLimit(maxLimitBytes, file);
@@ -278,49 +261,15 @@ export class ImageFileController {
     ) {
         const topic = `file-volatility-${volatileTag.category}`;
 
-        const client = await this.createClient(topic);
         const issue = (await lastValueFrom(
-            client.send(topic, {
+            this.e5.send(topic, {
                 ...volatileTag,
                 userId: user?.id,
-                roles: user!.roles,
+                roles: user?.roles,
             }),
         )) as FileVolatilityIssue;
         if (!issue.success) {
             throw new BadRequestException(issue.error);
-        }
-    }
-
-    private async createClient(topicName: string) {
-        if (this.mqServiceType == 'ENGINE5') {
-            const cl = this.e5;
-            return cl;
-        } else {
-            if (this.cacheClearTimeoutPtr) {
-                clearTimeout(this.cacheClearTimeoutPtr);
-                this.cacheClearTimeoutPtr = null;
-            }
-            if (this.clients[topicName] != null) {
-                return this.clients[topicName];
-            }
-
-            const cl = ClientProxyFactory.create({
-                transport: Transport.KAFKA,
-                options: {
-                    client: {
-                        clientId: 'filevol' + topicName,
-                        brokers: [env['NX_KAFKA_URL'] as string],
-                    },
-                    consumer: {
-                        groupId:
-                            'file_upload_checker_' + topicName + randomUUID(),
-                    },
-                },
-            }) as any as ClientKafka;
-            cl.subscribeToResponseOf(topicName);
-            this.clients[topicName] = cl;
-
-            return cl;
         }
     }
 
