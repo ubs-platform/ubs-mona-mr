@@ -29,6 +29,7 @@ export class FileService {
 
     private readonly logger = new Logger(FileService.name);
     private readonly dynamicQueue = new DynamicQueue();
+    private readonly pendingLastFetchSaves = new Set<string>();
 
     private readonly cacheLiveTime = 5 * 60 * 1000;
 
@@ -93,21 +94,27 @@ export class FileService {
 
                 const fileBin = await this.determineBin(file, widthForImage);
 
-                this.dynamicQueue
-                    .push(async () => {
-                        try {
-                            file.lastFetch = new Date();
-                            await file.save();
-                        } catch (error) {
-                            this.logger.error(
-                                `Failed to update lastFetch for ${category}/${name}`,
-                                error,
-                            );
-                        }
-                    })
-                    .output.subscribe({
-                        error: (err) => this.logger.error('Queue error:', err),
-                    });
+                const fetchKey = `${category}:${name}`;
+                if (!this.pendingLastFetchSaves.has(fetchKey)) {
+                    this.pendingLastFetchSaves.add(fetchKey);
+                    this.dynamicQueue
+                        .push(async () => {
+                            try {
+                                file.lastFetch = new Date();
+                                await file.save();
+                            } catch (error) {
+                                this.logger.error(
+                                    `Failed to update lastFetch for ${category}/${name}`,
+                                    error,
+                                );
+                            } finally {
+                                this.pendingLastFetchSaves.delete(fetchKey);
+                            }
+                        })
+                        .output.subscribe({
+                            error: (err) => this.logger.error('Queue error:', err),
+                        });
+                }
 
                 return {
                     id: file._id,
