@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { FileDoc, FileModel } from '@ubs-platform/files-entity-mongo';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
@@ -10,6 +10,7 @@ import { CacheManagerService } from '@ubs-platform/cache-manager';
 import { Cron } from '@nestjs/schedule';
 import { DynamicQueue } from '@ubs-platform/dynamic-queue';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
+import { createHash } from 'crypto';
 
 // Constants
 const IMAGE_MIME_TYPES_NONWEBP = new Set([
@@ -23,6 +24,22 @@ const IMAGE_MIME_TYPES_NONWEBP = new Set([
 const DEFAULT_VOLATILITY_DURATION = 3600000; // 1 hour in milliseconds
 const IMAGE_WIDTH_STEP = 75; // Round widths to nearest 75px for caching
 const MIN_IMAGE_WIDTH = 100;
+
+const PROXY_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+const PROXY_FETCH_TIMEOUT_MS = 10_000;
+const PROXY_MAX_DIMENSION = 2048;
+
+const PRIVATE_IP_PATTERNS = [
+    /^localhost$/i,
+    /^127\./,
+    /^10\./,
+    /^192\.168\./,
+    /^172\.(1[6-9]|2[0-9]|3[01])\./,
+    /^169\.254\./,
+    /^\[?::1\]?$/,
+    /^\[?fe80:/i,
+    /^\[?fd[0-9a-f]{2}:/i,
+];
 
 @Injectable()
 export class FileService {
@@ -322,6 +339,119 @@ export class FileService {
             mimeType === 'image/webp'
         );
     }
+
+    // ─── External Image Proxy ──────────────────────────────────────────────────
+
+    /**
+     * Downloads an external image URL, optimises it and stores it locally.
+     * GIFs are stored as-is (must be ≤ 5 MB).
+     * All other image types are converted to WebP and resized to max 2 K before
+     * the 5 MB limit is checked.
+     * The file name is the first 40 hex chars of SHA-256(url), which provides
+     * server-side deduplication: the same URL is never downloaded twice.
+     */
+    async proxyExternalImage(
+        url: string,
+        category = 'GENERAL',
+    ): Promise<{ category: string; name: string }> {
+        if (!this.isAllowedProxyUrl(url)) {
+            throw new BadRequestException('invalid-proxy-url');
+        }
+
+        const name = createHash('sha256').update(url).digest('hex').slice(0, 40);
+
+        const existing = await this.findByNamePure(category, name);
+        if (existing) {
+            return { category, name };
+        }
+
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), PROXY_FETCH_TIMEOUT_MS);
+
+        let response: Response;
+        try {
+            response = await fetch(url, { signal: controller.signal });
+        } catch {
+            throw new BadRequestException('proxy-fetch-failed');
+        } finally {
+            clearTimeout(timeout);
+        }
+
+        if (!response.ok) {
+            throw new BadRequestException('proxy-fetch-failed');
+        }
+
+        const contentType = response.headers.get('content-type') ?? '';
+        const mimeType = contentType.split(';')[0].trim().toLowerCase();
+
+        if (!mimeType.startsWith('image/')) {
+            throw new BadRequestException('not-an-image');
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const rawBuffer = Buffer.from(arrayBuffer);
+
+        let finalBuffer: Buffer;
+        let finalMime: string;
+
+        if (mimeType === 'image/gif') {
+            if (rawBuffer.length > PROXY_MAX_BYTES) {
+                throw new BadRequestException('image-too-large');
+            }
+            finalBuffer = rawBuffer;
+            finalMime = 'image/gif';
+        } else {
+            const webpBuffer = await sharp(rawBuffer)
+                .resize({
+                    width: PROXY_MAX_DIMENSION,
+                    height: PROXY_MAX_DIMENSION,
+                    fit: 'inside',
+                    withoutEnlargement: true,
+                })
+                .webp()
+                .toBuffer();
+
+            if (webpBuffer.length > PROXY_MAX_BYTES) {
+                throw new BadRequestException('image-too-large');
+            }
+            finalBuffer = webpBuffer;
+            finalMime = 'image/webp';
+        }
+
+        await this.uploadFile(
+            {
+                category,
+                name,
+                fileBytesBuff: finalBuffer,
+                mimeType: finalMime,
+                size: finalBuffer.length,
+                volatile: false,
+                durationMiliseconds: 0,
+                needAuthorizationAtView: false,
+            },
+            'start',
+        );
+
+        return { category, name };
+    }
+
+    private isAllowedProxyUrl(url: string): boolean {
+        let parsed: URL;
+        try {
+            parsed = new URL(url);
+        } catch {
+            return false;
+        }
+
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+            return false;
+        }
+
+        const host = parsed.hostname;
+        return !PRIVATE_IP_PATTERNS.some((pattern) => pattern.test(host));
+    }
+
+    // ──────────────────────────────────────────────────────────────────────────
 
     @Cron('0 20 4 * * *')
     async handleCron(): Promise<void> {

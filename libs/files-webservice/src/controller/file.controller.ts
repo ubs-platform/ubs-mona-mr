@@ -100,6 +100,17 @@ export class ImageFileController {
         await this.fservice.updateVolatilities(volatilities);
     }
 
+    @Post('/proxy-url')
+    @UseGuards(JwtAuthGuard)
+    async proxyImageUrl(
+        @Body() body: { url: string; category?: string },
+    ) {
+        if (!body?.url) {
+            throw new BadRequestException('url-required');
+        }
+        return this.fservice.proxyExternalImage(body.url, body.category ?? 'GENERAL');
+    }
+
     @Put('/:type/:objectId')
     // @UseInterceptors(FileInterceptor('file'))
     @UseInterceptors(FileInterceptor('file'))
