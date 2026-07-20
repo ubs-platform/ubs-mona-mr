@@ -98,8 +98,15 @@ class AllLibrariesBuilder {
         }
     }
     async publishOnNpm(currentBuild, versionTag, versionVisibility) {
+        const publishWithProvenance = process.env.XR_NPM_PROVENANCE === 'true';
+        const publishAccess = publishWithProvenance
+            ? 'public'
+            : versionVisibility;
+        const publishOptions = publishWithProvenance
+            ? `--tag ${versionTag} --provenance --access ${publishAccess}`
+            : `--tag ${versionTag} --access ${publishAccess}`;
         console.info(`${currentBuild.packageName} is about to be published on NPM Registry`);
-        await exec_util_1.ExecUtil.exec(`cd "${currentBuild.iksirPackage.buildDirectory}" && npm publish --tag ${versionTag} --access ${versionVisibility}`);
+        await exec_util_1.ExecUtil.exec(`cd "${currentBuild.iksirPackage.buildDirectory}" && npm publish ${publishOptions}`);
     }
 }
 exports.AllLibrariesBuilder = AllLibrariesBuilder;

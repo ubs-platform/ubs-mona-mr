@@ -112,12 +112,20 @@ export class AllLibrariesBuilder {
         versionTag: string,
         versionVisibility: string,
     ) {
+        const publishWithProvenance = process.env.XR_NPM_PROVENANCE === 'true';
+        const publishAccess = publishWithProvenance
+            ? 'public'
+            : versionVisibility;
+        const publishOptions = publishWithProvenance
+            ? `--tag ${versionTag} --provenance --access ${publishAccess}`
+            : `--tag ${versionTag} --access ${publishAccess}`;
+
         console.info(
             `${currentBuild.packageName} is about to be published on NPM Registry`,
         );
 
         await ExecUtil.exec(
-            `cd "${currentBuild.iksirPackage.buildDirectory}" && npm publish --tag ${versionTag} --access ${versionVisibility}`,
+            `cd "${currentBuild.iksirPackage.buildDirectory}" && npm publish ${publishOptions}`,
         );
     }
 }

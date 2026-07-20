@@ -24,5 +24,9 @@ export declare class PackageBuilder {
     get isPrebuilt(): boolean;
     prebuild(): Promise<void>;
     private applyToPackageJsonBuild;
+    private resolveRepositoryUrl;
+    private getGitRemoteOriginUrl;
+    private getRootRepositoryUrl;
+    private normalizeRepositoryUrl;
     collectImports(): Promise<ImportedPackage[]>;
 }

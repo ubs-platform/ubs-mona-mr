@@ -1,3 +1,4 @@
+import { execSync } from 'child_process';
 import path from 'path';
 import { TextUtil } from '../util/text-util';
 import { NpmPackageWithIksir } from './iksir-library-config';
@@ -54,6 +55,13 @@ export class PackageBuilder {
     async writePackage(version: string) {
         console.info('Package.json is writing');
         this.packageForFullCompilation.version = version;
+        const repositoryUrl = await this.resolveRepositoryUrl();
+        if (repositoryUrl) {
+            this.packageForFullCompilation.repository = {
+                type: 'git',
+                url: repositoryUrl,
+            };
+        }
         await JsonUtil.writeJson(
             this.packageForFullCompilation,
             this.iksirPackage.buildDirectory,
@@ -176,6 +184,71 @@ export class PackageBuilder {
         this.packageForFullCompilation.peerDependencies[libImport.packageName] =
             libImport.parentNpmVersion;
         libImport.digested = true;
+    }
+
+    private async resolveRepositoryUrl() {
+        const gitRemoteUrl = this.getGitRemoteOriginUrl();
+        const repositoryUrl = gitRemoteUrl || this.getRootRepositoryUrl();
+
+        if (!repositoryUrl) {
+            return undefined;
+        }
+
+        return this.normalizeRepositoryUrl(repositoryUrl);
+    }
+
+    private getGitRemoteOriginUrl() {
+        try {
+            return execSync('git remote get-url origin', {
+                cwd: this.parent?.directory ?? this.iksirPackage.directory,
+                encoding: 'utf-8',
+                stdio: ['ignore', 'pipe', 'ignore'],
+            }).trim();
+        } catch {
+            return undefined;
+        }
+    }
+
+    private getRootRepositoryUrl() {
+        const repository = this.parent?.packageObject.repository;
+
+        if (typeof repository === 'string') {
+            return repository;
+        }
+
+        if (repository && typeof repository === 'object') {
+            const repositoryUrl = (repository as { url?: string }).url;
+            if (repositoryUrl) {
+                return repositoryUrl;
+            }
+        }
+
+        return undefined;
+    }
+
+    private normalizeRepositoryUrl(repositoryUrl: string) {
+        const trimmedRepositoryUrl = repositoryUrl.trim();
+        const githubMatch = trimmedRepositoryUrl.match(
+            /(?:github\.com[:/])([^#?]+?)(?:\.git)?$/i,
+        );
+
+        if (githubMatch?.[1]) {
+            const repositoryPath = githubMatch[1].replace(/^\/+/, '');
+            return `git+https://github.com/${repositoryPath}.git`;
+        }
+
+        if (trimmedRepositoryUrl.startsWith('git+')) {
+            return trimmedRepositoryUrl;
+        }
+
+        if (
+            trimmedRepositoryUrl.startsWith('http://') ||
+            trimmedRepositoryUrl.startsWith('https://')
+        ) {
+            return `git+${trimmedRepositoryUrl.replace(/\.git$/, '')}.git`;
+        }
+
+        return trimmedRepositoryUrl;
     }
 
     public async collectImports() {
