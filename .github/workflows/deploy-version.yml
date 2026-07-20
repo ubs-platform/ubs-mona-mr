@@ -21,7 +21,6 @@ jobs:
     environment: PUBLISHING  # Environment adını buraya yaz
     permissions:
       contents: write
-      id-token: write
     
     steps:
       - name: Checkout code
@@ -73,7 +72,6 @@ jobs:
         run: npm run xr publish-libs
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          XR_NPM_PROVENANCE: 'true'
 
       - name: Setup QEMU (multi-arch emulation)
         uses: docker/setup-qemu-action@v3
