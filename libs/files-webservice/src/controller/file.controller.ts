@@ -93,11 +93,41 @@ export class ImageFileController {
         @Body() volatilities: FileVolatileTag[],
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
+        const acceptedVolatilities: FileVolatileTag[] = [];
+        const failedVolatilities: { category: string; id: string; name: string; error: string }[] = [];
+
         for (let index = 0; index < volatilities.length; index++) {
-            const volatile = volatilities[index];
-            await this.sendCheckForVolatile(volatile, currentUser);
+            const volatilityItem = volatilities[index];
+            try {
+                await this.sendCheckForVolatile(volatilityItem, currentUser);
+                acceptedVolatilities.push(volatilityItem);
+            } catch (error) {
+                const errorMessage =
+                    error instanceof BadRequestException
+                        ? (error.getResponse() as string)
+                        : 'volatility-check-failed';
+                failedVolatilities.push({
+                    category: volatilityItem.category,
+                    id: volatilityItem.name,
+                    name: volatilityItem.name,
+                    error: Array.isArray(errorMessage)
+                        ? errorMessage.join(',')
+                        : typeof errorMessage === 'string'
+                            ? errorMessage
+                            : 'volatility-check-failed',
+                });
+            }
         }
-        await this.fservice.updateVolatilities(volatilities);
+
+        if (acceptedVolatilities.length > 0) {
+            await this.fservice.updateVolatilities(acceptedVolatilities);
+        }
+
+        return {
+            updatedCount: acceptedVolatilities.length,
+            failedCount: failedVolatilities.length,
+            failures: failedVolatilities,
+        };
     }
 
     @Post('/proxy-url')
