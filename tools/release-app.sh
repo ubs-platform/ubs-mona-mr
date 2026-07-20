@@ -8,9 +8,18 @@ PLATFORMS=${DOCKER_PLATFORMS:-linux/amd64,linux/arm64,linux/arm/v7}
 BUILDX_BUILDER_NAME=ubs-mona-multiarch-builder
 DOCKER_PUSH_BY_PLATFORM=${DOCKER_PUSH_BY_PLATFORM:-0}
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
+PACKAGE_DOCKER_JSON=package.docker.json
 
 normalize_platform() {
     printf '%s' "$1" | tr '/' '-'
+}
+
+create_stable_package_manifest() {
+    jq 'del(.version) | .iksir.childrenVersionTag = null' package.json > "$PACKAGE_DOCKER_JSON"
+}
+
+cleanup_stable_package_manifest() {
+    rm -f "$PACKAGE_DOCKER_JSON"
 }
 
 if [ "$APP_NAME" = "" ]; then
@@ -25,6 +34,9 @@ else
     # docker/setup-buildx-action already provides one of these in CI; this is mainly for local use.
     docker buildx inspect "$BUILDX_BUILDER_NAME" >/dev/null 2>&1 || docker buildx create --name "$BUILDX_BUILDER_NAME" --driver docker-container
     docker buildx use "$BUILDX_BUILDER_NAME"
+
+    create_stable_package_manifest
+    trap cleanup_stable_package_manifest EXIT INT TERM
 
     IMAGE_TAG="$DOCKER_FULL_TAG"
     CACHE_REF="$DOCKER_ORGNAME/$IMG_PREFIX${APP_NAME}:buildcache"
@@ -51,4 +63,6 @@ else
         --push \
         .
     set +x
+    cleanup_stable_package_manifest
+    trap - EXIT INT TERM
 fi
