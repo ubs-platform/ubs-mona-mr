@@ -1,14 +1,24 @@
-APP_NAME=$1
+#!/usr/bin/env bash
+set -euo pipefail
+
+APP_NAME=${1:-}
 # Platforms to build/push. Covers amd64 servers, 64-bit ARM (Apple Silicon, Raspberry Pi OS 64-bit)
 # and 32-bit ARM (Raspberry Pi OS 32-bit / armhf).
 PLATFORMS=${DOCKER_PLATFORMS:-linux/amd64,linux/arm64,linux/arm/v7}
 BUILDX_BUILDER_NAME=ubs-mona-multiarch-builder
+DOCKER_PUSH_BY_PLATFORM=${DOCKER_PUSH_BY_PLATFORM:-0}
+SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
+
+normalize_platform() {
+    printf '%s' "$1" | tr '/' '-'
+}
 
 if [ "$APP_NAME" = "" ]; then
     echo "APP_NAME (first argument) is required."
+    exit 1
 else
-    echo $APP_NAME
-    source $(dirname ${BASH_SOURCE[0]})/project-info.sh
+    echo "$APP_NAME"
+    source "$SCRIPT_DIR/project-info.sh"
     echo determined docker tag: $DOCKER_FULL_TAG
 
     # Ensure a buildx builder capable of multi-platform builds exists (docker-container driver).
@@ -16,14 +26,26 @@ else
     docker buildx inspect "$BUILDX_BUILDER_NAME" >/dev/null 2>&1 || docker buildx create --name "$BUILDX_BUILDER_NAME" --driver docker-container
     docker buildx use "$BUILDX_BUILDER_NAME"
 
+    IMAGE_TAG="$DOCKER_FULL_TAG"
     CACHE_REF="$DOCKER_ORGNAME/$IMG_PREFIX${APP_NAME}:buildcache"
 
-    echo "start to build & push $DOCKER_FULL_TAG for platforms: $PLATFORMS"
+    if [ "$DOCKER_PUSH_BY_PLATFORM" = "1" ]; then
+        if printf '%s' "$PLATFORMS" | grep -q ','; then
+            echo "DOCKER_PUSH_BY_PLATFORM=1 requires a single platform in DOCKER_PLATFORMS."
+            exit 1
+        fi
+
+        PLATFORM_SLUG=$(normalize_platform "$PLATFORMS")
+        IMAGE_TAG="${DOCKER_FULL_TAG}-${PLATFORM_SLUG}"
+        CACHE_REF="$DOCKER_ORGNAME/$IMG_PREFIX${APP_NAME}:buildcache-${PLATFORM_SLUG}"
+    fi
+
+    echo "start to build & push $IMAGE_TAG for platforms: $PLATFORMS"
     set -x
     docker buildx build \
         --platform "$PLATFORMS" \
         --build-arg APP_NAME="${APP_NAME}" \
-        --tag "$DOCKER_FULL_TAG" \
+        --tag "$IMAGE_TAG" \
         --cache-from "type=registry,ref=${CACHE_REF}" \
         --cache-to "type=registry,ref=${CACHE_REF},mode=max" \
         --push \
