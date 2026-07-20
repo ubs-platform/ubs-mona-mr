@@ -1,10 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { IpBlockerModule } from './ip-blocker.module';
-import { getIpBlockerConfig } from './ip-blocker.config';
 
 async function bootstrap() {
-  const config = getIpBlockerConfig();
   const app = await NestFactory.create(IpBlockerModule);
-  await app.listen(config.port);
+  const portString = process.env['IP_BLOCKER_PORT'] || process.env['port'] || '3000';
+  await app.listen(parseInt(portString));
 }
 bootstrap();
