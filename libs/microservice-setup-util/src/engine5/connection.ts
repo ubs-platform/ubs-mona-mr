@@ -317,7 +317,7 @@ export class Engine5Connection {
         let incomingLength = 0;
 
         client.on('data', (data: Buffer) => {
-            this.queue.push(() => {
+            this.queue.push(async () => {
                 let offset = 0;
 
                 while (offset < data.length) {
@@ -340,7 +340,7 @@ export class Engine5Connection {
 
                     if (currentBuff.length === incomingLength) {
                         const messageBuffer = Buffer.from(currentBuff);
-                        void this.processIncomingData(messageBuffer, ok);
+                        void await this.processIncomingData(messageBuffer, ok);
                         sizeBytes = [];
                         currentBuff = [];
                         incomingLength = 0;
@@ -469,7 +469,7 @@ export class Engine5Connection {
             }
             case CtEvent: {
                 console.info('Event recieved', decoded.Subject);
-                this.processReceivedEvent(decoded);
+                await this.processReceivedEvent(decoded);
                 break;
             }
             case CtRequest: {
@@ -544,12 +544,12 @@ export class Engine5Connection {
     }
 
     // TODO: Bunu async/await yapmak lazım. Callback'in bitmesini beklemeden success yazmayalım...
-    private processReceivedEvent(decoded: Payload) {
+    private async processReceivedEvent(decoded: Payload) {
         const callbacks = this.listeningSubjectCallbacks[decoded.Subject!] ?? [];
         for (const callback of callbacks) {
             try {
-                callback(this.parseData(decoded.Content!));
-                void this.writePayload({
+                await callback(this.parseData(decoded.Content!));
+                await this.writePayload({
                     Command: CtConsumingSuccess,
                     Subject: decoded.Subject,
                     MessageId: decoded.MessageId,
@@ -558,7 +558,7 @@ export class Engine5Connection {
                 });
             } catch (error) {
                 console.error('Error in event callback for subject ' + decoded.Subject + ':', error);
-                void this.writePayload({
+                await this.writePayload({
                     Command: CtConsumingError,
                     Subject: decoded.Subject,
                     MessageId: decoded.MessageId,
