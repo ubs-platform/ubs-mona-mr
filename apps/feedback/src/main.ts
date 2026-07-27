@@ -20,7 +20,7 @@ async function bootstrap() {
         const app = await NestFactory.create(AppModule);
         const globalPrefix = 'api';
 
-        app.connectMicroservice(MicroserviceSetupUtil.setupServer(''));
+        app.connectMicroservice(MicroserviceSetupUtil.setupServer('ubs-feedback'));
 
         // app.connectMicroservice({
         //     transport: Transport.TCP,

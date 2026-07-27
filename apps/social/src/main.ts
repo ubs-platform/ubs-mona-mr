@@ -23,7 +23,7 @@ async function bootstrap() {
         );
         const globalPrefix = 'api';
 
-        app.connectMicroservice(MicroserviceSetupUtil.setupServer(''));
+        app.connectMicroservice(MicroserviceSetupUtil.setupServer('ubs-social'));
 
         app.setGlobalPrefix(globalPrefix);
         const port = process.env.PORT || 3117;

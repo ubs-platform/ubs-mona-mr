@@ -20,7 +20,7 @@ async function bootstrap() {
         // app.connectMicroservice({
         //     strategy: new E5NestServer('localhost', '8080', ''),
         // });
-        app.connectMicroservice(MicroserviceSetupUtil.setupServer(''));
+        app.connectMicroservice(MicroserviceSetupUtil.setupServer('ubs-notify'));
 
         app.setGlobalPrefix(globalPrefix);
         const port = process.env.PORT || 3169;
