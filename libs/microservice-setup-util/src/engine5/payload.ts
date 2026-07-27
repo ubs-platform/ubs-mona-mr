@@ -10,6 +10,8 @@ export const CtConnectError = "CONNECT_ERROR";
 export const CtResponseError = "RESPONSE_ERROR";
 export const CtResponseErrorSideE5 = "E5";
 export const CtResponseErrorSideClient = "CLIENT";
+export const CtConsumingSuccess = "CONSUMING_SUCCESS";
+export const CtConsumingError = "CONSUMING_ERROR";
 
 export type CommandType =
   | typeof CtConnect
@@ -21,7 +23,9 @@ export type CommandType =
   | typeof CtListen
   | typeof CtClose
   | typeof CtConnectError
-  | typeof CtResponseError;
+  | typeof CtResponseError
+  | typeof CtConsumingSuccess
+  | typeof CtConsumingError;
 
 export type ErrorSide = typeof CtResponseErrorSideE5 | typeof CtResponseErrorSideClient;
 export interface Payload {

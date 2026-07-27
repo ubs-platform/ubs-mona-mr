@@ -7,6 +7,8 @@ import {
     CtRequest,
     CtEvent,
     CtResponseError,
+    CtConsumingSuccess,
+    CtConsumingError,
 } from './payload';
 import { encode, decode } from '@msgpack/msgpack';
 import { DynamicQueue } from '@ubs-platform/dynamic-queue';
@@ -14,7 +16,7 @@ import { ReplaySubject } from 'rxjs';
 
 type ConnectionStatus = 'CONNECTING' | 'CLOSED' | 'CONNECTED';
 type CallbackFunction = (data: any) => any;
-type RequestCallback = (response: any) => void;
+type RequestCallback = (response: Payload) => void;
 type TLSClientOptions = Pick<
     tls.ConnectionOptions,
     'ca' | 'cert' | 'key' | 'servername' | 'rejectUnauthorized'
@@ -35,14 +37,10 @@ export class Engine5Connection {
     private connectionStatus: ConnectionStatus = 'CLOSED';
     private readonly connectionStatusSubject =
         new ReplaySubject<ConnectionStatus>(1);
-    private readonly listeningSubjectCallbacks: Record<
-        string,
-        CallbackFunction[]
-    > = {};
-    private readonly ongoingRequestsToComplete: Record<
-        string,
-        RequestCallback
-    > = {};
+    private readonly listeningSubjectCallbacks: Record<string, CallbackFunction[]> =
+        {};
+    private readonly ongoingRequestsToComplete: Record<string, RequestCallback> =
+        {};
     private readonly queue = new DynamicQueue();
     private reconnectOnFail = true;
     private tcpClientEventsRegistered = false;
@@ -66,12 +64,7 @@ export class Engine5Connection {
         this.authKey = connectOptions.authKey;
 
         this.connectionStatusSubject.next('CLOSED');
-        this.queue.push(async () => {
-            await this.runAtWhenConnected(() => {
-                // Initialize connection preparation
-            });
-        });
-
+        this.queue.push(() => this.runAtWhenConnected(() => undefined));
         this.startReconnectTimer();
     }
 
@@ -79,39 +72,46 @@ export class Engine5Connection {
         this.reconnectInterval = setInterval(() => {
             if (this.reconnectOnFail && this.connectionStatus === 'CLOSED') {
                 console.info('Attempting to reconnect...');
-                this.init().catch((error) => {
+                void this.init().catch((error) => {
                     console.error('Reconnection failed:', error);
                 });
             }
         }, 5000);
     }
 
-    private runAtWhenConnected<T>(action: () => T | Promise<T>): Promise<T> {
-        return new Promise((resolve, reject) => {
-            if (this.connectionStatus === 'CONNECTED') {
-                try {
-                    const result = action();
-                    if (result instanceof Promise) {
-                        result.then(resolve).catch(reject);
-                    } else {
-                        resolve(result);
-                    }
-                } catch (error) {
-                    reject(error);
-                }
-                return;
-            }
+    private setConnectionStatus(status: ConnectionStatus): void {
+        this.connectionStatus = status;
+        this.connectionStatusSubject.next(status);
+    }
 
+    private clearConnectionTimeout(): void {
+        if (this.connectionTimeout) {
+            clearTimeout(this.connectionTimeout);
+            this.connectionTimeout = null;
+        }
+    }
+
+    private runAtWhenConnected<T>(action: () => T | Promise<T>): Promise<T> {
+        if (this.connectionStatus === 'CONNECTED') {
+            try {
+                return Promise.resolve(action());
+            } catch (error) {
+                return Promise.reject(error);
+            }
+        }
+
+        return new Promise((resolve, reject) => {
             const subscription = this.connectionStatusSubject.subscribe(
                 async (status) => {
-                    if (status === 'CONNECTED') {
-                        subscription.unsubscribe();
-                        try {
-                            const result = await action();
-                            resolve(result);
-                        } catch (error) {
-                            reject(error);
-                        }
+                    if (status !== 'CONNECTED') {
+                        return;
+                    }
+
+                    subscription.unsubscribe();
+                    try {
+                        resolve(await action());
+                    } catch (error) {
+                        reject(error);
                     }
                 },
             );
@@ -119,25 +119,24 @@ export class Engine5Connection {
     }
 
     private async writePayload(payload: Payload): Promise<Engine5Connection> {
-        payload.AuthKey = this.authKey;
+        const outboundPayload = { ...payload, AuthKey: this.authKey };
+
         return new Promise((resolve, reject) => {
             this.queue.push(() => {
                 try {
-                    const msgpackData = Buffer.from(encode(payload));
+                    const msgpackData = Buffer.from(encode(outboundPayload));
                     const lengthPrefix = Buffer.alloc(4);
                     lengthPrefix.writeUInt32BE(msgpackData.length, 0);
-                    const fullMessage = Buffer.concat([
-                        lengthPrefix,
-                        msgpackData,
-                    ]);
+                    const fullMessage = Buffer.concat([lengthPrefix, msgpackData]);
 
                     this.tcpClient.write(fullMessage, (error) => {
                         if (error) {
                             console.error('Failed to write payload:', error);
                             reject(error);
-                        } else {
-                            resolve(this);
+                            return;
                         }
+
+                        resolve(this);
                     });
                 } catch (error) {
                     console.error('Error encoding payload:', error);
@@ -153,19 +152,23 @@ export class Engine5Connection {
         }
 
         console.info('Listening to subject: ' + subject);
-        this.queue.push(async () => {
-            try {
-                await this.writeListenCommand(subject);
-                const callbacks = this.listeningSubjectCallbacks[subject] || [];
-                callbacks.push(callback);
-                this.listeningSubjectCallbacks[subject] = callbacks;
-            } catch (error) {
-                console.error(
-                    'Failed to listen to subject ' + subject + ':',
-                    error,
-                );
-                throw error;
-            }
+
+        return new Promise((resolve, reject) => {
+            this.queue.push(async () => {
+                try {
+                    await this.writeListenCommand(subject);
+                    const callbacks = this.listeningSubjectCallbacks[subject] ?? [];
+                    callbacks.push(callback);
+                    this.listeningSubjectCallbacks[subject] = callbacks;
+                    resolve();
+                } catch (error) {
+                    console.error(
+                        'Failed to listen to subject ' + subject + ':',
+                        error,
+                    );
+                    reject(error);
+                }
+            });
         });
     }
 
@@ -203,18 +206,18 @@ export class Engine5Connection {
             const timeout = setTimeout(() => {
                 delete this.ongoingRequestsToComplete[messageId];
                 reject(new Error(`Request timeout for subject: ${subject}`));
-            }, 30000); // 30 second timeout
+            }, 30000);
 
             this.ongoingRequestsToComplete[messageId] = (response: Payload) => {
                 clearTimeout(timeout);
                 if (response.Command === CtResponseError) {
                     const errorSide = response.ResponseErrorSide || 'E5';
-                    const errorMessage = `Response error from ${errorSide === 'E5' ? 'server' : 'client'
-                        }: ${response.Content}`;
+                    const errorMessage = `Response error from ${errorSide === 'E5' ? 'server' : 'client'}: ${response.Content}`;
                     console.error(errorMessage);
                     reject(new Error(errorMessage));
                     return;
                 }
+
                 try {
                     const result = response.Content
                         ? this.parseData(response.Content)
@@ -243,25 +246,20 @@ export class Engine5Connection {
         });
     }
 
-    async init() {
-        return new Promise<Engine5Connection>((ok, fail) => {
-            if (this.connectionStatus == 'CLOSED') {
-                this._init((v) => {
-                    ok(v);
-                });
-            } else {
-                this.runAtWhenConnected(() => {
-                    ok(this);
-                });
-            }
-        });
+    async init(): Promise<Engine5Connection> {
+        if (this.connectionStatus === 'CLOSED') {
+            return new Promise<Engine5Connection>((resolve) => {
+                this._init(resolve);
+            });
+        }
+
+        return this.runAtWhenConnected(() => this);
     }
 
     private _init(
         ok: (value: Engine5Connection | PromiseLike<Engine5Connection>) => void,
     ) {
-        this.connectionStatusSubject.next('CONNECTING');
-        this.connectionStatus = 'CONNECTING';
+        this.setConnectionStatus('CONNECTING');
         console.info('Connecting to server');
 
         if (this.tlsEnabled) {
@@ -290,6 +288,7 @@ export class Engine5Connection {
         this.tcpClientEventsRegistered = false;
         const client = this.tcpClient;
         this.registerEvents(client, ok);
+
         try {
             client.connect(
                 {
@@ -309,55 +308,50 @@ export class Engine5Connection {
         client: net.Socket | tls.TLSSocket,
         ok: (value: Engine5Connection | PromiseLike<Engine5Connection>) => void,
     ) {
-        if (this.tcpClientEventsRegistered) return;
+        if (this.tcpClientEventsRegistered) {
+            return;
+        }
+
         let currentBuff: number[] = [];
         let sizeBytes: number[] = [];
         let incomingLength = 0;
+
         client.on('data', (data: Buffer) => {
             this.queue.push(() => {
                 let offset = 0;
 
                 while (offset < data.length) {
                     if (sizeBytes.length < 4) {
-                        // Read size prefix bytes
                         sizeBytes.push(data[offset]);
-                        offset++;
+                        offset += 1;
+
                         if (sizeBytes.length === 4) {
-                            incomingLength =
-                                Buffer.from(sizeBytes).readUInt32BE(0);
+                            incomingLength = Buffer.from(sizeBytes).readUInt32BE(0);
                         }
-                    } else {
-                        // Read message bytes
-                        const bytesNeeded = incomingLength - currentBuff.length;
-                        const bytesAvailable = data.length - offset;
-                        const bytesToRead = Math.min(
-                            bytesNeeded,
-                            bytesAvailable,
-                        );
+                        continue;
+                    }
 
-                        currentBuff.push(
-                            ...data.subarray(offset, offset + bytesToRead),
-                        );
-                        offset += bytesToRead;
+                    const bytesNeeded = incomingLength - currentBuff.length;
+                    const bytesAvailable = data.length - offset;
+                    const bytesToRead = Math.min(bytesNeeded, bytesAvailable);
 
-                        if (currentBuff.length === incomingLength) {
-                            // We have a complete message
-                            const messageBuffer = Buffer.from(currentBuff);
-                            this.processIncomingData(messageBuffer, ok);
-                            // Reset for next message
-                            sizeBytes = [];
-                            currentBuff = [];
-                            incomingLength = 0;
-                        }
+                    currentBuff.push(...data.subarray(offset, offset + bytesToRead));
+                    offset += bytesToRead;
+
+                    if (currentBuff.length === incomingLength) {
+                        const messageBuffer = Buffer.from(currentBuff);
+                        void this.processIncomingData(messageBuffer, ok);
+                        sizeBytes = [];
+                        currentBuff = [];
+                        incomingLength = 0;
                     }
                 }
             });
         });
 
         client.on('error', (err: Error) => {
-            console.error(`Socket error occurred:`, err);
+            console.error('Socket error occurred:', err);
 
-            // Check if it's a TLS-related error
             const errorMessage = err.message.toLowerCase();
             if (
                 errorMessage.includes('ssl') ||
@@ -371,17 +365,16 @@ export class Engine5Connection {
                 console.error('Client TLS enabled: ' + this.tlsEnabled);
             }
 
-            this.connectionStatus = 'CLOSED';
-            this.connectionStatusSubject.next('CLOSED');
+            this.setConnectionStatus('CLOSED');
         });
+
         client.on('end', () => {
-            this.connectionStatus = 'CLOSED';
-            this.connectionStatusSubject.next('CLOSED');
+            this.setConnectionStatus('CLOSED');
             console.log('Connection ended by server');
         });
-        client.on('close', async () => {
-            this.connectionStatus = 'CLOSED';
-            this.connectionStatusSubject.next('CLOSED');
+
+        client.on('close', () => {
+            this.setConnectionStatus('CLOSED');
             console.log('Connection closed');
         });
 
@@ -393,19 +386,15 @@ export class Engine5Connection {
     }
 
     private startConnection() {
-        // if (this.connectionStatus != "CONNECTING") return;
-
-        // Set connection timeout - if CONNECT_SUCCESS doesn't arrive, there might be a TLS mismatch
         this.connectionTimeout = setTimeout(() => {
             if (this.connectionStatus === 'CONNECTING') {
                 console.error(
                     'Connection timeout: Server might require TLS but client is not using TLS, or vice versa',
                 );
                 this.tcpClient.destroy();
-                this.connectionStatus = 'CLOSED';
-                this.connectionStatusSubject.next('CLOSED');
+                this.setConnectionStatus('CLOSED');
             }
-        }, 10000); // 10 second timeout
+        }, 10000);
 
         if (this.tlsEnabled) {
             const tlsSocket = this.tcpClient as tls.TLSSocket;
@@ -417,38 +406,29 @@ export class Engine5Connection {
                     );
                 } else {
                     console.error(
-                        'TLS authorization error: ' +
-                        tlsSocket.authorizationError,
+                        'TLS authorization error: ' + tlsSocket.authorizationError,
                     );
                     this.tcpClient.destroy();
                     return;
                 }
             }
         }
-        this.writePayload({
+
+        void this.writePayload({
             Command: 'CONNECT',
             InstanceId: this.instanceId || '',
             InstanceGroup: this.instanceGroup || this.instanceId,
         });
 
-        const alreadyListeningSubjects = Object.keys(
-            this.listeningSubjectCallbacks,
-        );
-
-        for (
-            let alsIndex = 0;
-            alsIndex < alreadyListeningSubjects.length;
-            alsIndex++
-        ) {
-            const als = alreadyListeningSubjects[alsIndex];
-            this.writeListenCommand(als)
-                .then(() => console.info('Listening subject again: ' + als))
+        for (const subject of Object.keys(this.listeningSubjectCallbacks)) {
+            void this.writeListenCommand(subject)
+                .then(() => console.info('Listening subject again: ' + subject))
                 .catch(console.error);
         }
     }
 
     private async processIncomingData(
-        data: any,
+        data: Buffer,
         promiseResolveFunc?: (
             value: Engine5Connection | PromiseLike<Engine5Connection>,
         ) => void,
@@ -456,7 +436,7 @@ export class Engine5Connection {
         let decoded: Payload;
 
         try {
-            decoded = decode(data) as any as Payload;
+            decoded = decode(data) as Payload;
         } catch (error) {
             console.error(
                 'Failed to decode message. This usually indicates a TLS mismatch:',
@@ -466,67 +446,74 @@ export class Engine5Connection {
             );
             console.error('Decode error:', error);
             this.tcpClient.destroy();
-            this.connectionStatus = 'CLOSED';
-            this.connectionStatusSubject.next('CLOSED');
+            this.setConnectionStatus('CLOSED');
             return;
         }
 
-        // console.info(decoded)
-        if (decoded.Command == 'CONNECT_SUCCESS') {
-            // Clear connection timeout on successful connection
-            if (this.connectionTimeout) {
-                clearTimeout(this.connectionTimeout);
-                this.connectionTimeout = null;
+        switch (decoded.Command) {
+            case 'CONNECT_SUCCESS': {
+                this.clearConnectionTimeout();
+                this.setConnectionStatus('CONNECTED');
+                this.instanceId = decoded.InstanceId!;
+                this.instanceGroup = decoded.InstanceGroup!;
+                promiseResolveFunc?.(this);
+                console.info('Connected Successfully');
+                break;
             }
+            case CtConnectError: {
+                this.clearConnectionTimeout();
+                console.error('Connection failed: ' + decoded.Content);
+                this.tcpClient.destroy();
+                this.setConnectionStatus('CLOSED');
+                break;
+            }
+            case CtEvent: {
+                console.info('Event recieved', decoded.Subject);
+                this.processReceivedEvent(decoded);
+                break;
+            }
+            case CtRequest: {
+                console.info('Request recieved: ', decoded.Subject);
+                try {
+                    const callback = this.listeningSubjectCallbacks[decoded.Subject!]?.[0];
+                    if (!callback) {
+                        console.warn('No callback registered for subject:', decoded.Subject);
+                        return;
+                    }
 
-            this.connectionStatus = 'CONNECTED';
-            this.connectionStatusSubject.next('CONNECTED');
-            this.instanceId = decoded.InstanceId!;
-            this.instanceGroup = decoded.InstanceGroup!;
-            promiseResolveFunc?.(this);
-            // this.reconnectOnFail = true;
-            console.info('Connected Successfully');
-        } else if (decoded.Command == CtConnectError) {
-            // Clear connection timeout
-            if (this.connectionTimeout) {
-                clearTimeout(this.connectionTimeout);
-                this.connectionTimeout = null;
+                    const responseContent = await callback(this.parseData(decoded.Content!));
+                    await this.writePayload({
+                        Command: CtResponse,
+                        Content: this.stringifyData(responseContent),
+                        MessageId: this.generateMessageId(),
+                        Subject: decoded.Subject,
+                        ResponseOfMessageId: decoded.MessageId,
+                    });
+                } catch (ex) {
+                    console.error(ex);
+                }
+                break;
             }
+            case CtResponse: {
+                const callback = this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!];
+                if (callback) {
+                    await callback(decoded);
+                }
+                break;
+            }
+            case CtResponseError: {
+                const errorSide = decoded.ResponseErrorSide || 'E5';
+                const errorMessage = `Response error from ${errorSide === 'E5' ? 'server' : 'client'}: ${decoded.Content}`;
+                console.error(errorMessage);
 
-            console.error('Connection failed: ' + decoded.Content);
-            this.tcpClient.destroy();
-            this.connectionStatus = 'CLOSED';
-            this.connectionStatusSubject.next('CLOSED');
-        } else if (decoded.Command == CtEvent) {
-            console.info('Event recieved', decoded.Subject);
-            this.processReceivedEvent(decoded);
-        } else if (decoded.Command == CtRequest) {
-            console.info('Request recieved: ', decoded.Subject);
-            try {
-                const ac = await this.listeningSubjectCallbacks[
-                    decoded.Subject!
-                ][0](this.parseData(decoded.Content!));
-                // this.ongoingRequestsToComplete[decoded.MessageId!](ac)
-                await this.writePayload({
-                    Command: CtResponse,
-                    Content: this.stringifyData(ac),
-                    MessageId: this.generateMessageId(),
-                    Subject: decoded.Subject,
-                    ResponseOfMessageId: decoded.MessageId,
-                });
-            } catch (ex) {
-                console.error(ex);
+                const callback = this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!];
+                if (callback) {
+                    await callback(decoded);
+                }
+                break;
             }
-        } else if (decoded.Command == CtResponse) {
-            await this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!](
-                decoded,
-            );
-        } else if (decoded.Command === CtResponseError) {
-            const errorSide = decoded.ResponseErrorSide || 'E5';
-            const errorMessage = `Response error from ${errorSide === 'E5' ? 'server' : 'client'
-                }: ${decoded.Content}`;
-            console.error(errorMessage);
-            await this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!](decoded);
+            default:
+                break;
         }
     }
 
@@ -534,11 +521,12 @@ export class Engine5Connection {
         if (dataString === 'undefined' || dataString === '') {
             return undefined;
         }
+
         try {
             return JSON.parse(dataString);
         } catch (error) {
             console.error('Failed to parse JSON data:', error);
-            return dataString; // Return original string if parsing fails
+            return dataString;
         }
     }
 
@@ -546,6 +534,7 @@ export class Engine5Connection {
         if (data === undefined) {
             return 'undefined';
         }
+
         try {
             return JSON.stringify(data);
         } catch (error) {
@@ -554,15 +543,30 @@ export class Engine5Connection {
         }
     }
 
+    // TODO: Bunu async/await yapmak lazım. Callback'in bitmesini beklemeden success yazmayalım...
     private processReceivedEvent(decoded: Payload) {
-        const cbs = this.listeningSubjectCallbacks[decoded.Subject!] || [];
-        for (
-            let callbackIndex = 0;
-            callbackIndex < cbs.length;
-            callbackIndex++
-        ) {
-            const callback = cbs[callbackIndex];
-            callback(this.parseData(decoded.Content!));
+        const callbacks = this.listeningSubjectCallbacks[decoded.Subject!] ?? [];
+        for (const callback of callbacks) {
+            try {
+                callback(this.parseData(decoded.Content!));
+                void this.writePayload({
+                    Command: CtConsumingSuccess,
+                    Subject: decoded.Subject,
+                    MessageId: decoded.MessageId,
+                    InstanceGroup: this.instanceGroup,
+                    InstanceId: this.instanceId,
+                });
+            } catch (error) {
+                console.error('Error in event callback for subject ' + decoded.Subject + ':', error);
+                void this.writePayload({
+                    Command: CtConsumingError,
+                    Subject: decoded.Subject,
+                    MessageId: decoded.MessageId,
+                    InstanceGroup: this.instanceGroup,
+                    InstanceId: this.instanceId,
+                    Content: `Error in event callback: ${error instanceof Error ? error.message : String(error)}`,
+                })
+            }
         }
     }
 
@@ -575,10 +579,7 @@ export class Engine5Connection {
             this.reconnectInterval = null;
         }
 
-        if (this.connectionTimeout) {
-            clearTimeout(this.connectionTimeout);
-            this.connectionTimeout = null;
-        }
+        this.clearConnectionTimeout();
 
         try {
             if (this.connectionStatus === 'CONNECTED') {
@@ -588,8 +589,7 @@ export class Engine5Connection {
             console.error('Error during close:', error);
         } finally {
             this.tcpClient.destroy();
-            this.connectionStatus = 'CLOSED';
-            this.connectionStatusSubject.next('CLOSED');
+            this.setConnectionStatus('CLOSED');
         }
     }
 
@@ -604,9 +604,10 @@ export class Engine5Connection {
             instanceId = 'default-id',
         } = connectOptions;
         const key = `${instanceGroup}(${instanceId})@${host}:${port}`;
+
         if (!this.globalE5Connections[key]) {
-            const nk = new Engine5Connection(connectOptions);
-            this.globalE5Connections[key] = nk;
+            const connection = new Engine5Connection(connectOptions);
+            this.globalE5Connections[key] = connection;
         }
 
         return this.globalE5Connections[key];
