@@ -1,5 +1,5 @@
 // Import stylesheets
-import { Observable, ReplaySubject, Subject, Subscriber, from } from 'rxjs';
+import { Observable, ReplaySubject, Subject, from } from 'rxjs';
 
 export interface QueueOrder {
   key: number;
@@ -71,15 +71,18 @@ export class DynamicQueue {
           const result = newTask_();
           if (result instanceof Promise) {
             result
-              .then((a) => subscriber.next(a))
+              .then((a) => {
+                subscriber.next(a);
+                subscriber.complete();
+              })
               .catch((e) => subscriber.error(e));
           } else {
             subscriber.next(result);
+            subscriber.complete();
           }
         } catch (error) {
           subscriber.error(error);
         }
-        subscriber.complete();
       });
     } else {
       newTask = from(newTask_);
@@ -115,6 +118,7 @@ export class DynamicQueue {
         },
         error: (error) => {
           firstStart.outputSubject.error(error);
+          this.runFirst();
         },
         complete: () => {
           firstStart.outputSubject.complete();

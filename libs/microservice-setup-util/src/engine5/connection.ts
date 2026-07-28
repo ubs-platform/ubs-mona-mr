@@ -53,6 +53,8 @@ export class Engine5Connection {
     private tlsEnabled: boolean = false;
     private tlsOptions?: TLSClientOptions;
     private authKey?: string;
+    private readonly processedEventMessageIds = new Map<string, number>();
+    private readonly processedEventTtlMs = 2 * 60 * 1000;
 
     constructor(connectOptions: Engine5ConnectionOptions) {
         this.host = connectOptions.host;
@@ -64,8 +66,31 @@ export class Engine5Connection {
         this.authKey = connectOptions.authKey;
 
         this.connectionStatusSubject.next('CLOSED');
-        this.queue.push(() => this.runAtWhenConnected(() => undefined));
         this.startReconnectTimer();
+    }
+
+    private cleanupProcessedEventMessageIds(now = Date.now()): void {
+        for (const [messageId, timestamp] of this.processedEventMessageIds) {
+            if (now - timestamp > this.processedEventTtlMs) {
+                this.processedEventMessageIds.delete(messageId);
+            }
+        }
+    }
+
+    private isDuplicateEventMessage(messageId?: string): boolean {
+        if (!messageId) {
+            return false;
+        }
+
+        const now = Date.now();
+        this.cleanupProcessedEventMessageIds(now);
+
+        if (this.processedEventMessageIds.has(messageId)) {
+            return true;
+        }
+
+        this.processedEventMessageIds.set(messageId, now);
+        return false;
     }
 
     private startReconnectTimer(): void {
@@ -158,6 +183,10 @@ export class Engine5Connection {
                 try {
                     await this.writeListenCommand(subject);
                     const callbacks = this.listeningSubjectCallbacks[subject] ?? [];
+                    if (callbacks.includes(callback)) {
+                        resolve();
+                        return;
+                    }
                     callbacks.push(callback);
                     this.listeningSubjectCallbacks[subject] = callbacks;
                     resolve();
@@ -209,6 +238,7 @@ export class Engine5Connection {
             }, 30000);
 
             this.ongoingRequestsToComplete[messageId] = (response: Payload) => {
+                delete this.ongoingRequestsToComplete[messageId];
                 clearTimeout(timeout);
                 if (response.Command === CtResponseError) {
                     const errorSide = response.ResponseErrorSide || 'E5';
@@ -317,7 +347,7 @@ export class Engine5Connection {
         let incomingLength = 0;
 
         client.on('data', (data: Buffer) => {
-            this.queue.push(async () => {
+            this.queue.push(() => {
                 let offset = 0;
 
                 while (offset < data.length) {
@@ -340,7 +370,7 @@ export class Engine5Connection {
 
                     if (currentBuff.length === incomingLength) {
                         const messageBuffer = Buffer.from(currentBuff);
-                        void await this.processIncomingData(messageBuffer, ok);
+                        void this.processIncomingData(messageBuffer, ok);
                         sizeBytes = [];
                         currentBuff = [];
                         incomingLength = 0;
@@ -468,6 +498,13 @@ export class Engine5Connection {
                 break;
             }
             case CtEvent: {
+                if (this.isDuplicateEventMessage(decoded.MessageId)) {
+                    console.warn(
+                        'Duplicate event ignored for subject:',
+                        decoded.Subject,
+                    );
+                    break;
+                }
                 console.info('Event recieved', decoded.Subject);
                 await this.processReceivedEvent(decoded);
                 break;
@@ -495,8 +532,11 @@ export class Engine5Connection {
                 break;
             }
             case CtResponse: {
-                const callback = this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!];
+                const responseOfMessageId = decoded.ResponseOfMessageId!;
+                const callback =
+                    this.ongoingRequestsToComplete[responseOfMessageId];
                 if (callback) {
+                    delete this.ongoingRequestsToComplete[responseOfMessageId];
                     await callback(decoded);
                 }
                 break;
@@ -506,8 +546,11 @@ export class Engine5Connection {
                 const errorMessage = `Response error from ${errorSide === 'E5' ? 'server' : 'client'}: ${decoded.Content}`;
                 console.error(errorMessage);
 
-                const callback = this.ongoingRequestsToComplete[decoded.ResponseOfMessageId!];
+                const responseOfMessageId = decoded.ResponseOfMessageId!;
+                const callback =
+                    this.ongoingRequestsToComplete[responseOfMessageId];
                 if (callback) {
+                    delete this.ongoingRequestsToComplete[responseOfMessageId];
                     await callback(decoded);
                 }
                 break;
@@ -588,6 +631,10 @@ export class Engine5Connection {
         } catch (error) {
             console.error('Error during close:', error);
         } finally {
+            for (const key of Object.keys(this.ongoingRequestsToComplete)) {
+                delete this.ongoingRequestsToComplete[key];
+            }
+            this.processedEventMessageIds.clear();
             this.tcpClient.destroy();
             this.setConnectionStatus('CLOSED');
         }
