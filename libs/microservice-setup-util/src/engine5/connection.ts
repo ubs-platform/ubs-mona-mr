@@ -11,7 +11,7 @@ import {
     CtConsumingError,
 } from './payload';
 import { encode, decode } from '@msgpack/msgpack';
-import { DynamicQueue } from '@ubs-platform/dynamic-queue';
+import { AsyncMutex } from './async-mutex';
 import { ReplaySubject } from 'rxjs';
 
 type ConnectionStatus = 'CONNECTING' | 'CLOSED' | 'CONNECTED';
@@ -41,11 +41,11 @@ export class Engine5Connection {
         {};
     private readonly ongoingRequestsToComplete: Record<string, RequestCallback> =
         {};
-    // Keep socket I/O and control-plane operations on different queues so a queued
-    // task that awaits another queued task cannot deadlock the whole pipeline.
-    private readonly writeQueue = new DynamicQueue();
-    private readonly readQueue = new DynamicQueue();
-    private readonly generalOperationsQueue = new DynamicQueue();
+    // Keep socket I/O and control-plane operations on separate mutexes so a locked
+    // task that awaits another mutex cannot deadlock the whole pipeline.
+    private readonly writeMutex = new AsyncMutex();
+    private readonly readMutex = new AsyncMutex();
+    private readonly generalMutex = new AsyncMutex();
     private reconnectOnFail = true;
     private tcpClientEventsRegistered = false;
     private reconnectInterval: NodeJS.Timeout | null = null;
@@ -147,32 +147,33 @@ export class Engine5Connection {
         });
     }
 
-    private async writePayload(payload: Payload): Promise<Engine5Connection> {
+    private writePayload(payload: Payload): Promise<Engine5Connection> {
         const outboundPayload = { ...payload, AuthKey: this.authKey };
 
-        return new Promise((resolve, reject) => {
-            this.writeQueue.push(() => {
-                try {
-                    const msgpackData = Buffer.from(encode(outboundPayload));
-                    const lengthPrefix = Buffer.alloc(4);
-                    lengthPrefix.writeUInt32BE(msgpackData.length, 0);
-                    const fullMessage = Buffer.concat([lengthPrefix, msgpackData]);
+        return this.writeMutex.run(
+            () =>
+                new Promise<Engine5Connection>((resolve, reject) => {
+                    try {
+                        const msgpackData = Buffer.from(encode(outboundPayload));
+                        const lengthPrefix = Buffer.alloc(4);
+                        lengthPrefix.writeUInt32BE(msgpackData.length, 0);
+                        const fullMessage = Buffer.concat([lengthPrefix, msgpackData]);
 
-                    this.tcpClient.write(fullMessage, (error) => {
-                        if (error) {
-                            console.error('Failed to write payload:', error);
-                            reject(error);
-                            return;
-                        }
+                        this.tcpClient.write(fullMessage, (error) => {
+                            if (error) {
+                                console.error('Failed to write payload:', error);
+                                reject(error);
+                                return;
+                            }
 
-                        resolve(this);
-                    });
-                } catch (error) {
-                    console.error('Error encoding payload:', error);
-                    reject(error);
-                }
-            });
-        });
+                            resolve(this);
+                        });
+                    } catch (error) {
+                        console.error('Error encoding payload:', error);
+                        reject(error);
+                    }
+                }),
+        );
     }
 
     async listen(subject: string, callback: CallbackFunction): Promise<void> {
@@ -182,26 +183,13 @@ export class Engine5Connection {
 
         console.info('Listening to subject: ' + subject);
 
-        return new Promise((resolve, reject) => {
-            this.generalOperationsQueue.push(async () => {
-                try {
-                    await this.writeListenCommand(subject);
-                    const callbacks = this.listeningSubjectCallbacks[subject] ?? [];
-                    if (callbacks.includes(callback)) {
-                        resolve();
-                        return;
-                    }
-                    callbacks.push(callback);
-                    this.listeningSubjectCallbacks[subject] = callbacks;
-                    resolve();
-                } catch (error) {
-                    console.error(
-                        'Failed to listen to subject ' + subject + ':',
-                        error,
-                    );
-                    reject(error);
-                }
-            });
+        return this.generalMutex.run(async () => {
+            await this.writeListenCommand(subject);
+            const callbacks = this.listeningSubjectCallbacks[subject] ?? [];
+            if (!callbacks.includes(callback)) {
+                callbacks.push(callback);
+                this.listeningSubjectCallbacks[subject] = callbacks;
+            }
         });
     }
 
@@ -351,7 +339,7 @@ export class Engine5Connection {
         let incomingLength = 0;
 
         client.on('data', (data: Buffer) => {
-            this.readQueue.push(() => {
+            void this.readMutex.run(() => {
                 let offset = 0;
 
                 while (offset < data.length) {
