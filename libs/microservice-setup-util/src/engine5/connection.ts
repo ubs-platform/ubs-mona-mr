@@ -41,7 +41,11 @@ export class Engine5Connection {
         {};
     private readonly ongoingRequestsToComplete: Record<string, RequestCallback> =
         {};
-    private readonly queue = new DynamicQueue();
+    // Keep socket I/O and control-plane operations on different queues so a queued
+    // task that awaits another queued task cannot deadlock the whole pipeline.
+    private readonly writeQueue = new DynamicQueue();
+    private readonly readQueue = new DynamicQueue();
+    private readonly generalOperationsQueue = new DynamicQueue();
     private reconnectOnFail = true;
     private tcpClientEventsRegistered = false;
     private reconnectInterval: NodeJS.Timeout | null = null;
@@ -147,7 +151,7 @@ export class Engine5Connection {
         const outboundPayload = { ...payload, AuthKey: this.authKey };
 
         return new Promise((resolve, reject) => {
-            this.queue.push(() => {
+            this.writeQueue.push(() => {
                 try {
                     const msgpackData = Buffer.from(encode(outboundPayload));
                     const lengthPrefix = Buffer.alloc(4);
@@ -179,7 +183,7 @@ export class Engine5Connection {
         console.info('Listening to subject: ' + subject);
 
         return new Promise((resolve, reject) => {
-            this.queue.push(async () => {
+            this.generalOperationsQueue.push(async () => {
                 try {
                     await this.writeListenCommand(subject);
                     const callbacks = this.listeningSubjectCallbacks[subject] ?? [];
@@ -347,7 +351,7 @@ export class Engine5Connection {
         let incomingLength = 0;
 
         client.on('data', (data: Buffer) => {
-            this.queue.push(() => {
+            this.readQueue.push(() => {
                 let offset = 0;
 
                 while (offset < data.length) {
@@ -592,7 +596,7 @@ export class Engine5Connection {
         for (const callback of callbacks) {
             try {
                 await callback(this.parseData(decoded.Content!));
-                await this.writePayload({
+                this.writePayload({
                     Command: CtConsumingSuccess,
                     Subject: decoded.Subject,
                     MessageId: decoded.MessageId,
@@ -601,7 +605,7 @@ export class Engine5Connection {
                 });
             } catch (error) {
                 console.error('Error in event callback for subject ' + decoded.Subject + ':', error);
-                await this.writePayload({
+                this.writePayload({
                     Command: CtConsumingError,
                     Subject: decoded.Subject,
                     MessageId: decoded.MessageId,
