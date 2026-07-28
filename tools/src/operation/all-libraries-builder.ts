@@ -34,10 +34,12 @@ export class AllLibrariesBuilder {
         for (let index = 0; index < chldrn.length; index++) {
             const xrPackage = this.xrRootPackage.children[index];
             const builder = new PackageBuilder(xrPackage);
-            await builder.prebuild();
             packageBuilders.push(builder);
             builderMap.set(builder.iksirPackage.packageObject.name, builder);
         }
+        await Promise.all(
+            packageBuilders.map(builder => builder.prebuild())
+        )
         const packageBuildersArranged = packageBuilders.sort(
             (a, b) => a.projectImports.length - b.projectImports.length,
         );
