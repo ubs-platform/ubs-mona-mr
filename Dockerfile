@@ -10,6 +10,9 @@ ARG APP_NAME
 RUN test -n "${APP_NAME}"
 RUN npm run build -- ${APP_NAME}
 RUN npm prune --omit=dev --legacy-peer-deps && npm cache clean --force
+RUN if [ "$APP_NAME" = "files" ] || [ "$APP_NAME" = "dev-monolith" ]; then \
+    npm install --no-save --legacy-peer-deps --include=optional sharp || true; \
+fi
 
 FROM ${NODE_IMAGE} AS runtime
 ENV NODE_ENV=production
