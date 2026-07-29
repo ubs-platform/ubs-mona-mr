@@ -23,6 +23,12 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
+      "@ubs-platform/async-mutex": [
+        "libs/async-mutex/src"
+      ],
+      "@ubs-platform/async-mutex/*": [
+        "libs/async-mutex/src/*"
+      ],
       "@ubs-platform/cache-manager": [
         "libs/cache-manager/src"
       ],

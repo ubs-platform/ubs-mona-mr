@@ -11,7 +11,7 @@ import {
     CtConsumingError,
 } from './payload';
 import { encode, decode } from '@msgpack/msgpack';
-import { AsyncMutex } from './async-mutex';
+import { AsyncMutex } from '@ubs-platform/async-mutex';
 import { ReplaySubject } from 'rxjs';
 
 type ConnectionStatus = 'CONNECTING' | 'CLOSED' | 'CONNECTED';

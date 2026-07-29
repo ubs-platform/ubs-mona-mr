@@ -10,6 +10,15 @@
     "webpack": true
   },
   "projects": {
+    "async-mutex": {
+      "type": "library",
+      "root": "libs/async-mutex",
+      "entryFile": "index",
+      "sourceRoot": "libs/async-mutex/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/async-mutex/tsconfig.lib.json"
+      }
+    },
     "cache-manager": {
       "type": "library",
       "root": "libs/cache-manager",
