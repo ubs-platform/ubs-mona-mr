@@ -4,7 +4,8 @@ FROM ${NODE_IMAGE} AS build
 WORKDIR /app
 COPY package.docker.json ./package.json
 COPY package-lock.json ./
-RUN if [ -f package-lock.json ] && [ -d node_modules ]; then npm ci --legacy-peer-deps --no-audit --no-fund; else npm install --legacy-peer-deps --no-audit --no-fund; fi
+RUN npm install --force --legacy-peer-deps --no-audit --no-fund
+# RUN if [ -f package-lock.json ] && [ -d node_modules ]; then npm ci --legacy-peer-deps --no-audit --no-fund; else npm install --legacy-peer-deps --no-audit --no-fund; fi
 COPY . .
 ARG APP_NAME
 RUN test -n "${APP_NAME}"
