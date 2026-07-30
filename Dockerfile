@@ -6,7 +6,7 @@ FROM --platform=$BUILDPLATFORM ${NODE_IMAGE} AS build
 WORKDIR /app
 COPY package.docker.json ./package.json
 COPY package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm \
+RUN --mount=type=cache,target=/root/.npm,id=npm-build \
     npm install --force --legacy-peer-deps --no-audit --no-fund
 COPY . .
 ARG APP_NAME
@@ -21,7 +21,8 @@ WORKDIR /app
 COPY package.docker.json ./package.json
 COPY package-lock.json ./
 ARG APP_NAME
-RUN --mount=type=cache,target=/root/.npm \
+ARG TARGETPLATFORM
+RUN --mount=type=cache,target=/root/.npm,id=npm-runtime-${TARGETPLATFORM} \
     npm install --omit=dev --force --legacy-peer-deps --no-audit --no-fund && \
     npm cache clean --force
 RUN if [ "$APP_NAME" = "files" ] || [ "$APP_NAME" = "dev-monolith" ]; then \
