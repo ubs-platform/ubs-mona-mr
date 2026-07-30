@@ -57,7 +57,7 @@ if (process.env.RELEASE_VERSION_TAG) {
     packageJson.childrenVersionTag = process.env.RELEASE_VERSION_TAG;
 }
 
-fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2) + '\n');
+fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2) + '\\n');
 NODE
                 '''
             }
