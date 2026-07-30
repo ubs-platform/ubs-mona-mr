@@ -63,13 +63,13 @@ NODE
             }
         }
 
-        stage('Publish libraries') {
-            steps {
-                withCredentials([string(credentialsId: 'npm-token', variable: 'NODE_AUTH_TOKEN')]) {
-                    sh 'npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN; npm run xr publish-libs'
-                }
-            }
-        }
+        // stage('Publish libraries') {
+        //     steps {
+        //         withCredentials([string(credentialsId: 'npm-token', variable: 'NODE_AUTH_TOKEN')]) {
+        //             sh 'npm config set //registry.npmjs.org/:_authToken=$NODE_AUTH_TOKEN; npm run xr publish-libs'
+        //         }
+        //     }
+        // }
 
         stage('Docker login') {
             steps {
