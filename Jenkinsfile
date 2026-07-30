@@ -88,10 +88,10 @@ NODE
         stage('Commit version changes') {
             steps {
                 sh '''
-                    git config user.name "jenkins"
-                    git config user.email "jenkins@users.noreply.github.com"
+                    git config user.name "Hüseyin Can Gündüz"
+                    git config user.email "hcangunduz@gmail.com"
                     git add .
-                    git commit -m "Version upgrade to ${RELEASE_VERSION} and publish completion" || echo "No changes to commit"
+                    git commit -m "JENKINS: Version upgrade to ${RELEASE_VERSION} and publish completion" || echo "No changes to commit"
                     git push origin HEAD:${BRANCH_NAME} || echo "Nothing to push"
                 '''
             }
