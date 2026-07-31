@@ -6,7 +6,7 @@ pipeline {
         disableConcurrentBuilds()
     }
 
-    variable {
+    environment {
         APPLICATION_NAME = 'UBS Mona Platform'
     }
 
