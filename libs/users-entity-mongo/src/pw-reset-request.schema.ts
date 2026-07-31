@@ -9,13 +9,13 @@ export class PwResetRequest {
       return randomUUID();
     },
   })
-  _id: string;
+  _id!: string;
 
   @Prop({ required: true })
-  userId: string;
+  userId!: string;
 
   @Prop({ required: true })
-  expireAfter: Date;
+  expireAfter!: Date;
 }
 
 export const PwResetRequestSchema =

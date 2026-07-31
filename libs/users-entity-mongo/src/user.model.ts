@@ -8,64 +8,64 @@ export class User {
         unique: true,
         required: true,
     })
-    username: string;
+    username!: string;
 
     @Prop({
         required: false,
     })
-    passwordEncyripted: string;
+    passwordEncyripted!: string;
 
     @Prop({
         required: true,
     })
-    primaryEmail: string;
+    primaryEmail!: string;
 
     @Prop({
         required: true,
     })
-    name: string;
+    name!: string;
 
     @Prop({
         required: true,
     })
-    surname: string;
-
-    @Prop()
-    country: string;
-
-    @Prop()
-    state: string;
-
-    @Prop()
-    city: string;
-
-    @Prop()
-    district: string;
-
-    @Prop()
-    gender: string;
-
-    @Prop()
-    pronounce: string;
-
-    @Prop()
-    roles: string[];
-
-    @Prop()
-    webSites: string[];
-
-    @Prop({
-        default: false,
-    })
-    active: boolean = false;
-
-    @Prop({
-        default: false,
-    })
-    suspended: boolean = false;
+    surname!: string;
 
     @Prop({ type: String })
-    suspendReason: string = '';
+    country!: string;
+
+    @Prop({ type: String })
+    state!: string;
+
+    @Prop({ type: String })
+    city!: string;
+
+    @Prop({ type: String })
+    district!: string;
+
+    @Prop({ type: String })
+    gender!: string;
+
+    @Prop({ type: String })
+    pronounce!: string;
+
+    @Prop({ type: [String] })
+    roles!: string[];
+
+    @Prop({ type: [String] })
+    webSites!: string[];
+
+    @Prop({
+        default: false,
+    })
+    active!: boolean;
+
+    @Prop({
+        default: false,
+    })
+    suspended!: boolean;
+
+    @Prop({ type: String })
+    suspendReason!: string;
 
     @Prop({ required: false, type: String })
     activationKey?: string;
@@ -73,8 +73,8 @@ export class User {
     @Prop({ required: false, type: Date })
     activationExpireDate?: Date | null;
 
-    @Prop({})
-    localeCode: string = '';
+    @Prop({ type: String })
+    localeCode!: string;
 }
 
 export type UserDoc = User & Document;

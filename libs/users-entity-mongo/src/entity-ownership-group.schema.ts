@@ -1,19 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { GroupCapability } from '@ubs-platform/users-common';
+import { Capability, GroupCapability } from '@ubs-platform/users-common';
 import { EntityOwnershipGroupEntityCapability } from './entity-ownership-group-entity-capability';
 
 export class GroupUserCapability {
     userId?: string;
-    // capability?: string;
-    groupCapability: GroupCapability;
-    userFullName?: string;
-    entityCapabilities: EntityOwnershipGroupEntityCapability[];
     /**
-     * Group capability defines the ability of the EntityOwnershipGroup as a whole.
+     * @deprecated string tabanlı capability alanı yerine orbitalGroupCapability alanı kullanılacak.
      */
-    // canEdit: boolean;
-    // canRemove: boolean;
-    // canView: boolean;
+    groupCapability: GroupCapability = "VIEWER";
+    groupCapabilities: Capability[] = [];
+    userFullName?: string;
+    entityCapabilities: EntityOwnershipGroupEntityCapability[] = [];
+
 }
 
 @Schema()
@@ -21,7 +19,7 @@ export class EntityOwnershipGroup {
     _id?: any;
 
     @Prop([GroupUserCapability])
-    userCapabilities: GroupUserCapability[];
+    userCapabilities: GroupUserCapability[] = [];
 
     /**
      * Group name of the ownership group. Can be used for best reading

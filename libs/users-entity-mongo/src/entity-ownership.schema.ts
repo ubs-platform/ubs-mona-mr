@@ -1,12 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { UserCapability } from './user-capability.model';
 
-export class UserCapability {
-    userId?: string;
-    capability?: string;
-    // canEdit: boolean;
-    // canRemove: boolean;
-    // canView: boolean;
-}
 
 @Schema({ autoIndex: true, timestamps: true })
 export class EntityOwnership {
@@ -16,7 +10,7 @@ export class EntityOwnership {
      * List of users and their capabilities for this entity
      */
     @Prop([UserCapability])
-    userCapabilities: UserCapability[];
+    userCapabilities: UserCapability[] = [];
 
     /** 
      * Group ID of the ownership group. Can be used for grouping users instead filling capabilities one by one

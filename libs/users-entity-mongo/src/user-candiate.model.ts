@@ -5,56 +5,56 @@ export class UserCandiate {
     _id?: any;
 
     @Prop(String)
-    username: string;
+    username!: string;
 
     @Prop(String)
-    passwordEncyripted: string;
+    passwordEncyripted!: string;
 
     @Prop(String)
-    primaryEmail: string;
+    primaryEmail!: string;
 
     @Prop(String)
-    name: string;
+    name!: string;
 
     @Prop(String)
-    surname: string;
+    surname!: string;
 
     @Prop(String)
-    country: string;
+    country!: string;
 
     @Prop(String)
-    state: string;
+    state!: string;
 
     @Prop(String)
-    city: string;
+    city!: string;
 
     @Prop(String)
-    district: string;
+    district!: string;
 
     @Prop(String)
-    gender: string;
+    gender!: string;
 
     @Prop(String)
-    pronounce: string;
+    pronounce!: string;
 
     @Prop([String])
-    roles: string[];
+    roles!: string[];
 
     @Prop([String])
-    webSites: string[];
+    webSites!: string[];
 
     @Prop({
         default: false,
     })
-    active: boolean = false;
+    active!: boolean;
 
     @Prop({
         default: false,
     })
-    suspended: boolean = false;
+    suspended!: boolean;
 
     @Prop({ type: String })
-    suspendReason: string = '';
+    suspendReason!: string;
 
     @Prop({ required: false, type: String })
     activationKey?: string;
@@ -63,7 +63,7 @@ export class UserCandiate {
     expireDate?: Date | null;
 
     @Prop({})
-    localeCode: string = '';
+    localeCode!: string;
 }
 
 export type UserCandiateDoc = UserCandiate & Document;

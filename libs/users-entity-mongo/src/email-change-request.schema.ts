@@ -5,13 +5,13 @@ export class EmailChangeRequest {
   _id?: any;
 
   @Prop()
-  userId: string;
+  userId!: string;
   @Prop()
-  newEmail: string;
+  newEmail!: string;
   @Prop()
-  code: string;
+  code!: string;
   @Prop()
-  expireAfter: Date;
+  expireAfter!: Date;
 }
 
 export type EmailChangeRequestDocument = EmailChangeRequest & Document;

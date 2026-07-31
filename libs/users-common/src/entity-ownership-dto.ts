@@ -1,6 +1,9 @@
+import { Capability } from "./capability";
+
 export class UserCapabilityDTO {
-    userId: string;
+    userId!: string;
     capability?: string;
+    capabilities: Capability[] = [];
 }
 
 export interface EntityOwnershipRemoveUserCapabilityDTO {
@@ -27,6 +30,8 @@ export interface EntityOwnershipInsertCapabiltyDTO {
     entityId: string;
     userId: string;
     capability: string;
+    capabilities: Capability[];
+
 }
 
 
@@ -35,7 +40,11 @@ export interface EntityOwnershipUserSearch {
     entityName: string;
     userId?: string;
     entityOwnershipGroupId?: string;
+    /**
+     * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
+     */
     capabilityAtLeastOne?: string[];
+    numericCapabilityAtLeastOne?: number[];
 }
 
 export interface EntityOwnershipSearch {
@@ -48,8 +57,11 @@ export interface EntityOwnershipUserCheck {
     entityGroup: string;
     entityName: string;
     entityId?: string;
-    // capability?: string;
+    /**
+     * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
+     */
     capabilityAtLeastOne?: string[];
+    numericCapabilityAtLeastOne?: number[];
 
     userId: string;
     entityOwnershipGroupId?: string;
@@ -59,6 +71,10 @@ export interface EntityOwnershipGroupIdCheck {
     entityGroup: string;
     entityName: string;
     entityId?: string;
+    /**
+ * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
+ */
     capabilityAtLeastOne?: string[];
+    numericCapabilityAtLeastOne?: number[];
     entityOwnershipGroupId: string;
 }

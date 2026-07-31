@@ -98,8 +98,10 @@ export class EntityOwnershipGroupService {
                 entityGroup: ec.entityGroup,
                 entityName: ec.entityName,
                 capability: ec.capability,
+                capabilities: ec.capabilities,
             })),
             groupCapability: a.groupCapability,
+            groupCapabilities: a.groupCapabilities,
             userFullName: a.userFullName,
         };
     }
@@ -278,6 +280,9 @@ export class EntityOwnershipGroupService {
             userCapability.entityCapabilities;
         group.userCapabilities[index].groupCapability =
             userCapability.groupCapability;
+        group.userCapabilities[index].groupCapabilities =
+            userCapability.groupCapabilities;
+            
         group.markModified('userCapabilities');
         group.markModified('groupCapability');
         await (group as any).save();
@@ -336,6 +341,7 @@ export class EntityOwnershipGroupService {
                 invitedByUserName: invitedByName,
                 entityOwnershipGroupId: groupId,
                 groupCapability: userCapability.groupCapability,
+                groupCapabilities: userCapability.capabilities,
                 entityCapabilities:
                     this.eogCapabilitiesToEntity(eogCapabilities),
                 eogName: group.name,
@@ -364,6 +370,7 @@ export class EntityOwnershipGroupService {
             entityGroup: ec.entityGroup,
             entityName: ec.entityName,
             capability: ec.capability,
+            capabilities: ec.capabilities,
         }));
     }
 
@@ -394,9 +401,11 @@ export class EntityOwnershipGroupService {
                 entityGroup: ec.entityGroup,
                 entityName: ec.entityName,
                 capability: ec.capability,
+                capabilities: ec.capabilities,
             })),
             userFullName: invite.invitedUserName,
             groupCapability: invite.groupCapability,
+            groupCapabilities: invite.groupCapabilities,
         };
 
         await this.addUserCapability(group._id!, userCapability);
@@ -457,6 +466,7 @@ export class EntityOwnershipGroupService {
             entityCapabilities: this.eogEntityCapabilitiesToDto(invite),
             userId: invite.invitedUserId,
             groupCapability: invite.groupCapability,
+            groupCapabilities: invite.groupCapabilities,
             userName: invite.invitedUserName,
             invitedByUserId: invite.invitedByUserId,
             invitedByUserName: invite.invitedByUserName,
@@ -475,6 +485,7 @@ export class EntityOwnershipGroupService {
             entityGroup: ec.entityGroup,
             entityName: ec.entityName,
             capability: ec.capability,
+            capabilities: ec.capabilities,
         }));
     }
 
