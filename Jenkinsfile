@@ -105,8 +105,7 @@ NODE
             }
         }
 
-
-// if not provided, it will skip the notification stage
+        // if not provided, it will skip the notification stage
         stage('Telegram Notification') {
             steps {
                 withCredentials([
@@ -122,10 +121,10 @@ NODE
                         -d chat_id="$TELEGRAM_CHAT_ID" \
                         -d text="${APPLICATION_NAME} - Release completed successfully for version ${RELEASE_VERSION}."
                     '''
-                }
+                    }
             }
         }
-
+    }
         // stage if failed, send notification to telegram
         post {
             failure {
@@ -141,9 +140,8 @@ NODE
                         curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
                         -d chat_id="$TELEGRAM_CHAT_ID" \
                         -d text="${APPLICATION_NAME} - Release failed for version ${RELEASE_VERSION}. Please check the Jenkins job for details."
-                    ''' 
+                    '''
                     }
             }
         }
-    }
 }
