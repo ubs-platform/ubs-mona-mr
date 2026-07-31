@@ -6,6 +6,10 @@ pipeline {
         disableConcurrentBuilds()
     }
 
+    variable {
+        APPLICATION_NAME = 'UBS Mona Platform'
+    }
+
     parameters {
         string(name: 'VERSION', defaultValue: '', description: 'Version number (for example 1.0.0). Leave empty to derive from a v* branch.')
         string(name: 'VERSION_TAG', defaultValue: '', description: 'Optional version tag to write into package.json.')
@@ -98,6 +102,47 @@ NODE
                     git commit -m "JENKINS: Version upgrade to ${RELEASE_VERSION} and publish completion" || echo "No changes to commit"
                     git push origin HEAD:${BRANCH_NAME} || echo "Nothing to push"
                 '''
+            }
+        }
+
+
+// if not provided, it will skip the notification stage
+        stage('Telegram Notification') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'telegram-bot-token', variable: 'TELEGRAM_BOT_TOKEN'),
+                    string(credentialsId: 'telegram-chat-id', variable: 'TELEGRAM_CHAT_ID')
+                    ]) {
+                    sh '''
+                        if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+                            echo "Telegram bot token or chat ID is not set. Skipping notification."
+                            exit 0
+                        fi
+                        curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+                        -d chat_id="$TELEGRAM_CHAT_ID" \
+                        -d text="${APPLICATION_NAME} - Release completed successfully for version ${RELEASE_VERSION}."
+                    '''
+                }
+            }
+        }
+
+        // stage if failed, send notification to telegram
+        post {
+            failure {
+                withCredentials([
+                    string(credentialsId: 'telegram-bot-token', variable: 'TELEGRAM_BOT_TOKEN'),
+                    string(credentialsId: 'telegram-chat-id', variable: 'TELEGRAM_CHAT_ID')
+                    ]) {
+                    sh '''
+                        if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+                            echo "Telegram bot token or chat ID is not set. Skipping notification."
+                            exit 0
+                        fi
+                        curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+                        -d chat_id="$TELEGRAM_CHAT_ID" \
+                        -d text="${APPLICATION_NAME} - Release failed for version ${RELEASE_VERSION}. Please check the Jenkins job for details."
+                    ''' 
+                    }
             }
         }
     }
