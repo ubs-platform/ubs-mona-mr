@@ -33,6 +33,9 @@ import { NotFoundError } from 'rxjs';
 import { EntityOwnershipService } from './entity-ownership.service';
 import { EntityOwnership } from '@ubs-platform/users-entity-mongo';
 
+
+// TODO: Adjust Member rolündeki kullanıcı Yöneticiyi çıkarabiliyor aşsdlkfaşdslfasdf
+// Çok fena buglar bırakmışız valla bunu düzeltmek laızm saşlfksaşdfsakdfşlksşafsaşkflsa
 @Injectable()
 export class EntityOwnershipGroupService {
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
