@@ -8,6 +8,7 @@ import {
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
     EntityOwnershipUserSearch,
+    requestedCapabilitiesToString,
 } from '@ubs-platform/users-common';
 import { EOChannelConsts } from '@ubs-platform/users-consts';
 import { CacheManagerService } from '@ubs-platform/cache-manager';
@@ -44,7 +45,7 @@ export class EntityOwnershipController {
 
         this.validateOwnershipParameters(eo);
         return this.cacheman.getOrCallAsync(
-            `eo-hasOwnershipDetailed ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${eo.capabilityAtLeastOne?.join(',')}`,
+            `eo-hasOwnershipDetailed ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${requestedCapabilitiesToString(eo.requestedCapabilities)}`,
             () => this.eoService.findInsertedUserCapability(eo, true),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
@@ -56,7 +57,7 @@ export class EntityOwnershipController {
 
         this.validateOwnershipParameters(eo);
         return this.cacheman.getOrCallAsync(
-            `eo-searchByEntityIdsByEogroup ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.entityOwnershipGroupId}/${eo.entityOwnershipGroupId}/${eo.capabilityAtLeastOne?.join(',')}`,
+            `eo-searchByEntityIdsByEogroup ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.entityOwnershipGroupId}/${eo.entityOwnershipGroupId}/${requestedCapabilitiesToString(eo.requestedCapabilities)}`,
             () => this.eoService.searchByEntityIdsByEogroup(eo),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
@@ -111,7 +112,7 @@ export class EntityOwnershipController {
     @MessagePattern(EOChannelConsts.searchOwnershipUser)
     async searchOwnershipUser(eo: EntityOwnershipUserSearch) {
         return this.cacheman.getOrCallAsync(
-            `eo-searchOwnershipUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${eo.capabilityAtLeastOne?.join(',')} `,
+            `eo-searchOwnershipUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${requestedCapabilitiesToString(eo.requestedCapabilities)}`,
             () => this.eoService.searchByUser(eo),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
@@ -120,7 +121,7 @@ export class EntityOwnershipController {
     @MessagePattern(EOChannelConsts.searchEntityIdsByUser)
     async searchEntityIdsByUser(eo: EntityOwnershipUserSearch) {
         return this.cacheman.getOrCallAsync(
-            `eo-searchEntityIdsByUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${eo.capabilityAtLeastOne?.join(',')} `,
+            `eo-searchEntityIdsByUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${requestedCapabilitiesToString(eo.requestedCapabilities)}`,
             () => this.eoService.searchEntityIdsByUser(eo),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );

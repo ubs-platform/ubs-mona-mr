@@ -4,14 +4,17 @@ import {
     EntityOwnership,
     EntityOwnershipDocument,
 } from '@ubs-platform/users-entity-mongo';
+import { migrateFromStringToCapability } from '@ubs-platform/users-common';
 import { InjectModel } from '@nestjs/mongoose';
 import { EntityOwnershipMapper } from '../mapper/entity-ownership.mapper';
 import {
+    Capability,
     EntityOwnershipDTO,
     EntityOwnershipInsertCapabiltyDTO,
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
     EntityOwnershipUserSearch,
+    hasCapabilityFromInnerArray,
     UserAuthBackendDTO,
     UserCapabilityDTO,
 } from '@ubs-platform/users-common';
@@ -34,6 +37,36 @@ export class EntityOwnershipService {
         private userService: UserService,
         private mapper: EntityOwnershipMapper,
     ) { }
+
+    public async onModuleInit() {
+        // Migrate old capability field to new capabilities array
+        this.logger.log('Starting capability migration...');
+        await this.migrateCapabilities();
+        this.logger.log('Capability migration completed.');
+    }
+
+    private async migrateCapabilities() {
+        const allEntities = await this.eoModel.find({
+            'userCapabilities.capability': { $exists: true },
+        });
+        for (const entity of allEntities) {
+            let updated = false;
+            for (const userCap of entity.userCapabilities) {
+                if (userCap.capability && !userCap.capabilities?.length) {
+                    userCap.capabilities = migrateFromStringToCapability(userCap.capability);
+                    userCap.capability = undefined;
+                    updated = true;
+                }
+            }
+            if (updated) {
+                entity.markModified('userCapabilities');
+                await entity.save();
+                this.logger.log(
+                    `Updated entity ${entity.entityGroup}/${entity.entityName}/${entity.entityId} to new capability structure.`,
+                );
+            }
+        }
+    }
 
     public async removeUserCapability(eo: EntityOwnershipUserCheck) {
         const searchKeys: EntityOwnershipSearch = {
@@ -66,21 +99,16 @@ export class EntityOwnershipService {
     private findUserCapabilityInEntity(
         entityOwnership: EntityOwnership,
         userId: string,
-        capabilitiesAtLeastOne?: string[],
+        requestedCapabilities?: number[][],
     ): Optional<UserCapabilityDTO> {
         if (!entityOwnership?.userCapabilities?.length) return null;
 
         const found = entityOwnership.userCapabilities.find(
             (uc) =>
-                uc.userId === userId &&
-                (!capabilitiesAtLeastOne?.length ||
-                    (uc.capability &&
-                        capabilitiesAtLeastOne.includes(uc.capability))),
+                uc.userId === userId && hasCapabilityFromInnerArray(uc.capabilities, requestedCapabilities),
         );
 
-        return found
-            ? { userId: found.userId!, capability: found.capability! }
-            : null;
+        return found ? { userId: found.userId!, capabilities: found.capabilities } : null;
     }
 
     // EntityOwnershipGroup'dan user capability arama
@@ -99,13 +127,15 @@ export class EntityOwnershipService {
                         $elemMatch: {
                             entityGroup: userCheck.entityGroup,
                             entityName: userCheck.entityName,
-                            ...(userCheck.capabilityAtLeastOne?.length
-                                ? {
-                                    capability: {
-                                        $in: userCheck.capabilityAtLeastOne,
-                                    },
-                                }
-                                : {}),
+                            // Bunu querye uyarlayacağım ama şu an array içinde array olduğu için ortalık karıştı...
+
+                            // ...(userCheck.requestedCapabilities?.length
+                            //     ? {
+                            //         capability: {
+                            //             $in: userCheck.requestedCapabilities,
+                            //         },
+                            //     }
+                            //     : {}),
                         },
                     },
                 },
@@ -115,7 +145,10 @@ export class EntityOwnershipService {
         if (!ownerShipGroup?.userCapabilities?.length) return null;
 
         const userCapability = ownerShipGroup.userCapabilities.find(
-            (uc) => uc.userId === userCheck.userId,
+            (uc) => (uc.userId === userCheck.userId)
+                && uc.entityCapabilities.some((ec) => ec.entityGroup === userCheck.entityGroup
+                    && ec.entityName === userCheck.entityName
+                    && hasCapabilityFromInnerArray(ec.capabilities, userCheck.requestedCapabilities)),
         );
 
         if (!userCapability) return null;
@@ -153,6 +186,7 @@ export class EntityOwnershipService {
             return {
                 userId: user.id,
                 capability: capability?.toString(),
+                capabilities: [Capability.OWNER]
             };
         }
 
@@ -164,6 +198,7 @@ export class EntityOwnershipService {
             ? {
                 userId: user.id,
                 capability: capability?.toString(),
+                capabilities: [Capability.VIEW, Capability.ADD, Capability.EDIT, Capability.DELETE]
             }
             : null;
     }
@@ -309,9 +344,6 @@ export class EntityOwnershipService {
         entityOwnershipUserCheck: EntityOwnershipUserCheck,
         checkRoleOverride: boolean,
     ): Promise<Optional<UserCapabilityDTO>> {
-        this.logger.debug({
-            cap: entityOwnershipUserCheck.capabilityAtLeastOne?.join(','),
-        });
 
         const entityOwnership = (await this.findEntitiesBySearchKeys({
             entityGroup: entityOwnershipUserCheck.entityGroup,
@@ -325,7 +357,7 @@ export class EntityOwnershipService {
         let found = this.findUserCapabilityInEntity(
             entityOwnership,
             entityOwnershipUserCheck.userId,
-            entityOwnershipUserCheck.capabilityAtLeastOne,
+            entityOwnershipUserCheck.requestedCapabilities,
         );
 
         // EntityOwnership Group içinde ara

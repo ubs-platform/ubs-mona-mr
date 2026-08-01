@@ -67,6 +67,61 @@ export enum Capability {
     // RESERVED_49 = 49,
     // RESERVED_50 = 50
 }
+
+export const hasCapability = (
+    capabilities: Capability[],
+    capabilityToCheck: Capability): boolean => {
+    return capabilities.includes(capabilityToCheck);
+};
+
+/**
+ * 
+ * @param capabilities Tüm kullanıcının sahip olduğu yetenekler
+ * @param query Array içinde array şeklinde yetenek sorgusu. Örneğin: [[Capability.OWNER], [Capability.VIEW, Capability.EDIT]] şeklinde bir sorgu, kullanıcının ya OWNER yeteneğine sahip olmasını ya da hem VIEW hem de EDIT yeteneklerine sahip olmasını gerektirir.
+ * @returns eğer kullanıcı, sorguda belirtilen yeteneklerden herhangi birine sahipse true döner, aksi takdirde false döner.
+ */
+export const hasCapabilityFromInnerArray = (capabilities: Capability[], query?: Capability[][]): boolean => {
+    if (!query || query.length === 0) {
+        return true; // If no specific capabilities are requested, consider it as having the capability.
+    }
+    for (const innerArray of query) {
+        let hasAll = true;
+        for (const capability of innerArray) {
+            if (!capabilities.includes(capability)) {
+                hasAll = false;
+                break;
+            }
+        }
+        if (hasAll) {
+            return true;
+        }
+    }
+    return false;
+};
+
+export const migrateFromStringToCapability = (capability: string): Capability[] => {
+    switch (capability) {
+        case "OWNER":
+            return [Capability.OWNER];
+        case "EDITOR":
+            return [Capability.EDIT, Capability.ADD, Capability.DELETE, Capability.VIEW];
+        case "EOG_ADJUST_MEMBERS":
+            return [Capability.EOG_ADJUST_MEMBERS];
+        case "EOG_ADJUST_CAPABILITIES":
+            return [Capability.EOG_ADJUST_CAPABILITIES];
+        case "EOG_EDIT_METADATA":
+            return [Capability.EOG_EDIT_METADATA];
+        default:
+            return [Capability.VIEW]; // Default to VIEW if the capability string is unrecognized
+    }
+}
+
+export const requestedCapabilitiesToString = (requestedCapabilities?: number[][]): string => {
+    if (!requestedCapabilities) {
+        return "<no requested capabilities>";
+    }
+    return "<requested caps." + requestedCapabilities.map(a => "(" + a.join(' and ') + ")").join(' or ') + ">";
+}
 // export type Capability = "OWNER" | "VIEW" | "ADD" | "EDIT" | "DELETE" | string;
 // Bitmasking ileride benim başıma bela olacak o yüzden commentte dursun
 

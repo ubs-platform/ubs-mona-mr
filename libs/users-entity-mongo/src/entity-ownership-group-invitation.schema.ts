@@ -22,7 +22,7 @@ export class EntityOwnershipGroupInvitation {
     entityOwnershipGroupId!: string;
 
     @Prop(String)
-    groupCapability!: GroupCapability;
+    groupCapability?: GroupCapability;
 
     @Prop([String])
     groupCapabilities!: Capability[];

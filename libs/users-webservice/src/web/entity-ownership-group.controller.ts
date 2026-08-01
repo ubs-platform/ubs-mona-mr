@@ -38,17 +38,17 @@ export class EntityOwnershipGroupController {
     constructor(private eogService: EntityOwnershipGroupService, private eoService: EntityOwnershipService) { }
 
     async assertHasUserGroupCapability(
-        currentUser: UserAuthBackendDTO, groupId: string, requiredCapabilities: GroupCapability[]
+        currentUser: UserAuthBackendDTO, groupId: string, requestedCapabilities: number[][]
     ) {
         if (currentUser.roles.includes('ADMIN')) {
             return;
         }
         const hasCap = await this.eogService.hasUserGroupCapability(
-            { userId: currentUser.id, entityOwnershipGroupId: groupId, groupCapabilitiesAtLeastOne: requiredCapabilities }
+            { userId: currentUser.id, entityOwnershipGroupId: groupId, requestedCapabilities }
         );
         if (!hasCap) {
             throw new UnauthorizedException(
-                `User ${currentUser.id} does not have capability ${requiredCapabilities} in entity ownership group ${groupId}`,
+                `User ${currentUser.id} does not have capability ${requestedCapabilities} in entity ownership group ${groupId}`,
             );
         }
     }

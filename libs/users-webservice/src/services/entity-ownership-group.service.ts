@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
 import { Document, Model, Types } from 'mongoose';
+import { migrateFromStringToCapability } from '@ubs-platform/users-common';
 import {
     EntityOwnershipGroup,
     GroupUserCapability,
@@ -52,7 +53,91 @@ export class EntityOwnershipGroupService {
         private emailService: EmailService,
         @InjectModel(EntityOwnership.name)
         private eoModel: Model<EntityOwnership>,
-    ) {}
+    ) { }
+
+    public async onModuleInit() {
+        this.logger.debug('EntityOwnershipGroupService initialized');
+        await Promise.all([
+            this.migrateAllGroupCapabilityToNewStructure(),
+            this.migrateAllGroupInvititaionCapabilityToNewStructure(),
+        ]);
+    }
+
+    async migrateAllGroupCapabilityToNewStructure() {
+        const allGroups = await this.eogModel.find(
+            {
+                $or: [{
+                    "userCapabilities.groupCapability": { $exists: true },
+                },
+                {
+                    "userCapabilities.entityCapabilities.capability": { $exists: true },
+                }]
+            }
+        ).exec();
+
+        for (const group of allGroups) {
+            let modified = false;
+            for (const userCap of group.userCapabilities) {
+                if (userCap.groupCapability) {
+                    userCap.groupCapabilities = migrateFromStringToCapability(userCap.groupCapability);
+                    delete userCap.groupCapability;
+                    modified = true;
+                }
+                if (userCap.entityCapabilities) {
+                    for (const entityCap of userCap.entityCapabilities) {
+                        if (entityCap.capability) {
+                            entityCap.capabilities = migrateFromStringToCapability(entityCap.capability);
+                            delete entityCap.capability;
+                            modified = true;
+                        }
+                    }
+                }
+            }
+
+
+            if (modified) {
+                group.markModified('userCapabilities');
+                await group.save();
+            }
+        }
+    }
+
+
+    async migrateAllGroupInvititaionCapabilityToNewStructure() {
+        const allGroups = await this.eogInvitationModel.find(
+            {
+                $or: [{
+                    "groupCapability": { $exists: true },
+                },
+                {
+                    "entityCapabilities.capability": { $exists: true },
+                }]
+            }
+        ).exec();
+
+        for (const invitation of allGroups) {
+            let modified = false;
+            if (invitation.groupCapability) {
+                invitation.groupCapabilities = migrateFromStringToCapability(invitation.groupCapability);
+                delete invitation.groupCapability;
+                modified = true;
+            }
+            if (invitation.entityCapabilities) {
+                for (const entityCap of invitation.entityCapabilities) {
+                    if (entityCap.capability) {
+                        entityCap.capabilities = migrateFromStringToCapability(entityCap.capability);
+                        delete entityCap.capability;
+                        modified = true;
+                    }
+                }
+            }
+
+            if (modified) {
+                await invitation.save();
+            }
+        }
+    }
+
 
     async deleteGroup(id: string) {
         await this.eogModel.findByIdAndDelete(id).exec();
@@ -97,10 +182,10 @@ export class EntityOwnershipGroupService {
             entityCapabilities: a.entityCapabilities?.map((ec) => ({
                 entityGroup: ec.entityGroup,
                 entityName: ec.entityName,
-                capability: ec.capability,
+                capability: ec.capability!,
                 capabilities: ec.capabilities,
             })),
-            groupCapability: a.groupCapability,
+            groupCapability: a.groupCapability!,
             groupCapabilities: a.groupCapabilities,
             userFullName: a.userFullName,
         };
@@ -113,15 +198,28 @@ export class EntityOwnershipGroupService {
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
         }
-        return (
-            group.userCapabilities?.some(
+
+        let requestedCapabilities = eogCheckCap.requestedCapabilities;
+        // if (!Array.isArray(requestedCapabilities[0])) {
+        //     requestedCapabilities = [requestedCapabilities as number[]];
+        // }
+        requestedCapabilities = requestedCapabilities as number[][];
+
+        let flag = false;
+
+        for (const requestedCapability of requestedCapabilities) {
+            const hasCap = group.userCapabilities?.some(
                 (uc) =>
                     uc.userId === eogCheckCap.userId &&
-                    eogCheckCap.groupCapabilitiesAtLeastOne.includes(
-                        uc.groupCapability,
-                    ),
-            ) || false
-        );
+                    requestedCapability.every((cap) => uc.groupCapabilities.includes(cap)),
+            );
+            if (hasCap) {
+                flag = true;
+                break;
+            }
+        }
+
+        return flag;
     }
 
     async findGroupsUserIn(
@@ -282,7 +380,7 @@ export class EntityOwnershipGroupService {
             userCapability.groupCapability;
         group.userCapabilities[index].groupCapabilities =
             userCapability.groupCapabilities;
-            
+
         group.markModified('userCapabilities');
         group.markModified('groupCapability');
         await (group as any).save();
@@ -400,11 +498,11 @@ export class EntityOwnershipGroupService {
             entityCapabilities: invite.entityCapabilities?.map((ec) => ({
                 entityGroup: ec.entityGroup,
                 entityName: ec.entityName,
-                capability: ec.capability,
+                capability: ec.capability!,
                 capabilities: ec.capabilities,
             })),
             userFullName: invite.invitedUserName,
-            groupCapability: invite.groupCapability,
+            groupCapability: invite.groupCapability!,
             groupCapabilities: invite.groupCapabilities,
         };
 
@@ -474,7 +572,6 @@ export class EntityOwnershipGroupService {
             eogName: invite.eogName,
             eogId: invite.eogId,
             eogDescription: invite.eogDescription,
-            inivitationId: invite._id,
         } as EOGUserCapabilityInvitationDTO;
     }
 

@@ -92,7 +92,7 @@ export class EOGUserCapabilityInvitationDTO {
      * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
      */
     groupCapability!: GroupCapability;
-    capabilities: Capability[] = [];
+    groupCapabilities: Capability[] = [];
 
 }
 
@@ -100,10 +100,9 @@ export class EOGCheckUserGroupCapabilityDTO {
     entityOwnershipGroupId!: string;
     userId!: string;
     /**
-     * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
+     * Eğer array içinde array varsa, İlk seviye array OR, ikinci seviye array AND mantığı ile çalışır. Örnek: [[1,2],[3]] => (1 AND 2) OR (3)
      */
-    groupCapabilitiesAtLeastOne!: GroupCapability[];
-    orbitalGroupCapabilitiesAtLeastOne!: number[];
+    requestedCapabilities: number[][] = [];
 }
 
 

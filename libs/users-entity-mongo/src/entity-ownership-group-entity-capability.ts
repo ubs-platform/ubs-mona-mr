@@ -9,5 +9,5 @@ export class EntityOwnershipGroupEntityCapability {
      * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
      *
      */
-    capability!: string;
+    capability?: string;
 }
