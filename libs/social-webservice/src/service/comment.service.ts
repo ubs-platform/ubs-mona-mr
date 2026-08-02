@@ -6,7 +6,7 @@ import {
 import { FilterQuery, Model } from 'mongoose';
 import { SocialComment } from '@ubs-platform/social-entity-mongo';
 
-import { UserAuthBackendDTO } from '@ubs-platform/users-common';
+import { Capability, UserAuthBackendDTO } from '@ubs-platform/users-common';
 import {
     CommentAddDTO,
     CommentDTO,
@@ -212,7 +212,7 @@ export class CommentService {
                         entityGroup: commentSearch.entityGroup,
                         entityName: commentSearch.mainEntityName!,
                         userId,
-                        capabilityAtLeastOne: ['OWNER'],
+                        requestedCapabilities: [[Capability.OWNER], [Capability.EDIT], [Capability.VIEW]],
                     }),
                 );
                 entities.forEach((a) => {

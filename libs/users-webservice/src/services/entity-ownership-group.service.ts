@@ -581,7 +581,7 @@ export class EntityOwnershipGroupService {
         return invite.entityCapabilities.map((ec) => ({
             entityGroup: ec.entityGroup,
             entityName: ec.entityName,
-            capability: ec.capability,
+            capability: ec.capability!,
             capabilities: ec.capabilities,
         }));
     }

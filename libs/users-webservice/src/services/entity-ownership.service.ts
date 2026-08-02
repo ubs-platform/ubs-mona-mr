@@ -127,20 +127,17 @@ export class EntityOwnershipService {
                         $elemMatch: {
                             entityGroup: userCheck.entityGroup,
                             entityName: userCheck.entityName,
-                            // Bunu querye uyarlayacağım ama şu an array içinde array olduğu için ortalık karıştı...
-
-                            // ...(userCheck.requestedCapabilities?.length
-                            //     ? {
-                            //         capability: {
-                            //             $in: userCheck.requestedCapabilities,
-                            //         },
-                            //     }
-                            //     : {}),
+                            ...(userCheck.requestedCapabilities?.length ? {
+                                $or: userCheck.requestedCapabilities.map((cap) => ({
+                                    capabilities: { $all: cap },
+                                })),
+                            } : {}),
                         },
                     },
                 },
             },
         });
+
 
         if (!ownerShipGroup?.userCapabilities?.length) return null;
 
@@ -157,14 +154,13 @@ export class EntityOwnershipService {
             (ec) =>
                 userCheck.entityGroup === ec.entityGroup &&
                 userCheck.entityName === ec.entityName &&
-                (!userCheck.capabilityAtLeastOne?.length ||
-                    userCheck.capabilityAtLeastOne.includes(ec.capability)),
+                hasCapabilityFromInnerArray(ec.capabilities, userCheck.requestedCapabilities),
         );
 
         return entityCapabilityMatch
             ? {
                 userId: userCapability.userId!,
-                capability: entityCapabilityMatch.capability!,
+                capabilities: entityCapabilityMatch.capabilities,
             }
             : null;
     }
@@ -173,8 +169,9 @@ export class EntityOwnershipService {
     private async checkRoleOverride(
         roleOverrides: string[],
         userId: string,
-        capability?: string,
+        capabilities?: number[],
     ): Promise<Optional<UserCapabilityDTO>> {
+        if (!capabilities) capabilities = [];
         if (!roleOverrides?.length || !userId) return null;
 
         const user: Optional<UserAuthBackendDTO> =
@@ -185,8 +182,8 @@ export class EntityOwnershipService {
         if (user.roles.includes('ADMIN')) {
             return {
                 userId: user.id,
-                capability: capability?.toString(),
-                capabilities: [Capability.OWNER]
+                capability: "",
+                capabilities
             };
         }
 
@@ -197,7 +194,7 @@ export class EntityOwnershipService {
         return hasOverrideRole
             ? {
                 userId: user.id,
-                capability: capability?.toString(),
+                capability: "",
                 capabilities: [Capability.VIEW, Capability.ADD, Capability.EDIT, Capability.DELETE]
             }
             : null;
@@ -209,13 +206,13 @@ export class EntityOwnershipService {
     ): Promise<EntityOwnershipGroup[]> {
         return await this.eogModel.find({
             'userCapabilities.userId': eo.userId,
-            ...(eo.capabilityAtLeastOne
+            ...(eo.requestedCapabilities
                 ? {
                     'userCapabilities.entityCapabilities': {
                         $elemMatch: {
-                            capability: { $in: eo.capabilityAtLeastOne },
-                            entityGroup: eo.entityGroup,
-                            entityName: eo.entityName,
+                            $or: eo.requestedCapabilities.map((cap) => ({
+                                capabilities: { $all: cap },
+                            })),
                         },
                     },
                 }
@@ -302,7 +299,7 @@ export class EntityOwnershipService {
             { ...searchKeys, 'userCapabilities.userId': oe.userId },
             {
                 $set: {
-                    'userCapabilities.$[related].capability': oe.capability,
+                    'userCapabilities.$[related].capabilities': oe.capabilities,
                 },
             },
             { arrayFilters: [{ 'related.userId': oe.userId }] },
@@ -322,7 +319,7 @@ export class EntityOwnershipService {
         if (foundEntities.length > 0) {
             const entity = foundEntities[0];
             entity.userCapabilities.push({
-                capability: oe.capability,
+                capabilities: oe.capabilities,
                 userId: oe.userId,
             });
             await (entity as any).save();
@@ -350,7 +347,7 @@ export class EntityOwnershipService {
             entityName: entityOwnershipUserCheck.entityName,
             ...(entityOwnershipUserCheck.entityId ? { entityId: entityOwnershipUserCheck.entityId } : {}),
         }))[0];
-
+        // exec(`kdialog --msgbox "findInsertedUserCapability ilk ${entityOwnership?.entityGroup} ${entityOwnership?.entityName} ${entityOwnership?.entityId} ${entityOwnership?._id}"`);
         if (!entityOwnership) return null;
 
         // EntityOwnership içinsde ara
@@ -359,6 +356,7 @@ export class EntityOwnershipService {
             entityOwnershipUserCheck.userId,
             entityOwnershipUserCheck.requestedCapabilities,
         );
+        console.info('Found in entity:', found);
 
         // EntityOwnership Group içinde ara
         if (!found) {
@@ -367,7 +365,7 @@ export class EntityOwnershipService {
                 entityOwnershipUserCheck,
             );
         }
-
+        console.info('Found in group:', found);
         // Role override kontrolü
         if (!found && checkRoleOverride) {
             const roleOverrides =
@@ -382,12 +380,13 @@ export class EntityOwnershipService {
                 found = await this.checkRoleOverride(
                     roleOverrides,
                     entityOwnershipUserCheck.userId,
-                    entityOwnershipUserCheck.capabilityAtLeastOne?.[0],
+                    entityOwnershipUserCheck.requestedCapabilities?.[0],
                 );
             }
         }
+        console.info('Found after role override check:', found);
         this.logger.debug('Found capability:', found);
-
+        exec(`kdialog --msgbox "findInsertedUserCapability ${entityOwnershipUserCheck.entityGroup} ${entityOwnershipUserCheck.entityName} ${entityOwnershipUserCheck.entityId} ${entityOwnershipUserCheck.userId} found: ${JSON.stringify(found)}"`);
         return found;
     }
 
@@ -406,11 +405,11 @@ export class EntityOwnershipService {
                     userCapabilities: {
                         $elemMatch: {
                             userId: eo.userId,
-                            ...(eo.capabilityAtLeastOne
+                            ...(eo.requestedCapabilities
                                 ? {
-                                    capability: {
-                                        $in: eo.capabilityAtLeastOne,
-                                    },
+                                    $or: eo.requestedCapabilities.map((cap) => ({
+                                        capabilities: { $all: cap },
+                                    })),
                                 }
                                 : {}),
                         },

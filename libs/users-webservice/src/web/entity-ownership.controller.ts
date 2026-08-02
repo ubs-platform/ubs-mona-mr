@@ -12,6 +12,7 @@ import {
 } from '@ubs-platform/users-common';
 import { EOChannelConsts } from '@ubs-platform/users-consts';
 import { CacheManagerService } from '@ubs-platform/cache-manager';
+import { exec } from 'child_process';
 
 @Controller('entity-ownership')
 export class EntityOwnershipController {
@@ -44,11 +45,12 @@ export class EntityOwnershipController {
     async hasOwnershipDetailed(eo: EntityOwnershipUserCheck) {
 
         this.validateOwnershipParameters(eo);
-        return this.cacheman.getOrCallAsync(
+        const value = this.cacheman.getOrCallAsync(
             `eo-hasOwnershipDetailed ${eo.entityGroup} ${eo.entityId} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${requestedCapabilitiesToString(eo.requestedCapabilities)}`,
             () => this.eoService.findInsertedUserCapability(eo, true),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
+        return value;
     }
 
 

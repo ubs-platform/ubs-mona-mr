@@ -80,7 +80,7 @@ export const hasCapability = (
  * @param query Array içinde array şeklinde yetenek sorgusu. Örneğin: [[Capability.OWNER], [Capability.VIEW, Capability.EDIT]] şeklinde bir sorgu, kullanıcının ya OWNER yeteneğine sahip olmasını ya da hem VIEW hem de EDIT yeteneklerine sahip olmasını gerektirir.
  * @returns eğer kullanıcı, sorguda belirtilen yeteneklerden herhangi birine sahipse true döner, aksi takdirde false döner.
  */
-export const hasCapabilityFromInnerArray = (capabilities: Capability[], query?: Capability[][]): boolean => {
+export const hasCapabilityFromInnerArray = (capabilities: number[], query?: number[][]): boolean => {
     if (!query || query.length === 0) {
         return true; // If no specific capabilities are requested, consider it as having the capability.
     }
@@ -99,7 +99,7 @@ export const hasCapabilityFromInnerArray = (capabilities: Capability[], query?: 
     return false;
 };
 
-export const migrateFromStringToCapability = (capability: string): Capability[] => {
+export const migrateFromStringToCapability = (capability: string): number[] => {
     switch (capability) {
         case "OWNER":
             return [Capability.OWNER];

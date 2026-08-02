@@ -9,6 +9,7 @@ import {
 } from '@ubs-platform/social-consts';
 
 import {
+    Capability,
     EntityOwnershipDTO,
     UserAuthBackendDTO,
 } from '@ubs-platform/users-common';
@@ -102,7 +103,8 @@ export class CommentAbilityCheckService {
                     entityId: saved.mainEntityId,
                     entityName: saved.mainEntityName,
                     userId: user.id,
-                    capabilityAtLeastOne: [CAPABILITY_NAME_ENTITY_OWNER, "EDITOR", CAPABILITY_NAME_COMMENT_OWNER],
+                    requestedCapabilities: [[Capability.OWNER], [Capability.DELETE]],
+                    // capabilityAtLeastOne: [CAPABILITY_NAME_ENTITY_OWNER, "EDITOR", CAPABILITY_NAME_COMMENT_OWNER],
                 }),
             );
         } else {

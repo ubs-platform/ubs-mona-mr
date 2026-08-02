@@ -10,7 +10,7 @@ import { DocProject } from '@ubs-platform/greenhat-entity-mongo';
 import {
   EntityOwnershipService,
 } from '@ubs-platform/users-microservice-helper';
-import { UserAuthBackendDTO } from '@ubs-platform/users-common';
+import { Capability, UserAuthBackendDTO } from '@ubs-platform/users-common';
 import { lastValueFrom } from 'rxjs';
 
 const GREENHAT_ENTITY_GROUP = 'GREENHAT';
@@ -122,7 +122,8 @@ export class ProjectService extends BaseCrudService<
           ...(s?.entityOwnershipGroupId
             ? { entityOwnershipGroupId: s.entityOwnershipGroupId }
             : {}),
-          capabilityAtLeastOne: PROJECT_READ_CAPABILITIES,
+          // capabilityAtLeastOne: PROJECT_READ_CAPABILITIES,
+          requestedCapabilities: [[Capability.OWNER], [Capability.EDIT], [Capability.VIEW]],
         }),
       );
 
@@ -148,7 +149,7 @@ export class ProjectService extends BaseCrudService<
       entityName: GREENHAT_ENTITY_NAME_PROJECT,
       entityId: m._id,
       overriderRoles: [],
-      userCapabilities: [{ userId: user.id, capability: 'OWNER' }],
+      userCapabilities: [{ userId: user.id, capabilities: [Capability.OWNER] }],
       entityOwnershipGroupId: input.entityOwnershipGroupId as unknown as string,
     });
   }

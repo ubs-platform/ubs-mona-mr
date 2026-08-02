@@ -25,7 +25,7 @@ import {
 import {
   EntityOwnershipService,
 } from '@ubs-platform/users-microservice-helper';
-import { UserAuthBackendDTO } from '@ubs-platform/users-common';
+import { Capability, UserAuthBackendDTO } from '@ubs-platform/users-common';
 import { lastValueFrom } from 'rxjs';
 
 const GREENHAT_ENTITY_GROUP = 'GREENHAT';
@@ -332,7 +332,8 @@ export class DocumentService {
         entityName: GREENHAT_ENTITY_NAME_PROJECT,
         entityId: projectId,
         userId: user.id,
-        capabilityAtLeastOne: PROJECT_EDIT_CAPABILITIES,
+        // TODO: Detaylandırılacak.
+        requestedCapabilities: [[Capability.OWNER], [Capability.EDIT]],
       }),
     );
 
@@ -355,7 +356,7 @@ export class DocumentService {
         entityName: GREENHAT_ENTITY_NAME_PROJECT,
         entityId: projectId,
         userId: user.id,
-        capabilityAtLeastOne: PROJECT_READ_CAPABILITIES,
+        requestedCapabilities: [[Capability.OWNER], [Capability.EDIT], [Capability.VIEW]],
       }),
     );
 

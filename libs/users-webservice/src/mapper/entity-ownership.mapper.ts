@@ -61,6 +61,7 @@ export class EntityOwnershipMapper {
             (a) => ({
                 userId: a.userId,
                 capability: a.capability,
+                capabilities: a.capabilities,
             }),
         );
         return existingEntity;

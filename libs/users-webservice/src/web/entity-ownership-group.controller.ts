@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import {
+    Capability,
     EntityOwnershipGroupCommonDTO,
     EntityOwnershipGroupDTO,
     EntityOwnershipGroupMetaDTO,
@@ -60,7 +61,7 @@ export class EntityOwnershipGroupController {
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         // Only users with global admin role can create EOGs
-        await this.assertHasUserGroupCapability(currentUser, id, ['OWNER', "EDITOR", "META_EDIT", "ONLY_EDIT_MEMBER_CAPABILITIES", "VIEWER"]);
+        await this.assertHasUserGroupCapability(currentUser, id, [[Capability.OWNER], [Capability.EDIT], [Capability.EOG_EDIT_METADATA], [Capability.VIEW]]);
         return await this.eogService.getByIdPublic(id);
     }
 
@@ -133,7 +134,7 @@ export class EntityOwnershipGroupController {
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         // Only users with global admin role can create EOGs
-        await this.assertHasUserGroupCapability(currentUser, eogMetaDto.id, ['OWNER', "EDITOR", "META_EDIT"]);
+        await this.assertHasUserGroupCapability(currentUser, eogMetaDto.id, [[Capability.OWNER], [Capability.EOG_EDIT_METADATA]]);
 
         return await this.eogService.editMeta(eogMetaDto);
     }
@@ -151,7 +152,7 @@ export class EntityOwnershipGroupController {
             );
         }
         // Only users with global admin role can delete EOGs
-        await this.assertHasUserGroupCapability(currentUser, id, ['OWNER']);
+        await this.assertHasUserGroupCapability(currentUser, id, [[Capability.OWNER]]);
 
         return await this.eogService.deleteGroup(id);
     }
