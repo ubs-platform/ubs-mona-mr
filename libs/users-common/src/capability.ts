@@ -111,6 +111,10 @@ export const migrateFromStringToCapability = (capability: string): number[] => {
             return [Capability.EOG_ADJUST_CAPABILITIES];
         case "EOG_EDIT_METADATA":
             return [Capability.EOG_EDIT_METADATA];
+        case "LIBRARY":
+            return [101]; // Lotus özel durum.
+        case "TENANT":
+            return [102]; // Lotus özel durum.
         default:
             return [Capability.VIEW]; // Default to VIEW if the capability string is unrecognized
     }
