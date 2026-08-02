@@ -386,7 +386,7 @@ export class EntityOwnershipService {
         }
         console.info('Found after role override check:', found);
         this.logger.debug('Found capability:', found);
-        exec(`kdialog --msgbox "findInsertedUserCapability ${entityOwnershipUserCheck.entityGroup} ${entityOwnershipUserCheck.entityName} ${entityOwnershipUserCheck.entityId} ${entityOwnershipUserCheck.userId} found: ${JSON.stringify(found)}"`);
+        // exec(`kdialog --msgbox "findInsertedUserCapability ${entityOwnershipUserCheck.entityGroup} ${entityOwnershipUserCheck.entityName} ${entityOwnershipUserCheck.entityId} ${entityOwnershipUserCheck.userId} found: ${JSON.stringify(found)}"`);
         return found;
     }
 
