@@ -11,6 +11,7 @@ import {
     UseGuards,
 } from '@nestjs/common';
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
+import { EogAssertions } from '../util/eog-assertions';
 import {
     Capability,
     EOGCheckUserGroupCapabilityDTO,
@@ -31,71 +32,8 @@ export class EntityOwnershipGroupMemberController {
     /**
      *
      */
-    constructor(private eogService: EntityOwnershipGroupService) { }
+    constructor(private eogService: EntityOwnershipGroupService, private eogAssertions: EogAssertions) { }
 
-    async assertHasUserGroupCapability(
-        currentUser: UserAuthBackendDTO, groupId: string, requiredCapabilities: number[][]
-    ) {
-        if (currentUser.roles.includes('ADMIN')) {
-            return;
-        }
-        const hasCap = await this.eogService.hasUserGroupCapability(
-            { userId: currentUser.id, entityOwnershipGroupId: groupId, requestedCapabilities: requiredCapabilities }
-        );
-        if (!hasCap) {
-            throw new UnauthorizedException(
-                `User ${currentUser.id} does not have capability ${requestedCapabilitiesToString(requiredCapabilities)} in entity ownership group ${groupId}`,
-            );
-        }
-    }
-
-    async assertUserDontGivingCapabilitiesToHimself(
-        currentUser: UserAuthBackendDTO, userId: string
-    ) {
-        if (currentUser.id === userId) {
-            throw new UnauthorizedException(
-                `User ${currentUser.id} can't give capabilities to himself`,
-            );
-        }
-    }
-
-    async assertUserDontRemoveHimselfFromGroup(
-        currentUser: UserAuthBackendDTO, userId: string
-    ) {
-        if (currentUser.id === userId) {
-            throw new UnauthorizedException(
-                `User ${currentUser.id} can't remove himself from group`,
-            );
-        }
-    }
-
-
-    async assertUserDontGivingCapabilitiesDoesntHave(
-        currentUser: UserAuthBackendDTO, groupCapabilities: number[], entityCapabilities: EOGUserEntityCapabilityDTO[]
-    ) {
-        if (groupCapabilities.length > 0) {
-            const hasGroupCap = await this.eogService.hasUserGroupCapability(
-                { userId: currentUser.id, entityOwnershipGroupId: groupCapabilities[0].toString(), requestedCapabilities: [groupCapabilities] }
-            );
-            if (!hasGroupCap) {
-                throw new UnauthorizedException(
-                    `User ${currentUser.id} can't give group capabilities he doesn't have`,
-                );
-            }
-        }
-        if (entityCapabilities.length > 0) {
-            for (const entityCap of entityCapabilities) {
-                const hasEntityCap = await this.eogService.hasUserEntityCapability(
-                    { userId: currentUser.id, entityGroup: entityCap.entityGroup, entityName: entityCap.entityName, requestedCapabilities: [entityCap.capabilities] }
-                );
-                if (!hasEntityCap) {
-                    throw new UnauthorizedException(
-                        `User ${currentUser.id} can't give entity capabilities he doesn't have`,
-                    );
-                }
-            }
-        }
-    }
 
     @Get(':id/users')
     async fetchUsersInGroup(
@@ -110,7 +48,7 @@ export class EntityOwnershipGroupMemberController {
         @Param('id') id: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ): Promise<EOGUserCapabilityInvitationDTO[]> {
-        await this.assertHasUserGroupCapability(
+        await this.eogAssertions.assertHasUserGroupCapability(
             currentUser,
             id,
             [[Capability.OWNER], [Capability.EOG_ADJUST_MEMBERS], [Capability.VIEW]],
@@ -127,10 +65,19 @@ export class EntityOwnershipGroupMemberController {
         @Body() body: EOGUserCapabilityDTO,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        await this.assertHasUserGroupCapability(
+        await this.eogAssertions.assertHasUserGroupCapability(
             currentUser,
             id,
             [[Capability.OWNER], [Capability.EDIT], [Capability.EOG_ADJUST_CAPABILITIES]],
+        );
+        await this.eogAssertions.assertUserDontChangeGroupOwnerCapabilities(
+            currentUser,
+            id,);
+        await this.eogAssertions.assertUserDontGivingCapabilitiesDoesntHave(
+            currentUser,
+            id,
+            body.groupCapabilities,
+            body.entityCapabilities,
         );
         return await this.eogService.updateUserCapability(id, body);
     }
@@ -142,12 +89,18 @@ export class EntityOwnershipGroupMemberController {
         @Param('userId') userId: string,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        await this.assertHasUserGroupCapability(
+        await this.eogAssertions.assertHasUserGroupCapability(
             currentUser,
             id,
             [[Capability.OWNER], [Capability.EDIT], [Capability.EOG_ADJUST_MEMBERS]],
         );
-
+        await this.eogAssertions.assertUserDontChangeGroupOwnerCapabilities(
+            currentUser,
+            id,);
+        await this.eogAssertions.assertUserDontRemoveHimselfFromGroup(
+            currentUser,
+            userId,
+        );
         const people = await this.eogService.fetchUsersInGroup(id);
         if (people.length == 1) {
             throw new UnauthorizedException(
@@ -171,7 +124,7 @@ export class EntityOwnershipGroupMemberController {
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
 
-        await this.assertHasUserGroupCapability(
+        await this.eogAssertions.assertHasUserGroupCapability(
             currentUser,
             id,
             [[Capability.OWNER], [Capability.EOG_ADJUST_MEMBERS]],
@@ -187,10 +140,22 @@ export class EntityOwnershipGroupMemberController {
         @Body() body: EOGUserCapabilityInviteDTO,
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
-        await this.assertHasUserGroupCapability(
+        await this.eogAssertions.assertHasUserGroupCapability(
             currentUser,
             id,
             [[Capability.OWNER], [Capability.EOG_ADJUST_MEMBERS], [Capability.EOG_ADJUST_CAPABILITIES]],
+        );
+
+        await this.eogAssertions.assertUserDontGivingCapabilitiesToHimself(
+            currentUser,
+            body.userLogin,
+        );
+
+        await this.eogAssertions.assertUserDontGivingCapabilitiesDoesntHave(
+            currentUser,
+            id,
+            body.capabilities,
+            body.entityCapabilities,
         );
         return await this.eogService.addUserCapabilityInvite(
             id,

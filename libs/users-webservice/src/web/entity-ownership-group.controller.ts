@@ -30,30 +30,17 @@ import { EntityOwnershipGroupService } from '../services/entity-ownership-group.
 import { CurrentUser } from '@ubs-platform/users-microservice-helper';
 import { SearchRequest } from '@ubs-platform/crud-base-common/search-request';
 import { EntityOwnershipService } from '../services/entity-ownership.service';
+import { EogAssertions } from '../util/eog-assertions';
 
 @Controller('entity-ownership-group')
 export class EntityOwnershipGroupController {
     /**
      *
      */
-    constructor(private eogService: EntityOwnershipGroupService, private eoService: EntityOwnershipService) { }
+    constructor(private eogService: EntityOwnershipGroupService, private eoService: EntityOwnershipService, private eogAssertions: EogAssertions) { }
 
 
-    async assertHasUserGroupCapability(
-        currentUser: UserAuthBackendDTO, groupId: string, requestedCapabilities: number[][]
-    ) {
-        if (currentUser.roles.includes('ADMIN')) {
-            return;
-        }
-        const hasCap = await this.eogService.hasUserGroupCapability(
-            { userId: currentUser.id, entityOwnershipGroupId: groupId, requestedCapabilities }
-        );
-        if (!hasCap) {
-            throw new UnauthorizedException(
-                `User ${currentUser.id} does not have capability ${requestedCapabilities} in entity ownership group ${groupId}`,
-            );
-        }
-    }
+
 
     @UseGuards(JwtAuthLocalGuard)
     @Get(":id")
@@ -62,7 +49,7 @@ export class EntityOwnershipGroupController {
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         // Only users with global admin role can create EOGs
-        await this.assertHasUserGroupCapability(currentUser, id, [[Capability.OWNER], [Capability.EDIT], [Capability.EOG_EDIT_METADATA], [Capability.VIEW]]);
+        await this.eogAssertions.assertHasUserGroupCapability(currentUser, id, [[Capability.OWNER], [Capability.EDIT], [Capability.EOG_EDIT_METADATA], [Capability.VIEW]]);
         return await this.eogService.getByIdPublic(id);
     }
 
@@ -135,7 +122,7 @@ export class EntityOwnershipGroupController {
         @CurrentUser() currentUser: UserAuthBackendDTO,
     ) {
         // Only users with global admin role can create EOGs
-        await this.assertHasUserGroupCapability(currentUser, eogMetaDto.id, [[Capability.OWNER], [Capability.EOG_EDIT_METADATA]]);
+        await this.eogAssertions.assertHasUserGroupCapability(currentUser, eogMetaDto.id, [[Capability.OWNER], [Capability.EOG_EDIT_METADATA]]);
 
         return await this.eogService.editMeta(eogMetaDto);
     }
@@ -153,7 +140,7 @@ export class EntityOwnershipGroupController {
             );
         }
         // Only users with global admin role can delete EOGs
-        await this.assertHasUserGroupCapability(currentUser, id, [[Capability.OWNER]]);
+        await this.eogAssertions.assertHasUserGroupCapability(currentUser, id, [[Capability.OWNER]]);
 
         return await this.eogService.deleteGroup(id);
     }

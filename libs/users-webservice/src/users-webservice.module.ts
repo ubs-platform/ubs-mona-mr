@@ -27,6 +27,7 @@ import { JwtAuthLocalGuard } from './guard/jwt-local.guard';
 import { JwtLocalStrategy } from './strategies/jwt-local-strategy';
 import { EntityOwnershipMapper } from './mapper/entity-ownership.mapper';
 import { EntityOwnershipGroupMapper } from './mapper/entity-ownership-group.mapper';
+import { EogAssertions } from './util/eog-assertions';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { EntityOwnershipGroupMapper } from './mapper/entity-ownership-group.mapp
     EntityOwnershipMapper,
     EntityOwnershipGroupService,
     EntityOwnershipGroupMapper,
+    EogAssertions
   ],
   exports: [UserService, UserCommonService, AuthService, EntityOwnershipService, EntityOwnershipGroupService],
 })
