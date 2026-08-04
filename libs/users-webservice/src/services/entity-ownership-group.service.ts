@@ -380,7 +380,6 @@ export class EntityOwnershipGroupService {
             userCapability.groupCapability;
         group.userCapabilities[index].groupCapabilities =
             userCapability.groupCapabilities;
-
         group.markModified('userCapabilities');
         group.markModified('groupCapability');
         await (group as any).save();
@@ -431,6 +430,7 @@ export class EntityOwnershipGroupService {
             })
             .exec();
         const eogCapabilities = userCapability.entityCapabilities;
+        debugger;
         if (!existingInvite) {
             existingInvite = new this.eogInvitationModel({
                 invitedUserName: `${userInvited.name} ${userInvited.surname}`,
@@ -468,7 +468,7 @@ export class EntityOwnershipGroupService {
             entityGroup: ec.entityGroup,
             entityName: ec.entityName,
             capability: ec.capability,
-            capabilities: ec.capabilities,
+            capabilities: ec.capabilities.sort((a, b) => a - b),
         }));
     }
 
@@ -582,7 +582,7 @@ export class EntityOwnershipGroupService {
             entityGroup: ec.entityGroup,
             entityName: ec.entityName,
             capability: ec.capability!,
-            capabilities: ec.capabilities,
+            capabilities: ec.capabilities.sort((a, b) => a - b),
         }));
     }
 

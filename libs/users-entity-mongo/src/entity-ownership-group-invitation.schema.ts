@@ -24,8 +24,8 @@ export class EntityOwnershipGroupInvitation {
     @Prop(String)
     groupCapability?: GroupCapability;
 
-    @Prop([String])
-    groupCapabilities!: Capability[];
+    @Prop([Number])
+    groupCapabilities!: number[];
 
     @Prop([EntityOwnershipGroupEntityCapability])
     entityCapabilities!: EntityOwnershipGroupEntityCapability[];
