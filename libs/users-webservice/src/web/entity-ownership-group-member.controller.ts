@@ -17,6 +17,7 @@ import {
     EOGUserCapabilityDTO,
     EOGUserCapabilityInvitationDTO,
     EOGUserCapabilityInviteDTO,
+    EOGUserEntityCapabilityDTO,
     GroupCapability,
     requestedCapabilitiesToString,
     UserAuthBackendDTO,
@@ -45,6 +46,54 @@ export class EntityOwnershipGroupMemberController {
             throw new UnauthorizedException(
                 `User ${currentUser.id} does not have capability ${requestedCapabilitiesToString(requiredCapabilities)} in entity ownership group ${groupId}`,
             );
+        }
+    }
+
+    async assertUserDontGivingCapabilitiesToHimself(
+        currentUser: UserAuthBackendDTO, userId: string
+    ) {
+        if (currentUser.id === userId) {
+            throw new UnauthorizedException(
+                `User ${currentUser.id} can't give capabilities to himself`,
+            );
+        }
+    }
+
+    async assertUserDontRemoveHimselfFromGroup(
+        currentUser: UserAuthBackendDTO, userId: string
+    ) {
+        if (currentUser.id === userId) {
+            throw new UnauthorizedException(
+                `User ${currentUser.id} can't remove himself from group`,
+            );
+        }
+    }
+
+
+    async assertUserDontGivingCapabilitiesDoesntHave(
+        currentUser: UserAuthBackendDTO, groupCapabilities: number[], entityCapabilities: EOGUserEntityCapabilityDTO[]
+    ) {
+        if (groupCapabilities.length > 0) {
+            const hasGroupCap = await this.eogService.hasUserGroupCapability(
+                { userId: currentUser.id, entityOwnershipGroupId: groupCapabilities[0].toString(), requestedCapabilities: [groupCapabilities] }
+            );
+            if (!hasGroupCap) {
+                throw new UnauthorizedException(
+                    `User ${currentUser.id} can't give group capabilities he doesn't have`,
+                );
+            }
+        }
+        if (entityCapabilities.length > 0) {
+            for (const entityCap of entityCapabilities) {
+                const hasEntityCap = await this.eogService.hasUserEntityCapability(
+                    { userId: currentUser.id, entityGroup: entityCap.entityGroup, entityName: entityCap.entityName, requestedCapabilities: [entityCap.capabilities] }
+                );
+                if (!hasEntityCap) {
+                    throw new UnauthorizedException(
+                        `User ${currentUser.id} can't give entity capabilities he doesn't have`,
+                    );
+                }
+            }
         }
     }
 
@@ -125,7 +174,7 @@ export class EntityOwnershipGroupMemberController {
         await this.assertHasUserGroupCapability(
             currentUser,
             id,
-            [[Capability.OWNER], [Capability.EDIT], [Capability.EOG_ADJUST_MEMBERS]],
+            [[Capability.OWNER], [Capability.EOG_ADJUST_MEMBERS]],
         );
 
         return await this.eogService.removeInvitationAdmin(invitationId);

@@ -38,6 +38,7 @@ export class EntityOwnershipGroupController {
      */
     constructor(private eogService: EntityOwnershipGroupService, private eoService: EntityOwnershipService) { }
 
+
     async assertHasUserGroupCapability(
         currentUser: UserAuthBackendDTO, groupId: string, requestedCapabilities: number[][]
     ) {
