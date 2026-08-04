@@ -72,7 +72,8 @@ export class EntityOwnershipGroupMemberController {
         );
         await this.eogAssertions.assertUserDontChangeGroupOwnerCapabilities(
             currentUser,
-            id,);
+            id, body.userId);
+
         await this.eogAssertions.assertUserDontGivingCapabilitiesDoesntHave(
             currentUser,
             id,
@@ -96,7 +97,7 @@ export class EntityOwnershipGroupMemberController {
         );
         await this.eogAssertions.assertUserDontChangeGroupOwnerCapabilities(
             currentUser,
-            id,);
+            id, userId);
         await this.eogAssertions.assertUserDontRemoveHimselfFromGroup(
             currentUser,
             userId,

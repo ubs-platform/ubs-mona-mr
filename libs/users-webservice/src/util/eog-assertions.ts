@@ -27,6 +27,7 @@ export class EogAssertions {
 
     async assertUserDontChangeGroupOwnerCapabilities(
         currentUser: UserAuthBackendDTO, groupId: string,
+        changingUserId: string
     ) {
         if (currentUser.roles.includes('ADMIN')) {
             return;
@@ -43,11 +44,17 @@ export class EogAssertions {
                 `User ${currentUser.id} has no capabilities in Entity Ownership Group ${groupId}`,
             );
         }
+        const changingUserCapabilities = eog.userCapabilities.find(a => a.userId === changingUserId);
+        if (!changingUserCapabilities) {
+            throw new UnauthorizedException(
+                `User ${changingUserId} has no capabilities in Entity Ownership Group ${groupId}`,
+            );
+        }
         const currentUserGroupCapabilities = currentUserCapabilities.groupCapabilities;
         if (currentUserGroupCapabilities.includes(Capability.OWNER)) {
             return;
         }
-        if (groupCapabilities.includes(Capability.OWNER)) {
+        if (changingUserCapabilities?.groupCapabilities.includes(Capability.OWNER)) {
             throw new UnauthorizedException(
                 `User ${currentUser.id} can't change group owner capabilities in Entity Ownership Group ${groupId}`,
             );
@@ -82,7 +89,7 @@ export class EogAssertions {
             return;
         }
 
-        
+
         const eog = await this.eogService.getById(eogId);
         if (!eog) {
             throw new UnauthorizedException(
@@ -103,7 +110,7 @@ export class EogAssertions {
 
         // Check if the user is trying to give capabilities that he doesn't have
         for (const cap of groupCapabilities) {
-            exec(`kdialog --msgbox "User ${currentUser.id} can't give group capability ${cap} that he doesn't have in Entity Ownership Group ${eogId}"`);
+            // exec(`kdialog --msgbox "User ${currentUser.id} can't give group capability ${cap} that he doesn't have in Entity Ownership Group ${eogId}"`);
             if (!currentUserGroupCapabilities.includes(cap)) {
                 throw new UnauthorizedException(
                     `User ${currentUser.id} can't give group capability ${cap} that he doesn't have in Entity Ownership Group ${eogId}`,
