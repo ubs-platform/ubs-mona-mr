@@ -468,7 +468,7 @@ export class EntityOwnershipGroupService {
             entityGroup: ec.entityGroup,
             entityName: ec.entityName,
             capability: ec.capability,
-            capabilities: ec.capabilities.sort((a, b) => a - b),
+            capabilities: ec.capabilities,
         }));
     }
 
@@ -582,7 +582,7 @@ export class EntityOwnershipGroupService {
             entityGroup: ec.entityGroup,
             entityName: ec.entityName,
             capability: ec.capability!,
-            capabilities: ec.capabilities.sort((a, b) => a - b),
+            capabilities: ec.capabilities,
         }));
     }
 
