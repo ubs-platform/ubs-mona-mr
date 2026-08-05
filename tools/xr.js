@@ -8,6 +8,7 @@ const nest_cli_wrap_1 = require("./operation/nest-cli-wrap");
 const rest_api_doc_gen_1 = require("./operation/rest-api-doc-gen");
 const rest_api_angular_client_gen_1 = require("./operation/rest-api-angular-client-gen");
 const rest_api_nestjs_client_gen_1 = require("./operation/rest-api-nestjs-client-gen");
+const exec_util_1 = require("./util/exec-util");
 console.info(`
 ▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖ ▗▄▖ ▗▖  ▗▖▗▄▄▖ 
 ▐▛▚▞▜▌▐▌ ▐▌▐▛▚▖▐▌▐▌ ▐▌ ▝▚▞▘ ▐▌ ▐▌
@@ -16,6 +17,28 @@ console.info(`
 MonaXr for Mona5            H.C.G`);
 const program = new commander_1.Command();
 const workingDirectory = process.cwd();
+const getPeerLibraryNames = async () => {
+    const paket = await iksir_package_1.IksirPackage.scanRoot(workingDirectory);
+    return paket.children
+        .filter((child) => child.libraryMode === 'PEER')
+        .map((child) => child.packageName);
+};
+const setLatestTagForLibraries = async (version) => {
+    const packageNames = await getPeerLibraryNames();
+    for (const packageName of packageNames) {
+        console.info((0, colors_1.strColor)(colors_1.COLORS.FgBlue, `Setting latest tag for ${packageName}@${version}`));
+        await exec_util_1.ExecUtil.exec(`npm dist-tag add "${packageName}@${version}" latest`);
+        console.info((0, colors_1.strColor)(colors_1.COLORS.FgGreen, `Latest tag set for ${packageName}@${version}`));
+    }
+};
+const deprecateVersionForLibraries = async (version, message) => {
+    const packageNames = await getPeerLibraryNames();
+    for (const packageName of packageNames) {
+        console.info((0, colors_1.strColor)(colors_1.COLORS.FgBlue, `Deprecating ${packageName}@${version}`));
+        await exec_util_1.ExecUtil.exec(`npm deprecate "${packageName}@${version}" "${message}"`);
+        console.info((0, colors_1.strColor)(colors_1.COLORS.FgGreen, `Deprecated ${packageName}@${version}`));
+    }
+};
 program
     .name('xr')
     .description('MonaXr — Mona5 için yardımcı geliştirme aracı')
@@ -58,6 +81,20 @@ program
         patchAnotherDirectory: true,
         patchTarget: targetDirectory,
     });
+});
+program
+    .command('set-latest <version>')
+    .description('PEER kütüphaneler için verilen sürümü latest etiketi yapar')
+    .action(async (version) => {
+    await setLatestTagForLibraries(version);
+});
+program
+    .command('deprecate-libs <version> [message]')
+    .description('PEER kütüphanelerde verilen sürümü deprecate eder')
+    .action(async (version, message) => {
+    const deprecateMessage = message ||
+        'This version is deprecated. Please use the latest stable version.';
+    await deprecateVersionForLibraries(version, deprecateMessage);
 });
 program
     .command('extend-lib <targetDirectory>')

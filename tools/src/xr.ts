@@ -7,6 +7,7 @@ import { NestJsCliWrap } from './operation/nest-cli-wrap';
 import { RestApiDocGen } from './operation/rest-api-doc-gen';
 import { RestApiAngularClientGen } from './operation/rest-api-angular-client-gen';
 import { RestApiNestjsClientGen } from './operation/rest-api-nestjs-client-gen';
+import { ExecUtil } from './util/exec-util';
 
 console.info(
     `
@@ -19,6 +20,60 @@ MonaXr for Mona5            H.C.G`,
 
 const program = new Command();
 const workingDirectory = process.cwd();
+
+const getPeerLibraryNames = async () => {
+    const paket = await IksirPackage.scanRoot(workingDirectory);
+    return paket.children
+        .filter((child) => child.libraryMode === 'PEER')
+        .map((child) => child.packageName);
+};
+
+const setLatestTagForLibraries = async (version: string) => {
+    const packageNames = await getPeerLibraryNames();
+
+    for (const packageName of packageNames) {
+        console.info(
+            strColor(
+                COLORS.FgBlue,
+                `Setting latest tag for ${packageName}@${version}`,
+            ),
+        );
+        await ExecUtil.exec(
+            `npm dist-tag add "${packageName}@${version}" latest`,
+        );
+        console.info(
+            strColor(
+                COLORS.FgGreen,
+                `Latest tag set for ${packageName}@${version}`,
+            ),
+        );
+    }
+};
+
+const deprecateVersionForLibraries = async (
+    version: string,
+    message: string,
+) => {
+    const packageNames = await getPeerLibraryNames();
+
+    for (const packageName of packageNames) {
+        console.info(
+            strColor(
+                COLORS.FgBlue,
+                `Deprecating ${packageName}@${version}`,
+            ),
+        );
+        await ExecUtil.exec(
+            `npm deprecate "${packageName}@${version}" "${message}"`,
+        );
+        console.info(
+            strColor(
+                COLORS.FgGreen,
+                `Deprecated ${packageName}@${version}`,
+            ),
+        );
+    }
+};
 
 program
     .name('xr')
@@ -67,6 +122,23 @@ program
             patchAnotherDirectory: true,
             patchTarget: targetDirectory,
         });
+    });
+
+program
+    .command('set-latest <version>')
+    .description('PEER kütüphaneler için verilen sürümü latest etiketi yapar')
+    .action(async (version: string) => {
+        await setLatestTagForLibraries(version);
+    });
+
+program
+    .command('deprecate-libs <version> [message]')
+    .description('PEER kütüphanelerde verilen sürümü deprecate eder')
+    .action(async (version: string, message?: string) => {
+        const deprecateMessage =
+            message ||
+            'This version is deprecated. Please use the latest stable version.';
+        await deprecateVersionForLibraries(version, deprecateMessage);
     });
 
 program
