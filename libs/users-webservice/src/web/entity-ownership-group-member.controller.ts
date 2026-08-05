@@ -85,6 +85,7 @@ export class EntityOwnershipGroupMemberController {
             id,
             body.groupCapabilities,
             body.entityCapabilities,
+            body.userId
         );
         return await this.eogService.updateUserCapability(id, body, currentUser);
     }
