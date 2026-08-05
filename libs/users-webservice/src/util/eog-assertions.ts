@@ -66,7 +66,7 @@ export class EogAssertions {
     ) {
         if (currentUser.id === userId) {
             throw new UnauthorizedException(
-                `User ${currentUser.id} can't give capabilities to himself`,
+                `User ${currentUser.id} can't give capabilities to themselves`,
             );
         }
     }
@@ -76,7 +76,7 @@ export class EogAssertions {
     ) {
         if (currentUser.id === userId) {
             throw new UnauthorizedException(
-                `User ${currentUser.id} can't remove himself from group`,
+                `User ${currentUser.id} can't remove themselves from group`,
             );
         }
     }
@@ -121,11 +121,11 @@ export class EogAssertions {
         }
 
         const groupCapabilitiesToCheck = this.getCapabilitiesNeedAttentions(changingUserGroupCaps, changingUserCapabilitiesCurrent?.groupCapabilities || []);
-        // Check if the user is trying to give capabilities that he doesn't have
+        // Check if the user is trying to give capabilities that they don't have
         for (const cap of groupCapabilitiesToCheck) {
             if (!currentUserGroupCapabilities.includes(cap)) {
                 throw new UnauthorizedException(
-                    `User ${currentUser.id} can't give group capability ${cap} that he doesn't have in Entity Ownership Group ${eogId}`,
+                    `User ${currentUser.id} can't give group capability ${cap} that they don't have in Entity Ownership Group ${eogId}`,
                 );
             }
         }
@@ -147,12 +147,12 @@ export class EogAssertions {
 
             if (!currentUserEntityCapabilities) {
                 throw new UnauthorizedException(
-                    `User ${currentUser.id} can't give entity capabilities [${changingUserECap.capabilities.join(',')}] for entity ${changingUserECap.entityGroup}/${changingUserECap.entityName} that he doesn't have in Entity Ownership Group ${eogId}`,
+                    `User ${currentUser.id} can't give entity capabilities [${changingUserECap.capabilities.join(',')}] for entity ${changingUserECap.entityGroup}/${changingUserECap.entityName} that they don't have in Entity Ownership Group ${eogId}`,
                 );
             }
             if (entCapabilitiesToCheck.some(cap => !currentUserEntityCapabilities.capabilities.includes(cap))) {
                 throw new UnauthorizedException(
-                    `User ${currentUser.id} can't give entity capabilities [${changingUserECap.capabilities.join(',')}] for entity ${changingUserECap.entityGroup}/${changingUserECap.entityName} that he doesn't have in Entity Ownership Group ${eogId}`,
+                    `User ${currentUser.id} can't give entity capabilities [${changingUserECap.capabilities.join(',')}] for entity ${changingUserECap.entityGroup}/${changingUserECap.entityName} that they don't have in Entity Ownership Group ${eogId}`,
                 );
             }
         }

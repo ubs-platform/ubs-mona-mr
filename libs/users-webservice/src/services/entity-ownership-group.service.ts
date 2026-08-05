@@ -371,7 +371,7 @@ export class EntityOwnershipGroupService {
             currentUser.id === userId
         ) {
             throw new UnauthorizedException(
-                `User ${currentUser.id} can't remove himself from group`,
+                `User ${currentUser.id} can't remove themselves from group`,
             );
         }
 
@@ -418,7 +418,7 @@ export class EntityOwnershipGroupService {
             currentUser.id === userCapability.userId
         ) {
             throw new UnauthorizedException(
-                `User ${currentUser.id} can't edit his own capabilities`,
+                `User ${currentUser.id} can't edit their own capabilities`,
             );
         }
 
@@ -482,7 +482,7 @@ export class EntityOwnershipGroupService {
         }
         if (userInvited.id === currentUser.id) {
             throw new UnauthorizedException(
-                `User ${currentUser.id} can't give capabilities to himself`,
+                `User ${currentUser.id} can't give capabilities to themselves`,
             );
         }
 
