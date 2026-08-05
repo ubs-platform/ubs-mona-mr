@@ -44,6 +44,23 @@ export class UserMicroserviceController {
         return u;
     }
 
+    @MessagePattern('user-by-login')
+    async findUserAuthFromLogin(login: string): Promise<UserAuthBackendDTO> {
+        const u = await this.cacheman.getOrCallAsync(
+            `${this.CACHE_PREFIX_MSCTRL} findUserAuthFromLogin ${login}`,
+            () =>
+                this.userService.findUserByLogin({
+                    login,
+                    password: '',
+                }),
+            { livetime: 1000, livetimeExtending: 'ON_GET' },
+        );
+        if (!u) {
+            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+        }
+        return u as UserAuthBackendDTO;
+    }
+
     @MessagePattern('user-role-check')
     async hasUserRoleOrJew({
         userId,

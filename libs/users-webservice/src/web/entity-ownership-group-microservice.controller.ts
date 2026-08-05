@@ -61,7 +61,6 @@ export class EntityOwnershipGroupMicroserviceController {
     async removeUserCapability(data: {
         groupId: string;
         userId: string;
-        capability: string;
     }) {
         this.cacheman.invalidateRegex(/eog-*/);
         return await this.eogService.removeUserCapability(
@@ -95,14 +94,14 @@ export class EntityOwnershipGroupMicroserviceController {
     @MessagePattern(EOGroupEventConsts.searchByUserId)
     async searchByUserId(searchParams: {
         userId: string;
-        capability?: string;
+        requestedCapabilities?: number[][];
     }): Promise<EntityOwnershipGroupCommonDTO[]> {
         return this.cacheman.getOrCallAsync(
             `eog-searchByUserId ${searchParams.userId}`,
             () =>
                 this.eogService.searchByUserId(
                     searchParams.userId,
-                    searchParams.capability,
+                    searchParams.requestedCapabilities,
                 ),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );

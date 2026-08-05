@@ -19,7 +19,6 @@ import {
     UserCapabilityDTO,
 } from '@ubs-platform/users-common';
 import { UserService } from './user.service';
-import { exec } from 'child_process';
 import { EntityOwnershipGroup } from '@ubs-platform/users-entity-mongo';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
 
@@ -184,7 +183,6 @@ export class EntityOwnershipService {
         if (user.roles.includes('ADMIN')) {
             return {
                 userId: user.id,
-                capability: "",
                 capabilities
             };
         }
@@ -196,7 +194,6 @@ export class EntityOwnershipService {
         return hasOverrideRole
             ? {
                 userId: user.id,
-                capability: "",
                 capabilities: [Capability.VIEW, Capability.ADD, Capability.EDIT, Capability.DELETE]
             }
             : null;

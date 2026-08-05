@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
 import { Document, Model, Types } from 'mongoose';
@@ -23,6 +23,7 @@ import {
 import { UserService } from './user.service';
 import { EntityOwnershipGroupInvitation } from '@ubs-platform/users-entity-mongo';
 import {
+    Capability,
     UserAuthBackendDTO,
     UserCapabilityDTO,
 } from '@ubs-platform/users-common';
@@ -184,10 +185,8 @@ export class EntityOwnershipGroupService {
             entityCapabilities: a.entityCapabilities?.map((ec) => ({
                 entityGroup: ec.entityGroup,
                 entityName: ec.entityName,
-                capability: ec.capability!,
                 capabilities: ec.capabilities,
             })),
-            groupCapability: a.groupCapability!,
             groupCapabilities: a.groupCapabilities,
             userFullName: a.userFullName,
         };
@@ -304,12 +303,20 @@ export class EntityOwnershipGroupService {
 
     searchByUserId(
         userId: string,
-        capacity: string | undefined,
+        requestedCapabilities?: number[][],
     ): Promise<EntityOwnershipGroupCommonDTO[]> {
+        const capabilityFilter = requestedCapabilities?.length
+            ? {
+                $or: requestedCapabilities.map((capabilities) => ({
+                    'userCapabilities.groupCapabilities': { $all: capabilities },
+                })),
+            }
+            : {};
+
         return this.eogModel
             .find({
                 'userCapabilities.userId': userId,
-                'userCapabilities.capability': capacity,
+                ...capabilityFilter,
             })
             .exec()
             .then((entities) => entities.map((e) => this.mapper.toDto(e)));
@@ -348,26 +355,71 @@ export class EntityOwnershipGroupService {
         return this.mapper.toDto(group);
     }
 
-    async removeUserCapability(groupId: string, userId: string): Promise<void> {
+    async removeUserCapability(
+        groupId: string,
+        userId: string,
+        currentUser?: UserAuthBackendDTO,
+    ): Promise<void> {
         const group = await this.getById(groupId);
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
         }
 
+        if (
+            currentUser &&
+            !currentUser.roles.includes('ADMIN') &&
+            currentUser.id === userId
+        ) {
+            throw new UnauthorizedException(
+                `User ${currentUser.id} can't remove himself from group`,
+            );
+        }
+
+        const people = group.userCapabilities || [];
+        if (people.length === 1) {
+            throw new UnauthorizedException(
+                `Member can't be removed as the only member.`,
+            );
+        }
+
+        const removedUserIsOwner = people
+            .find((a) => a.userId === userId)
+            ?.groupCapabilities?.includes(Capability.OWNER);
+        const ownerCount = people.filter((a) =>
+            a.groupCapabilities?.includes(Capability.OWNER),
+        ).length;
+
+        if (removedUserIsOwner && ownerCount < 2) {
+            throw new UnauthorizedException(
+                `Owner can't leave Entity Ownership Group ${groupId} as the only owner.`,
+            );
+        }
+
         group.userCapabilities = group.userCapabilities?.filter(
             (uc) => !(uc.userId === userId),
         );
-        await (group as any).save();
+        await this.saveUserCapabilitiesWithOptimisticLock(groupId, group);
     }
 
     async updateUserCapability(
         groupId: string,
         userCapability: EOGUserCapabilityDTO,
+        currentUser?: UserAuthBackendDTO,
     ): Promise<EntityOwnershipGroupCommonDTO> {
         const group = await this.eogModel.findById(groupId);
 
         if (!group) {
             throw new Error('EntityOwnershipGroup not found');
+        }
+
+        if (
+            currentUser &&
+            !currentUser.roles.includes('ADMIN') &&
+            currentUser.id === userCapability.userId
+        ) {
+            throw new UnauthorizedException(
+                `User ${currentUser.id} can't edit his own capabilities`,
+            );
         }
 
         const index = group.userCapabilities?.findIndex(
@@ -378,14 +430,37 @@ export class EntityOwnershipGroupService {
         }
         group.userCapabilities[index].entityCapabilities =
             userCapability.entityCapabilities;
-        group.userCapabilities[index].groupCapability =
-            userCapability.groupCapability;
         group.userCapabilities[index].groupCapabilities =
             userCapability.groupCapabilities;
-        group.markModified('userCapabilities');
-        group.markModified('groupCapability');
-        await (group as any).save();
+        await this.saveUserCapabilitiesWithOptimisticLock(groupId, group);
         return this.mapper.toDto(group);
+    }
+
+    private async saveUserCapabilitiesWithOptimisticLock(
+        groupId: string,
+        group: EntityOwnershipGroup,
+    ) {
+        const expectedVersion = (group as any).__v;
+        const updateResult = await this.eogModel.updateOne(
+            {
+                _id: groupId,
+                __v: expectedVersion,
+            },
+            {
+                $set: {
+                    userCapabilities: group.userCapabilities,
+                },
+                $inc: {
+                    __v: 1,
+                },
+            },
+        );
+
+        if (updateResult.modifiedCount === 0) {
+            throw new ConflictException(
+                `Entity Ownership Group ${groupId} was modified concurrently. Please retry.`,
+            );
+        }
     }
 
     async addUserCapabilityInvite(
@@ -404,6 +479,11 @@ export class EntityOwnershipGroupService {
         });
         if (!userInvited) {
             throw new Error('Invited user not found');
+        }
+        if (userInvited.id === currentUser.id) {
+            throw new UnauthorizedException(
+                `User ${currentUser.id} can't give capabilities to himself`,
+            );
         }
 
         const invitedByName = `${currentUser.name} ${currentUser.surname}`;
@@ -432,7 +512,6 @@ export class EntityOwnershipGroupService {
             })
             .exec();
         const eogCapabilities = userCapability.entityCapabilities;
-        debugger;
         if (!existingInvite) {
             existingInvite = new this.eogInvitationModel({
                 invitedUserName: `${userInvited.name} ${userInvited.surname}`,
@@ -440,7 +519,6 @@ export class EntityOwnershipGroupService {
                 invitedByUserId: currentUser.id,
                 invitedByUserName: invitedByName,
                 entityOwnershipGroupId: groupId,
-                groupCapability: userCapability.groupCapability,
                 groupCapabilities: userCapability.capabilities,
                 entityCapabilities:
                     this.eogCapabilitiesToEntity(eogCapabilities),
@@ -469,7 +547,6 @@ export class EntityOwnershipGroupService {
         return eogCapabilities.map((ec) => ({
             entityGroup: ec.entityGroup,
             entityName: ec.entityName,
-            capability: ec.capability,
             capabilities: ec.capabilities,
         }));
     }
@@ -496,15 +573,12 @@ export class EntityOwnershipGroupService {
 
         const userCapability: EOGUserCapabilityDTO = {
             userId: invite.invitedUserId,
-            // capability: invite.entityCapability,
             entityCapabilities: invite.entityCapabilities?.map((ec) => ({
                 entityGroup: ec.entityGroup,
                 entityName: ec.entityName,
-                capability: ec.capability!,
                 capabilities: ec.capabilities,
             })),
             userFullName: invite.invitedUserName,
-            groupCapability: invite.groupCapability!,
             groupCapabilities: invite.groupCapabilities,
         };
 
@@ -562,10 +636,8 @@ export class EntityOwnershipGroupService {
         invite: EntityOwnershipGroupInvitation,
     ): EOGUserCapabilityInvitationDTO {
         return {
-            // capability: invite.entityCapability,
             entityCapabilities: this.eogEntityCapabilitiesToDto(invite),
             userId: invite.invitedUserId,
-            groupCapability: invite.groupCapability,
             groupCapabilities: invite.groupCapabilities,
             userName: invite.invitedUserName,
             invitedByUserId: invite.invitedByUserId,
@@ -583,7 +655,6 @@ export class EntityOwnershipGroupService {
         return invite.entityCapabilities.map((ec) => ({
             entityGroup: ec.entityGroup,
             entityName: ec.entityName,
-            capability: ec.capability!,
             capabilities: ec.capabilities,
         }));
     }

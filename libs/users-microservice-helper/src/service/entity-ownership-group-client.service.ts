@@ -63,11 +63,10 @@ export class EntityOwnershipGroupClientService {
     removeUserCapability(
         groupId: string,
         userId: string,
-        capability: string,
     ): Observable<EntityOwnershipGroupDTO> {
         return this.kafkaClient.send<EntityOwnershipGroupDTO>(
             EOGroupEventConsts.removeUserCapability,
-            { groupId, userId, capability },
+            { groupId, userId },
         );
     }
 
@@ -80,11 +79,11 @@ export class EntityOwnershipGroupClientService {
 
     searchByUserId(
         userId: string,
-        capacity?: string,
+        requestedCapabilities?: number[][],
     ): Observable<EntityOwnershipGroupDTO[]> {
         return this.kafkaClient.send<EntityOwnershipGroupDTO[]>(
             EOGroupEventConsts.searchByUserId,
-            { userId, capacity },
+            { userId, requestedCapabilities },
         );
     }
 

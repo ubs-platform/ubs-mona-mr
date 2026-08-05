@@ -49,7 +49,7 @@ export class EOGUserEntityCapabilityDTO {
     /**
      * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
      */
-    capability!: string;
+    capability?: string;
     capabilities: Capability[] = [];
 }
 export class EOGUserCapabilityDTO {
@@ -59,7 +59,7 @@ export class EOGUserCapabilityDTO {
     /**
     * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
     */
-    groupCapability!: GroupCapability;
+    groupCapability?: GroupCapability;
     
     groupCapabilities: Capability[] = [];
 
@@ -72,7 +72,7 @@ export class EOGUserCapabilityInviteDTO {
     /**
      * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
      */
-    groupCapability!: GroupCapability;
+    groupCapability?: GroupCapability;
     capabilities: Capability[] = [];
 
 }
@@ -91,7 +91,7 @@ export class EOGUserCapabilityInvitationDTO {
     /**
      * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
      */
-    groupCapability!: GroupCapability;
+    groupCapability?: GroupCapability;
     groupCapabilities: Capability[] = [];
 
 }

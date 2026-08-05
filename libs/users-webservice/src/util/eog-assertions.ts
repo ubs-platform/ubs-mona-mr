@@ -1,7 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { EntityOwnershipGroupService } from '../services/entity-ownership-group.service';
 import { UserAuthBackendDTO, EOGUserEntityCapabilityDTO, requestedCapabilitiesToString, Capability } from '@ubs-platform/users-common';
-import { exec } from 'child_process';
 
 @Injectable()
 export class EogAssertions {
@@ -122,12 +121,12 @@ export class EogAssertions {
             const userEntityCap = currentUserEntityCapabilities.find(a => a.entityGroup === entityCap.entityGroup && a.entityName === entityCap.entityName);
             if (!userEntityCap) {
                 throw new UnauthorizedException(
-                    `User ${currentUser.id} can't give entity capability ${entityCap.capability} for entity ${entityCap.entityGroup}/${entityCap.entityName} that he doesn't have in Entity Ownership Group ${eogId}`,
+                    `User ${currentUser.id} can't give entity capabilities [${entityCap.capabilities.join(',')}] for entity ${entityCap.entityGroup}/${entityCap.entityName} that he doesn't have in Entity Ownership Group ${eogId}`,
                 );
             }
             if (entityCap.capabilities.some(cap => !userEntityCap.capabilities.includes(cap))) {
                 throw new UnauthorizedException(
-                    `User ${currentUser.id} can't give entity capability ${entityCap.capability} for entity ${entityCap.entityGroup}/${entityCap.entityName} that he doesn't have in Entity Ownership Group ${eogId}`,
+                    `User ${currentUser.id} can't give entity capabilities [${entityCap.capabilities.join(',')}] for entity ${entityCap.entityGroup}/${entityCap.entityName} that he doesn't have in Entity Ownership Group ${eogId}`,
                 );
             }
         }

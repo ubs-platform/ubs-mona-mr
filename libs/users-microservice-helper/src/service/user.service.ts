@@ -12,6 +12,7 @@ export class UserService implements OnModuleInit {
     ) {}
     onModuleInit() {
         (this.kafkaClient as ClientKafka).subscribeToResponseOf?.('user-by-id');
+        (this.kafkaClient as ClientKafka).subscribeToResponseOf?.('user-by-login');
     }
 
     async findUserAuth(userId: any): Promise<UserDTO> {
@@ -21,6 +22,13 @@ export class UserService implements OnModuleInit {
             this.kafkaClient.send('user-by-id', userId),
         )) as UserDTO;
         console.debug(`The request made by: ${user.name} ${user.surname}`);
+        return user;
+    }
+
+    async findUserByLogin(login: string): Promise<UserDTO> {
+        const user = (await firstValueFrom(
+            this.kafkaClient.send('user-by-login', login),
+        )) as UserDTO;
         return user;
     }
 }
