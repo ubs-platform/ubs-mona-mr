@@ -42,6 +42,7 @@ export class EntityOwnershipGroupService {
     private readonly logger = new Logger(EntityOwnershipGroupService.name, {
         timestamp: true,
     });
+    readonly APPLY_TK_LOTUS_MIGRATIONS = process.env['APPLY_TK_LOTUS_MIGRATIONS'] === undefined || process.env['APPLY_TK_LOTUS_MIGRATIONS'] === 'true';
 
     constructor(
         @InjectModel(EntityOwnershipGroup.name)
@@ -54,6 +55,7 @@ export class EntityOwnershipGroupService {
         @InjectModel(EntityOwnership.name)
         private eoModel: Model<EntityOwnership>,
     ) { }
+
 
     public async onModuleInit() {
         this.logger.debug('EntityOwnershipGroupService initialized');
@@ -79,14 +81,14 @@ export class EntityOwnershipGroupService {
             let modified = false;
             for (const userCap of group.userCapabilities) {
                 if (userCap.groupCapability) {
-                    userCap.groupCapabilities = migrateFromStringToCapability(userCap.groupCapability);
+                    userCap.groupCapabilities = migrateFromStringToCapability(userCap.groupCapability, this.APPLY_TK_LOTUS_MIGRATIONS);
                     delete userCap.groupCapability;
                     modified = true;
                 }
                 if (userCap.entityCapabilities) {
                     for (const entityCap of userCap.entityCapabilities) {
                         if (entityCap.capability) {
-                            entityCap.capabilities = migrateFromStringToCapability(entityCap.capability);
+                            entityCap.capabilities = migrateFromStringToCapability(entityCap.capability, this.APPLY_TK_LOTUS_MIGRATIONS);
                             delete entityCap.capability;
                             modified = true;
                         }
@@ -118,14 +120,14 @@ export class EntityOwnershipGroupService {
         for (const invitation of allGroups) {
             let modified = false;
             if (invitation.groupCapability) {
-                invitation.groupCapabilities = migrateFromStringToCapability(invitation.groupCapability);
+                invitation.groupCapabilities = migrateFromStringToCapability(invitation.groupCapability, this.APPLY_TK_LOTUS_MIGRATIONS);
                 delete invitation.groupCapability;
                 modified = true;
             }
             if (invitation.entityCapabilities) {
                 for (const entityCap of invitation.entityCapabilities) {
                     if (entityCap.capability) {
-                        entityCap.capabilities = migrateFromStringToCapability(entityCap.capability);
+                        entityCap.capabilities = migrateFromStringToCapability(entityCap.capability, this.APPLY_TK_LOTUS_MIGRATIONS);
                         delete entityCap.capability;
                         modified = true;
                     }

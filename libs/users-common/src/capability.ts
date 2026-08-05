@@ -99,7 +99,16 @@ export const hasCapabilityFromInnerArray = (capabilities: number[], query?: numb
     return false;
 };
 
-export const migrateFromStringToCapability = (capability: string): number[] => {
+/**
+ * String tabanlı yetenekleri Capability enum değerlerine dönüştürür. Eğer applyTkLotusMigrations parametresi false ise, "LIBRARY" ve "TENANT" yetenekleri "VIEW" olarak değerlendirilir.
+ * @param capability String tabanlı yetenek
+ * @param applyTkLotusMigrations Lotus migrasyonlarının uygulanıp uygulanmayacağını belirten boolean değer
+ * @returns Capability enum değerlerinin array'i
+ */
+export const migrateFromStringToCapability = (capability: string, applyTkLotusMigrations = true): number[] => {
+    if (!applyTkLotusMigrations && (capability === "LIBRARY" || capability === "TENANT")) {
+        capability = "VIEW"; // If migrations are not applied, treat LIBRARY and TENANT as VIEW
+    }
     switch (capability) {
         case "OWNER":
             return [Capability.OWNER];

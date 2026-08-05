@@ -29,6 +29,8 @@ export class EntityOwnershipService {
         timestamp: true,
     });
 
+    readonly APPLY_TK_LOTUS_MIGRATIONS = process.env['APPLY_TK_LOTUS_MIGRATIONS'] === undefined || process.env['APPLY_TK_LOTUS_MIGRATIONS'] === 'true';
+
     constructor(
         @InjectModel(EntityOwnership.name)
         private eoModel: Model<EntityOwnership>,
@@ -53,7 +55,7 @@ export class EntityOwnershipService {
             let updated = false;
             for (const userCap of entity.userCapabilities) {
                 if (userCap.capability && !userCap.capabilities?.length) {
-                    userCap.capabilities = migrateFromStringToCapability(userCap.capability);
+                    userCap.capabilities = migrateFromStringToCapability(userCap.capability, this.APPLY_TK_LOTUS_MIGRATIONS);
                     userCap.capability = undefined;
                     updated = true;
                 }
