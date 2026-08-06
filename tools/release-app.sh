@@ -4,7 +4,7 @@ set -euo pipefail
 APP_NAME=${1:-}
 # Platforms to build/push. Covers amd64 servers, 64-bit ARM (Apple Silicon, Raspberry Pi OS 64-bit)
 # and 32-bit ARM (Raspberry Pi OS 32-bit / armhf).
-PLATFORMS=${DOCKER_PLATFORMS:-linux/amd64,linux/arm64,linux/arm/v7}
+PLATFORMS=${DOCKER_PLATFORMS:-linux/amd64,linux/arm64} # ,linux/arm/v7 yi sonra eklerim şu an elimde raspberry pi yok...
 BUILDX_BUILDER_NAME=ubs-mona-multiarch-builder
 DOCKER_PUSH_BY_PLATFORM=${DOCKER_PUSH_BY_PLATFORM:-0}
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 APP_NAME=${1:-}
-PLATFORMS=${DOCKER_PLATFORMS:-linux/amd64,linux/arm64,linux/arm/v7}
+PLATFORMS=${DOCKER_PLATFORMS:-linux/amd64,linux/arm64} # ,linux/arm/v7 yi sonra eklerim şu an elimde raspberry pi yok...
 SCRIPT_DIR=$(dirname "${BASH_SOURCE[0]}")
 
 normalize_platform() {
