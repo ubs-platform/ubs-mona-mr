@@ -31,7 +31,7 @@ export class EntityOwnershipGroupMapper {
                     userFullName: user?.name + ' ' + user?.surname,
                     entityCapabilities: eogDto.initialUserEntityCapabilities,
                     // groupCapability: 'OWNER',
-                    capabilities: [Capability.OWNER]
+                    groupCapabilities: [Capability.OWNER]
                 },
             ],
             
