@@ -365,10 +365,19 @@ export class EntityOwnershipGroupService {
             throw new Error('EntityOwnershipGroup not found');
         }
 
+        const currentUserCapabilities = group.userCapabilities?.find(
+            (uc) => uc.userId === currentUser?.id,
+        );
+        const currentUserIsOwner =
+            currentUserCapabilities?.groupCapabilities?.includes(
+                Capability.OWNER,
+            ) ?? false;
+
         if (
             currentUser &&
             !currentUser.roles.includes('ADMIN') &&
-            currentUser.id === userId
+            currentUser.id === userId &&
+            !currentUserIsOwner
         ) {
             throw new UnauthorizedException(
                 `User ${currentUser.id} can't remove themselves from group`,
@@ -412,10 +421,19 @@ export class EntityOwnershipGroupService {
             throw new Error('EntityOwnershipGroup not found');
         }
 
+        const currentUserCapabilities = group.userCapabilities?.find(
+            (uc) => uc.userId === currentUser?.id,
+        );
+        const currentUserIsOwner =
+            currentUserCapabilities?.groupCapabilities?.includes(
+                Capability.OWNER,
+            ) ?? false;
+
         if (
             currentUser &&
             !currentUser.roles.includes('ADMIN') &&
-            currentUser.id === userCapability.userId
+            currentUser.id === userCapability.userId &&
+            !currentUserIsOwner
         ) {
             throw new UnauthorizedException(
                 `User ${currentUser.id} can't edit their own capabilities`,
