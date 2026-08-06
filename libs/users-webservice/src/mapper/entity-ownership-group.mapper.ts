@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { EntityOwnershipGroup } from '@ubs-platform/users-entity-mongo';
 import {
+    Capability,
     EntityOwnershipGroupCommonDTO,
     EntityOwnershipGroupDTO,
 } from '@ubs-platform/users-common';
@@ -29,9 +30,11 @@ export class EntityOwnershipGroupMapper {
                     userId: currentUserId,
                     userFullName: user?.name + ' ' + user?.surname,
                     entityCapabilities: eogDto.initialUserEntityCapabilities,
-                    groupCapability: 'OWNER',
+                    // groupCapability: 'OWNER',
+                    capabilities: [Capability.OWNER]
                 },
             ],
+            
         });
     }
 
