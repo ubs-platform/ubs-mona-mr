@@ -4,7 +4,7 @@ echo E5 TLS DURUMU: $E5_TLS_ENABLED
 echo JWT GİZLİSİ: $NX_SECRET_JWT
 echo $NODE_OPTIONS
 # NODE_OPTIONS="" nest start $1 --watch
-nest start $1 --watch
+nest start $1 --watch ${@:2}
 # nest build $1
 # echo "BUN-ASSED"
 # bun dist/apps/$1/main.js
