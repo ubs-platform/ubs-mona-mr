@@ -10,7 +10,6 @@ import {
 import { EntityOwnershipGroupMapper } from '../mapper/entity-ownership-group.mapper';
 import {
     EntityOwnershipGroupCommonDTO,
-    EntityOwnershipGroupDTO,
     EntityOwnershipGroupMetaDTO,
     EntityOwnershipGroupSearchDTO,
     EOGCheckUserGroupCapabilityDTO,
@@ -18,21 +17,17 @@ import {
     EOGUserCapabilityInvitationDTO,
     EOGUserCapabilityInviteDTO,
     EOGUserEntityCapabilityDTO,
-    GroupCapability,
 } from 'libs/users-common/src/entity-ownership-group';
 import { UserService } from './user.service';
 import { EntityOwnershipGroupInvitation } from '@ubs-platform/users-entity-mongo';
 import {
     Capability,
     UserAuthBackendDTO,
-    UserCapabilityDTO,
 } from '@ubs-platform/users-common';
 import { EmailService } from './email.service';
 import { SearchRequest } from '@ubs-platform/crud-base-common/search-request';
 import { SearchResult } from '@ubs-platform/crud-base-common/search-result';
 import { MongooseSearchUtil } from '@ubs-platform/crud-base';
-import { NotFoundError } from 'rxjs';
-import { EntityOwnershipService } from './entity-ownership.service';
 import { EntityOwnership } from '@ubs-platform/users-entity-mongo';
 
 

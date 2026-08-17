@@ -3,7 +3,6 @@ import {
     Controller,
     Delete,
     Get,
-    Injectable,
     Param,
     Post,
     Put,
@@ -15,16 +14,9 @@ import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import {
     Capability,
     EntityOwnershipGroupCommonDTO,
-    EntityOwnershipGroupDTO,
     EntityOwnershipGroupMetaDTO,
     EntityOwnershipGroupSearchDTO,
-    EOGCheckUserGroupCapabilityDTO,
-    EOGUserCapabilityDTO,
-    EOGUserCapabilityInvitationDTO,
-    EOGUserCapabilityInviteDTO,
-    GroupCapability,
     UserAuthBackendDTO,
-    UserCapabilityDTO,
 } from '@ubs-platform/users-common';
 import { EntityOwnershipGroupService } from '../services/entity-ownership-group.service';
 import { CurrentUser } from '@ubs-platform/users-microservice-helper';

@@ -1,7 +1,5 @@
 import { Capability } from "./capability";
 
-export type GroupCapability = 'OWNER' | 'VIEWER' | "EDITOR" | "META_EDIT" | 'ADJUST_MEMBERS' | 'ONLY_EDIT_MEMBER_CAPABILITIES';
-
 export class EntityOwnershipGroupCommonDTO {
     // required when editing the EOG
     id?: string;
@@ -59,7 +57,7 @@ export class EOGUserCapabilityDTO {
     /**
     * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
     */
-    groupCapability?: GroupCapability;
+    // groupCapability?: GroupCapability;
     
     groupCapabilities: Capability[] = [];
 
@@ -72,7 +70,7 @@ export class EOGUserCapabilityInviteDTO {
     /**
      * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
      */
-    groupCapability?: GroupCapability;
+    // groupCapability?: GroupCapability;
     capabilities: Capability[] = [];
 
 }
@@ -91,7 +89,7 @@ export class EOGUserCapabilityInvitationDTO {
     /**
      * @deprecated string tabanlı capability alanı yerine capabilities alanı kullanılacak.
      */
-    groupCapability?: GroupCapability;
+    // groupCapability?: GroupCapability;
     groupCapabilities: Capability[] = [];
 
 }

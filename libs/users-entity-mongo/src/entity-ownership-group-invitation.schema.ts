@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Capability, GroupCapability } from '@ubs-platform/users-common';
 import { EntityOwnershipGroupEntityCapability } from './entity-ownership-group-entity-capability';
 
 @Schema()
@@ -22,7 +21,7 @@ export class EntityOwnershipGroupInvitation {
     entityOwnershipGroupId!: string;
 
     @Prop(String)
-    groupCapability?: GroupCapability;
+    groupCapability?: string;
 
     @Prop([Number])
     groupCapabilities!: number[];

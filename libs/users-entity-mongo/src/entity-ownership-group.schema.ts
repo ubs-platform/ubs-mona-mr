@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Capability, GroupCapability } from '@ubs-platform/users-common';
+import { Capability } from '@ubs-platform/users-common';
 import { EntityOwnershipGroupEntityCapability } from './entity-ownership-group-entity-capability';
 
 export class GroupUserCapability {
@@ -7,7 +7,7 @@ export class GroupUserCapability {
     /**
      * @deprecated string tabanlı capability alanı yerine orbitalGroupCapability alanı kullanılacak.
      */
-    groupCapability?: GroupCapability;
+    // groupCapability?: string;
     groupCapabilities: Capability[] = [];
     userFullName?: string;
     entityCapabilities: EntityOwnershipGroupEntityCapability[] = [];

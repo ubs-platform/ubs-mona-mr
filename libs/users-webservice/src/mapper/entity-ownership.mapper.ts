@@ -34,7 +34,8 @@ export class EntityOwnershipMapper {
             userCapabilities: entityOwnership.userCapabilities.map((a) => {
                 return {
                     userId: a.userId,
-                    capability: a.capability,
+                    // capability: a.capability,
+                    capabilities: a.capabilities,
                 };
             }),
         });
