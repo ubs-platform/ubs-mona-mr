@@ -7,7 +7,7 @@ export class GroupUserCapability {
     /**
      * @deprecated string tabanlı capability alanı yerine orbitalGroupCapability alanı kullanılacak.
      */
-    // groupCapability?: string;
+    groupCapability?: string;
     groupCapabilities: Capability[] = [];
     userFullName?: string;
     entityCapabilities: EntityOwnershipGroupEntityCapability[] = [];

@@ -1,12 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Model } from 'mongoose';
 import { SocialComment } from '@ubs-platform/social-entity-mongo';
-import {
-    CAPABILITY_NAME_COMMENT_OWNER,
-    CAPABILITY_NAME_ENTITY_OWNER,
-    ENTITY_GROUP as SOCIAL_ENTITY_GROUP,
-    ENTITY_NAME_COMMENTS as SOCIAL_ENTITY_NAME_COMMENTS,
-} from '@ubs-platform/social-consts';
 
 import {
     Capability,
@@ -17,13 +10,9 @@ import {
     CanManuplateComment,
     CommentAbilityDTO as CommentingAbilityDTO,
     CommentSearchDTO,
-    ExistCommentAbilityDTO,
 } from '@ubs-platform/social-common';
 import { EntityOwnershipService } from '@ubs-platform/users-microservice-helper';
-import { CommentMapper } from '../mapper/comment.mapper';
-import { InjectModel } from '@nestjs/mongoose';
 import { lastValueFrom } from 'rxjs';
-import { SocialCommentMeta } from '@ubs-platform/social-entity-mongo';
 import { CommentMetaService } from './comment-meta.service';
 import { ApplicationSocialRestrictionService } from './application-social-restriction.service';
 @Injectable()
