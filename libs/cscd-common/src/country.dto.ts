@@ -16,3 +16,26 @@ export interface LocalityDTO {
   name?: string;
   subdivisionCode: string;
 }
+
+/**
+ * Örnek:
+ * 
+ * CountryDTO: {
+ * name: "Türkiye",
+ * code: "TR",
+ * localeCode: "tr" 
+ * }
+ * 
+ * SubdivisionDTO: {
+ * name: "İstanbul",
+ * code: "34",
+ * countryCode: "TR"
+ * }
+ * 
+ * 
+ * LocalityDTO: {
+ * name: "Kadıköy",
+ * code: "34-1",
+ * subdivisionCode: "34"
+ * }
+ */
