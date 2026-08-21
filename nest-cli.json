@@ -46,6 +46,33 @@
         "tsConfigPath": "libs/crud-base-common/tsconfig.lib.json"
       }
     },
+    "cscd-common": {
+      "type": "library",
+      "root": "libs/cscd-common",
+      "entryFile": "index",
+      "sourceRoot": "libs/cscd-common/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/cscd-common/tsconfig.lib.json"
+      }
+    },
+    "cscd-entity-mongo": {
+      "type": "library",
+      "root": "libs/cscd-entity-mongo",
+      "entryFile": "index",
+      "sourceRoot": "libs/cscd-entity-mongo/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/cscd-entity-mongo/tsconfig.lib.json"
+      }
+    },
+    "cscd-webservice": {
+      "type": "library",
+      "root": "libs/cscd-webservice",
+      "entryFile": "index",
+      "sourceRoot": "libs/cscd-webservice/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/cscd-webservice/tsconfig.lib.json"
+      }
+    },
     "dev-monolith": {
       "type": "application",
       "root": "apps/dev-monolith",

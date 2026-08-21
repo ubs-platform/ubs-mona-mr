@@ -47,6 +47,24 @@
       "@ubs-platform/crud-base/*": [
         "libs/crud-base/src/*"
       ],
+      "@ubs-platform/cscd-common": [
+        "libs/cscd-common/src"
+      ],
+      "@ubs-platform/cscd-common/*": [
+        "libs/cscd-common/src/*"
+      ],
+      "@ubs-platform/cscd-entity-mongo": [
+        "libs/cscd-entity-mongo/src"
+      ],
+      "@ubs-platform/cscd-entity-mongo/*": [
+        "libs/cscd-entity-mongo/src/*"
+      ],
+      "@ubs-platform/cscd-webservice": [
+        "libs/cscd-webservice/src"
+      ],
+      "@ubs-platform/cscd-webservice/*": [
+        "libs/cscd-webservice/src/*"
+      ],
       "@ubs-platform/dynamic-queue": [
         "libs/dynamic-queue/src"
       ],
