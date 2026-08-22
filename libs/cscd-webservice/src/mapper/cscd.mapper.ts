@@ -12,6 +12,7 @@ export class CscdMapper {
       name: country.name,
       code: country.code,
       localeCode: country.localeCode,
+      federalState: country.federalState,
     };
   }
 

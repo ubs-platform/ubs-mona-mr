@@ -5,6 +5,8 @@ import { Country, Locality, Subdivision } from '@ubs-platform/cscd-entity-mongo'
 import {
     CountryDTO,
     LocalityDTO,
+    LocalityInfoRequest,
+    LocalityInfoResponse,
     SubdivisionDTO,
 } from '@ubs-platform/cscd-common';
 import { CscdMapper } from '../mapper/cscd.mapper';
@@ -32,6 +34,7 @@ interface CscdSourceCountry {
 
 @Injectable()
 export class CscdWebserviceService {
+
     constructor(
         @InjectModel(Country.name) private readonly countryModel: Model<Country>,
         @InjectModel(Subdivision.name)
@@ -65,6 +68,30 @@ export class CscdWebserviceService {
         return localities.map(CscdMapper.localityToDto);
     }
 
+    async getCountryDetails(localityInfoRequest: LocalityInfoRequest): Promise<LocalityInfoResponse> {
+        const { countryCode, subdivisionCode, localityCode } = localityInfoRequest;
+        return await Promise.all([
+            this.countryModel.findOne({ code: countryCode }).exec(),
+            this.subdivisionModel.findOne({ countryCode, code: subdivisionCode }).exec(),
+            this.localityModel.findOne({ countryCode, subdivisionCode, code: localityCode }).exec(),
+        ]).then(([country, subdivision, locality]) => {
+            if (!country) {
+                throw new NotFoundException(`Country '${countryCode}' was not found`);
+            }
+            if (!subdivision) {
+                throw new NotFoundException(`Subdivision '${subdivisionCode}' was not found in country '${countryCode}'`);
+            }
+            if (!locality) {
+                throw new NotFoundException(`Locality '${localityCode}' was not found in subdivision '${subdivisionCode}' of country '${countryCode}'`);
+            }
+
+            return {
+                country: CscdMapper.countryToDto(country),
+                subdivision: CscdMapper.subdivisionToDto(subdivision),
+                locality: CscdMapper.localityToDto(locality),
+            };
+        });
+    }
 
     /**
      * Imports the country > subdivision > locality hierarchy from
@@ -80,7 +107,7 @@ export class CscdWebserviceService {
         const { data } = await Axios.get<CscdSourceCountry[]>(
             'https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries%2Bstates%2Bcities.json',
         );
-        
+
         const countryDocs = data.map((country) => ({
             name: country.name.replace("Turkey", "Türkiye"),
             code: country.iso2,
