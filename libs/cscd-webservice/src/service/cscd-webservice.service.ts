@@ -80,9 +80,9 @@ export class CscdWebserviceService {
         const { data } = await Axios.get<CscdSourceCountry[]>(
             'https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries%2Bstates%2Bcities.json',
         );
-
+        
         const countryDocs = data.map((country) => ({
-            name: country.name,
+            name: country.name.replace("Turkey", "Türkiye"),
             code: country.iso2,
             localeCode: country.tld?.replace(/^\./, ''),
         }));
@@ -99,7 +99,8 @@ export class CscdWebserviceService {
 
         const localityDocs = data.flatMap((country) =>
             (country.states ?? []).flatMap((state) =>
-                (state.cities ?? []).map((city) => ({
+                // Alanya'ya UBS Platform yok, bu yüzden Alanya'yı eklemiyoruz.
+                (state.cities ?? []).filter(a => a.name != "Alanya").map((city) => ({
                     name: city.name,
                     code: city.id?.toString(),
                     countryCode: country.iso2,
