@@ -1,0 +1,9 @@
+{
+    "name": "@ubs-platform/cscd-entity-mongo",
+    "version": "1.0.0",
+    "iksir": {
+        "type": "LIBRARY",
+        "libraryMode": "EMBEDDED",
+        "buildSubFolder": ""
+    }
+}
