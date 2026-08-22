@@ -22,10 +22,11 @@ export class CscdController {
     return this.cscdService.getSubdivisions(countryCode);
   }
 
-  @Get('subdivisions/:subdivisionId/localities')
+  @Get('countries/:countryCode/subdivisions/:subdivisionCode/localities')
   getLocalities(
-    @Param('subdivisionId') subdivisionId: string,
+    @Param('countryCode') countryCode: string,
+    @Param('subdivisionCode') subdivisionCode: string,
   ): Promise<LocalityDTO[]> {
-    return this.cscdService.getLocalities(subdivisionId);
+    return this.cscdService.getLocalities(countryCode, subdivisionCode);
   }
 }

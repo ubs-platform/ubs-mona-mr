@@ -1,5 +1,4 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Schema as MongooseSchema } from 'mongoose';
 
 
 @Schema()
@@ -9,7 +8,15 @@ export class Locality {
     @Prop({ type: String })
     name?: string;
 
+    // source dataset city id, unique within its subdivision
     @Prop({ type: String })
+    code?: string;
+
+    @Prop({ type: String, index: true })
+    countryCode?: string;
+
+    // only unique combined with countryCode, not globally
+    @Prop({ type: String, index: true })
     subdivisionCode?: string;
 }
 
@@ -20,8 +27,12 @@ export class Subdivision {
     @Prop({ type: String })
     name?: string;
 
-    @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'Country' })
-    country?: Country;
+    // state/province iso2 code, e.g. "74" for Bartın
+    @Prop({ type: String })
+    code?: string;
+
+    @Prop({ type: String, index: true })
+    countryCode?: string;
 }
 
 
@@ -32,14 +43,11 @@ export class Country {
     @Prop({ type: String })
     name?: string;
 
-    @Prop({ type: String })
+    @Prop({ type: String, index: true })
     code?: string;
 
     @Prop({ type: String })
     localeCode?: string;
-
-    @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Subdivision' }] })
-    subdivisions?: Subdivision[];
 }
 export const
     CountrySchema = SchemaFactory.createForClass(Country),

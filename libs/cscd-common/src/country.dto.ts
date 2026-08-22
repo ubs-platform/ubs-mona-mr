@@ -8,12 +8,15 @@ export interface CountryDTO {
 export interface SubdivisionDTO {
   _id: string;
   name?: string;
+  code?: string;
   countryCode: string;
 }
 
 export interface LocalityDTO {
   _id: string;
   name?: string;
+  code?: string;
+  countryCode: string;
   subdivisionCode: string;
 }
 

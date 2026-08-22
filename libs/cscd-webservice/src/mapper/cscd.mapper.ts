@@ -19,7 +19,8 @@ export class CscdMapper {
     return {
       _id: subdivision._id!.toString(),
       name: subdivision.name,
-      countryId: this.referenceId(subdivision.country),
+      code: subdivision.code,
+      countryCode: subdivision.countryCode || '',
     };
   }
 
@@ -27,17 +28,9 @@ export class CscdMapper {
     return {
       _id: locality._id!.toString(),
       name: locality.name,
-      subdivisionId: this.referenceId(locality.subdivision),
+      code: locality.code,
+      countryCode: locality.countryCode || '',
+      subdivisionCode: locality.subdivisionCode || '',
     };
-  }
-
-  private static referenceId(reference?: { _id?: string } | string): string {
-    if (!reference) {
-      return '';
-    }
-
-    return typeof reference === 'string'
-      ? reference
-      : reference._id?.toString() || reference.toString();
   }
 }
