@@ -33,6 +33,10 @@ export class Subdivision {
 
     @Prop({ type: String, index: true })
     countryCode?: string;
+
+    // Örn: ABD için true, Türkiye için false. ABD eyaletleri federal state olarak geçiyor, Türkiye'de ise iller federal state değil.
+    @Prop({ type: Boolean })
+    federalState?: boolean;
 }
 
 
@@ -48,9 +52,23 @@ export class Country {
 
     @Prop({ type: String })
     localeCode?: string;
+
+    // Örn: ABD için true, Türkiye için false. ABD eyaletleri federal state olarak geçiyor, Türkiye'de ise iller federal state değil.
+    @Prop({ type: Boolean })
+    federalState?: boolean;
 }
 export const
     CountrySchema = SchemaFactory.createForClass(Country),
     SubdivisionSchema = SchemaFactory.createForClass(Subdivision),
     LocalitySchema = SchemaFactory.createForClass(Locality);
 
+/*
+
+CityName (Şehir / İl): Adresin bağlı olduğu ana il (Örn: Ankara, İstanbul, İzmir) bilgisini tutar. UBL-TR şemalarında zorunlu alanlardan biridir.
+CitySubdivisionName (İlçe / Semt): İl içindeki alt idari birimi veya ilçeyi (Örn: Çankaya, Beşiktaş, Bornova) ifade eder. 
+Bu alan da Türkiye şartlarında adresin zorunlu bileşenleri arasındadır.
+CountrySubentity / Eyalet: Uluslararası standartlarda (OASIS UBL) yer almasına rağmen UBL-TR 
+yerelleştirmesinde Türkiye'nin idari yapısında eyalet sistemi olmadığından aktif olarak kullanılmaz 
+veya boş bırakılır. 
+Türkiye adreslerinde bölge/ilçe/şehir ayrımları yukarıdaki iki alanla çözülür.
+*/
