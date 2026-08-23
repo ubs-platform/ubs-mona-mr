@@ -120,7 +120,7 @@ export class CscdWebserviceService {
         );
 
         const countryDocs = data.map((country) => ({
-            name: country.name.replace("Turkey", "Türkiye"),
+            name: country.iso2 == 'TR' ? 'Türkiye' : country.name,
             code: country.iso2,
             localeCode: country.tld?.replace(/^\./, ''),
             hasSubdivisions: this.COUNTRIES_SUBDIVISIONS.includes(country.iso2 || ''),
@@ -138,10 +138,9 @@ export class CscdWebserviceService {
 
         const localityDocs = data.flatMap((country) =>
             (country.states ?? []).flatMap((state) =>
-                // Alanya'ya UBS Platform yok, bu yüzden Alanya'yı eklemiyoruz.
-                (state.cities ?? []).filter(a => a.name != "Alanya").map((city) => ({
+                (state.cities ?? []).map((city) => ({
                     name: city.name,
-                    code: city.id?.toString(),
+                    code: city.name, // source dataset city id is not unique across subdivisions, so use name as code
                     countryCode: country.iso2,
                     subdivisionCode: state.iso2,
                 })),
