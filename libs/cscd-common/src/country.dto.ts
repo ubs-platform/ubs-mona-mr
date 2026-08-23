@@ -15,7 +15,7 @@ export interface CountryDTO {
   name?: string;
   code?: string;
   localeCode?: string;
-  federalState?: boolean;
+  hasSubdivisions?: boolean;
 }
 
 export interface SubdivisionDTO {

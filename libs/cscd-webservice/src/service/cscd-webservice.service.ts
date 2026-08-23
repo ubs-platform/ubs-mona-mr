@@ -34,7 +34,7 @@ interface CscdSourceCountry {
 
 @Injectable()
 export class CscdWebserviceService {
-
+    readonly COUNTRIES_SUBDIVISIONS = ['US', 'CA', "AU", "DE", "BR", "IN", "MX", "RU", "CH", "AR", "BE", "CL", "ES", "IT", "JP", "NL", "PL", "SE"];
     constructor(
         @InjectModel(Country.name) private readonly countryModel: Model<Country>,
         @InjectModel(Subdivision.name)
@@ -100,9 +100,20 @@ export class CscdWebserviceService {
      * three collections can be bulk-inserted independently.
      */
     async initializeData(): Promise<void> {
-        if ((await this.countryModel.countDocuments().exec()) > 0) {
+        const reinit = process.env.CSCD_REINIT === 'true';
+        if (!reinit && (await this.countryModel.countDocuments().exec()) > 0) {
             // Data already exists, so skip the import
             return;
+        }
+
+        if (reinit) {
+            Promise.all([
+                this.countryModel.deleteMany({}).exec(),
+                this.subdivisionModel.deleteMany({}).exec(),
+                this.localityModel.deleteMany({}).exec(),
+            ]).catch((err) => {
+                console.error('Failed to clear CSCD data:', err);
+            });
         }
         const { data } = await Axios.get<CscdSourceCountry[]>(
             'https://raw.githubusercontent.com/dr5hn/countries-states-cities-database/master/json/countries%2Bstates%2Bcities.json',
@@ -112,6 +123,7 @@ export class CscdWebserviceService {
             name: country.name.replace("Turkey", "Türkiye"),
             code: country.iso2,
             localeCode: country.tld?.replace(/^\./, ''),
+            hasSubdivisions: this.COUNTRIES_SUBDIVISIONS.includes(country.iso2 || ''),
         }));
         await this.countryModel.insertMany(countryDocs);
 

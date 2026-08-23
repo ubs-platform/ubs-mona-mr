@@ -34,9 +34,9 @@ export class Subdivision {
     @Prop({ type: String, index: true })
     countryCode?: string;
 
-    // Örn: ABD için true, Türkiye için false. ABD eyaletleri federal state olarak geçiyor, Türkiye'de ise iller federal state değil.
+    // Birinci seviye idari subdivision bilgisi olan ülkeler için true.
     @Prop({ type: Boolean })
-    federalState?: boolean;
+    hasSubdivisions?: boolean;
 }
 
 
@@ -53,9 +53,9 @@ export class Country {
     @Prop({ type: String })
     localeCode?: string;
 
-    // Örn: ABD için true, Türkiye için false. ABD eyaletleri federal state olarak geçiyor, Türkiye'de ise iller federal state değil.
+    // Birinci seviye idari subdivision bilgisi olan ülkeler için true.
     @Prop({ type: Boolean })
-    federalState?: boolean;
+    hasSubdivisions?: boolean;
 }
 export const
     CountrySchema = SchemaFactory.createForClass(Country),
