@@ -46,6 +46,15 @@
         "tsConfigPath": "libs/crud-base-common/tsconfig.lib.json"
       }
     },
+    "cscd": {
+      "type": "application",
+      "root": "apps/cscd",
+      "entryFile": "main",
+      "sourceRoot": "apps/cscd/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/cscd/tsconfig.app.json"
+      }
+    },
     "cscd-common": {
       "type": "library",
       "root": "libs/cscd-common",
