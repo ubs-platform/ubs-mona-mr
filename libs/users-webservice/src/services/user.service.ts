@@ -374,10 +374,9 @@ export class UserService {
             await this.saveNewUser(user);
             console.warn(
                 'Initial user has been added. Please see the following output',
-            );
-            console.warn(
                 "Don't forget to change these informations before production.",
             );
+
             console.info(user);
             // }
         }
