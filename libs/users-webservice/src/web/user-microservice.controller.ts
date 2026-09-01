@@ -61,8 +61,16 @@ export class UserMicroserviceController {
         return u as UserAuthBackendDTO;
     }
 
+    /**
+     * Daha önceki metot ismi ırkçı bir ifade içeriyordu. Ancak bu ırkçılıktan ziyade bir south park şakasıydı. 
+     * Kyle karakterini çok seviyordum ve Cartman ile atışmaları komikti. 
+     * Kyle Candır 💚 ama artık proje ciddi bir proje olduğu için easter eggler maalesef siliniyor, bir de 
+     * South Park yaratıcıları tarafından bir davayı kaldıramazdım... üzgünüm
+     * @param param0 
+     * @returns 
+     */
     @MessagePattern('user-role-check')
-    async hasUserRoleOrJew({
+    async hasUserRoleOrAdmin({
         userId,
         role,
     }: {
@@ -70,7 +78,7 @@ export class UserMicroserviceController {
         role: string;
     }): Promise<boolean> {
         return await this.cacheman.getOrCallAsync(
-            `${this.CACHE_PREFIX_MSCTRL} hasUserRoleOrJew ${userId} ${role}`,
+            `${this.CACHE_PREFIX_MSCTRL} hasUserRoleOrAdmin ${userId} ${role}`,
             () => this.userService.hasUserRoleAtLeastOneOrAdmin(userId, role),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );

@@ -357,33 +357,24 @@ export class UserService {
     }
 
     async initOperation() {
-        // const kyle =await this.userModel.findOne({username: "kyle"}).exec()
-        // kyle!.passwordEncyripted = await CryptoOp.encryptPassword("kyle");
-        // await kyle!.save()
-        // return
+
         const count = await this.userModel.countDocuments();
         if (count == 0) {
             const user = {
-                username: process.env['UBS_USERS_INITIAL_USERNAME'] || 'kyle',
-                password: process.env['UBS_USERS_INITIAL_PW'] || 'kyle',
+                username: process.env['UBS_USERS_INITIAL_USERNAME'] || 'admin',
+                password: process.env['UBS_USERS_INITIAL_PW'] || 'admin',
                 primaryEmail:
                     process.env['UBS_USERS_INITIAL_EMAIL'] || 'main@localhost',
-                name: process.env['UBS_USERS_INITIAL_NAME'] || 'Kyle',
+                name: process.env['UBS_USERS_INITIAL_NAME'] || 'Admin',
                 surname:
-                    process.env['UBS_USERS_INITIAL_SURNAME'] || 'Broflovski',
+                    process.env['UBS_USERS_INITIAL_SURNAME'] || 'Tetakent',
                 active: true,
                 roles: ['ADMIN'],
             } as UserCreateDTO;
             await this.saveNewUser(user);
-            if (user.name == 'Kyle' && user.surname == 'Broflovski') {
-                console.warn(
-                    'We suppose that you are Kip Drordy, you are so alone and have social anxiety. So admin user "Kyle Broflovski" has been added for emotional support. Please see the following output\n',
-                );
-            } else {
-                console.warn(
-                    'Initial user has been added. Please see the following output',
-                );
-            }
+            console.warn(
+                'Initial user has been added. Please see the following output',
+            );
             console.warn(
                 "Don't forget to change these informations before production.",
             );
