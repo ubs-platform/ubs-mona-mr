@@ -148,4 +148,21 @@ export class UserMessageService extends BaseCrudService<
     private regexSearch(str: string): any {
         return { $regex: '.*' + str + '.*' };
     }
+
+    // Sends the user message to the configured feedback vendor. Throws an error if the vendor URL is not configured or if the request fails.
+    // If reseller admin found a issue related with UBS Project, it should be reported to the feedback vendor, defaultly to Tetakent.
+    async sendToVendor(message: IUserMessageDto): Promise<void> {
+        const vendorUrl = process.env.U_FEEDBACK_VENDOR || "https://lotus.tetakent.com/api/feedback";
+
+        const res = await fetch(vendorUrl + "/user-message", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(message),
+        });
+        if (!res.ok) {
+            throw new Error(`Failed to send message to vendor: ${res.statusText}`);
+        }
+    }
 }
