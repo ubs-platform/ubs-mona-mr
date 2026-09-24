@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { FileMeta } from '../dto/file-meta';
 import { FileRequest } from '../dto/file-request';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 import { FileVolatileTag } from '../dto/file-volatile-tag';
 import { CacheManagerService } from '@ubs-platform/cache-manager';
 import { Cron } from '@nestjs/schedule';
