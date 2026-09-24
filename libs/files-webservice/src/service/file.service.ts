@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { FileMeta } from '../dto/file-meta';
 import { FileRequest } from '../dto/file-request';
-import * as sharp from 'sharp';
+import sharp from 'sharp';
 import { FileVolatileTag } from '../dto/file-volatile-tag';
 import { CacheManagerService } from '@ubs-platform/cache-manager';
 import { Cron } from '@nestjs/schedule';
@@ -59,7 +59,7 @@ export class FileService {
         try {
             await this.fileModel.findOneAndDelete({ name });
             this.invalidateFileCacheByName(name);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(`Failed to remove file: ${name}`, error);
         }
     }
@@ -84,7 +84,7 @@ export class FileService {
                     volatility.durationMiliseconds,
                 );
                 await existFile.save();
-            } catch (error) {
+            } catch (error: any) {
                 this.logger.error(
                     `Failed to update volatility for ${volatility.name}`,
                     error,
@@ -119,7 +119,7 @@ export class FileService {
                             try {
                                 file.lastFetch = new Date();
                                 await file.save();
-                            } catch (error) {
+                            } catch (error: any) {
                                 this.logger.error(
                                     `Failed to update lastFetch for ${category}/${name}`,
                                     error,
@@ -177,7 +177,7 @@ export class FileService {
             }
 
             return await this.createAndCacheScaledImage(file, roundedWidth);
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('Error determining image buffer:', error);
             return file.file;
         }
@@ -289,7 +289,7 @@ export class FileService {
             this.invalidateFileCache(optimizedRequest.category, optimizedRequest.name);
             const remaining = optimizedRequest.size - fileBuffer.length;
             return remaining;
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error(`Failed to upload file: ${ft.name}`, error);
             return 0;
         }
@@ -319,7 +319,7 @@ export class FileService {
                     .toBuffer();
                 fileRequest.fileBytesBuff = webpBuffer;
                 fileRequest.mimeType = 'image/webp';
-            } catch (error) {
+            } catch (error: any) {
                 this.logger.warn(
                     `Failed to convert to WebP: ${fileRequest.name}`,
                     error,
@@ -464,7 +464,7 @@ export class FileService {
             this.logger.log(
                 `Deleted ${result.deletedCount} expired volatile files`,
             );
-        } catch (error) {
+        } catch (error: any) {
             this.logger.error('Error cleaning up expired files:', error);
         }
     }

@@ -58,7 +58,7 @@ export class UserController {
                 currentUser.id,
                 email,
             );
-        } catch (error) {
+        } catch (error: any) {
             throw new HttpException(error, HttpStatus.BAD_REQUEST);
         }
     }
@@ -76,7 +76,7 @@ export class UserController {
                 params.id,
                 code,
             );
-        } catch (error) {
+        } catch (error: any) {
             throw new HttpException(error, HttpStatus.BAD_REQUEST);
         }
     }
@@ -96,7 +96,7 @@ export class UserController {
                 currentUser.id,
                 pwChange,
             );
-        } catch (error) {
+        } catch (error: any) {
             throw new HttpException(error, HttpStatus.BAD_REQUEST);
         }
     }

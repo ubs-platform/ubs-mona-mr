@@ -32,7 +32,7 @@ export class FirewallAdapterService {
       if (stderr) {
         this.logger.warn(stderr.trim());
       }
-    } catch (error) {
+    } catch (error: any) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.warn(`iptables command failed (${command}): ${message}`);
     }

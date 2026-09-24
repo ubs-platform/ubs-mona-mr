@@ -96,7 +96,7 @@ export class RealtimeChatFeederService {
                 } else {
                     ok();
                 }
-            } catch (error) {
+            } catch (error: any) {
                 fail(error);
             }
         });

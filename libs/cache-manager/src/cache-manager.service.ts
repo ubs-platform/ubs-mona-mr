@@ -34,7 +34,7 @@ export class CacheManagerService {
     private inflight = new Map<string, Promise<any>>();
 
     // tek zamanlayıcı ve expirations (min-heap benzeri; sort ile yönetiyoruz)
-    private scheduler: NodeJS.Timeout | null = null;
+    private scheduler: any = null;
     private expirations: ExpireItem[] = []; // küçük N’de sort ucuz; büyük N için binary-heap’e çevrilebilir
 
     // ---- Public API

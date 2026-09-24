@@ -1,247 +1,158 @@
 {
-  "exclude": [
-    "./tools",
-    "./infrastructure",
-    "./dist"
-  ],
-  "compilerOptions": {
-    "module": "commonjs",
-    "declaration": true,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "allowSyntheticDefaultImports": true,
-    "target": "ES2021",
-    "sourceMap": true,
-    "outDir": "./dist",
-    "baseUrl": "./",
-    "incremental": true,
-    "skipLibCheck": true,
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
-    "noImplicitAny": false,
-    "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false,
-    "paths": {
-      "@ubs-platform/async-mutex": [
-        "libs/async-mutex/src"
-      ],
-      "@ubs-platform/async-mutex/*": [
-        "libs/async-mutex/src/*"
-      ],
-      "@ubs-platform/cache-manager": [
-        "libs/cache-manager/src"
-      ],
-      "@ubs-platform/cache-manager/*": [
-        "libs/cache-manager/src/*"
-      ],
-      "@ubs-platform/crud-base": [
-        "libs/crud-base/src"
-      ],
-      "@ubs-platform/crud-base-common": [
-        "libs/crud-base-common/src"
-      ],
-      "@ubs-platform/crud-base-common/*": [
-        "libs/crud-base-common/src/*"
-      ],
-      "@ubs-platform/crud-base/*": [
-        "libs/crud-base/src/*"
-      ],
-      "@ubs-platform/cscd-common": [
-        "libs/cscd-common/src"
-      ],
-      "@ubs-platform/cscd-common/*": [
-        "libs/cscd-common/src/*"
-      ],
-      "@ubs-platform/cscd-entity-mongo": [
-        "libs/cscd-entity-mongo/src"
-      ],
-      "@ubs-platform/cscd-entity-mongo/*": [
-        "libs/cscd-entity-mongo/src/*"
-      ],
-      "@ubs-platform/cscd-webservice": [
-        "libs/cscd-webservice/src"
-      ],
-      "@ubs-platform/cscd-webservice/*": [
-        "libs/cscd-webservice/src/*"
-      ],
-      "@ubs-platform/dynamic-queue": [
-        "libs/dynamic-queue/src"
-      ],
-      "@ubs-platform/dynamic-queue/*": [
-        "libs/dynamic-queue/src/*"
-      ],
-      "@ubs-platform/entity-base": [
-        "libs/entity-base/src"
-      ],
-      "@ubs-platform/entity-base/*": [
-        "libs/entity-base/src/*"
-      ],
-      "@ubs-platform/feedback-common": [
-        "libs/feedback-common/src"
-      ],
-      "@ubs-platform/feedback-common/*": [
-        "libs/feedback-common/src/*"
-      ],
-      "@ubs-platform/feedback-entity-mongo": [
-        "libs/feedback-entity-mongo/src"
-      ],
-      "@ubs-platform/feedback-entity-mongo/*": [
-        "libs/feedback-entity-mongo/src/*"
-      ],
-      "@ubs-platform/feedback-webservice": [
-        "libs/feedback-webservice/src"
-      ],
-      "@ubs-platform/feedback-webservice/*": [
-        "libs/feedback-webservice/src/*"
-      ],
-      "@ubs-platform/file-helper": [
-        "libs/file-helper/src"
-      ],
-      "@ubs-platform/file-helper/*": [
-        "libs/file-helper/src/*"
-      ],
-      "@ubs-platform/files-entity-mongo": [
-        "libs/files-entity-mongo/src"
-      ],
-      "@ubs-platform/files-entity-mongo/*": [
-        "libs/files-entity-mongo/src/*"
-      ],
-      "@ubs-platform/files-webservice": [
-        "libs/files-webservice/src"
-      ],
-      "@ubs-platform/files-webservice/*": [
-        "libs/files-webservice/src/*"
-      ],
-      "@ubs-platform/greenhat-common": [
-        "libs/greenhat-common/src"
-      ],
-      "@ubs-platform/greenhat-common/*": [
-        "libs/greenhat-common/src/*"
-      ],
-      "@ubs-platform/greenhat-entity-mongo": [
-        "libs/greenhat-entity-mongo/src"
-      ],
-      "@ubs-platform/greenhat-entity-mongo/*": [
-        "libs/greenhat-entity-mongo/src/*"
-      ],
-      "@ubs-platform/greenhat-webservice": [
-        "libs/greenhat-webservice/src"
-      ],
-      "@ubs-platform/greenhat-webservice/*": [
-        "libs/greenhat-webservice/src/*"
-      ],
-      "@ubs-platform/ip-blocker-entity-mongo": [
-        "libs/ip-blocker-entity-mongo/src"
-      ],
-      "@ubs-platform/ip-blocker-entity-mongo/*": [
-        "libs/ip-blocker-entity-mongo/src/*"
-      ],
-      "@ubs-platform/ip-blocker-webservice": [
-        "libs/ip-blocker-webservice/src"
-      ],
-      "@ubs-platform/ip-blocker-webservice/*": [
-        "libs/ip-blocker-webservice/src/*"
-      ],
-      "@ubs-platform/loadbalanced-proxy": [
-        "libs/loadbalanced-proxy/src"
-      ],
-      "@ubs-platform/loadbalanced-proxy/*": [
-        "libs/loadbalanced-proxy/src/*"
-      ],
-      "@ubs-platform/microservice-setup-util": [
-        "libs/microservice-setup-util/src"
-      ],
-      "@ubs-platform/notify-common": [
-        "libs/notify-common/src"
-      ],
-      "@ubs-platform/notify-common/*": [
-        "libs/notify-common/src/*"
-      ],
-      "@ubs-platform/notify-entity-mongo": [
-        "libs/notify-entity-mongo/src"
-      ],
-      "@ubs-platform/notify-entity-mongo/*": [
-        "libs/notify-entity-mongo/src/*"
-      ],
-      "@ubs-platform/notify-webservice": [
-        "libs/notify-webservice/src"
-      ],
-      "@ubs-platform/notify-webservice/*": [
-        "libs/notify-webservice/src/*"
-      ],
-      "@ubs-platform/social-common": [
-        "libs/social-common/src"
-      ],
-      "@ubs-platform/social-common/*": [
-        "libs/social-common/src/*"
-      ],
-      "@ubs-platform/social-consts": [
-        "libs/social-consts/src"
-      ],
-      "@ubs-platform/social-consts/*": [
-        "libs/social-consts/src/*"
-      ],
-      "@ubs-platform/social-entity-mongo": [
-        "libs/social-entity-mongo/src"
-      ],
-      "@ubs-platform/social-entity-mongo/*": [
-        "libs/social-entity-mongo/src/*"
-      ],
-      "@ubs-platform/social-webservice": [
-        "libs/social-webservice/src"
-      ],
-      "@ubs-platform/social-webservice/*": [
-        "libs/social-webservice/src/*"
-      ],
-      "@ubs-platform/superlama-common": [
-        "libs/superlama-common/src"
-      ],
-      "@ubs-platform/superlama-common/*": [
-        "libs/superlama-common/src/*"
-      ],
-      "@ubs-platform/superlama-entity-mongo": [
-        "libs/superlama-entity-mongo/src"
-      ],
-      "@ubs-platform/superlama-entity-mongo/*": [
-        "libs/superlama-entity-mongo/src/*"
-      ],
-      "@ubs-platform/superlama-webservice": [
-        "libs/superlama-webservice/src"
-      ],
-      "@ubs-platform/superlama-webservice/*": [
-        "libs/superlama-webservice/src/*"
-      ],
-      "@ubs-platform/users-common": [
-        "libs/users-common/src"
-      ],
-      "@ubs-platform/users-consts": [
-        "libs/users-consts/src"
-      ],
-      "@ubs-platform/users-entity-mongo": [
-        "libs/users-entity-mongo/src"
-      ],
-      "@ubs-platform/users-entity-mongo/*": [
-        "libs/users-entity-mongo/src/*"
-      ],
-      "@ubs-platform/users-microservice-helper": [
-        "libs/users-microservice-helper/src"
-      ],
-      "@ubs-platform/users-roles": [
-        "libs/users-roles/src"
-      ],
-      "@ubs-platform/users-webservice": [
-        "libs/users-webservice/src"
-      ],
-      "@ubs-platform/users-webservice/*": [
-        "libs/users-webservice/src/*"
-      ],
-      "@ubs-platform/web-proxy": [
-        "libs/web-proxy/src"
-      ],
-      "@ubs-platform/web-proxy/*": [
-        "libs/web-proxy/src/*"
-      ]
+    "exclude": ["./tools", "./infrastructure", "./dist"],
+    "compilerOptions": {
+        "module": "commonjs",
+        "declaration": true,
+        "removeComments": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "allowSyntheticDefaultImports": true,
+        "target": "ES2021",
+        "sourceMap": true,
+        "esModuleInterop": true,
+        "rootDir": ".",
+        "types": ["node"],
+        "outDir": "./dist",
+        "baseUrl": ".",
+        "ignoreDeprecations": "6.0",
+        "incremental": true,
+        "skipLibCheck": true,
+        "strictNullChecks": true,
+        "strictPropertyInitialization": false,
+        "forceConsistentCasingInFileNames": true,
+        "noImplicitAny": false,
+        "strictBindCallApply": false,
+        "noFallthroughCasesInSwitch": false,
+        "paths": {
+            "@ubs-platform/async-mutex": ["libs/async-mutex/src"],
+            "@ubs-platform/async-mutex/*": ["libs/async-mutex/src/*"],
+            "@ubs-platform/cache-manager": ["libs/cache-manager/src"],
+            "@ubs-platform/cache-manager/*": ["libs/cache-manager/src/*"],
+            "@ubs-platform/crud-base": ["libs/crud-base/src"],
+            "@ubs-platform/crud-base-common": ["libs/crud-base-common/src"],
+            "@ubs-platform/crud-base-common/*": ["libs/crud-base-common/src/*"],
+            "@ubs-platform/crud-base/*": ["libs/crud-base/src/*"],
+            "@ubs-platform/cscd-common": ["libs/cscd-common/src"],
+            "@ubs-platform/cscd-common/*": ["libs/cscd-common/src/*"],
+            "@ubs-platform/cscd-entity-mongo": ["libs/cscd-entity-mongo/src"],
+            "@ubs-platform/cscd-entity-mongo/*": [
+                "libs/cscd-entity-mongo/src/*"
+            ],
+            "@ubs-platform/cscd-webservice": ["libs/cscd-webservice/src"],
+            "@ubs-platform/cscd-webservice/*": ["libs/cscd-webservice/src/*"],
+            "@ubs-platform/dynamic-queue": ["libs/dynamic-queue/src"],
+            "@ubs-platform/dynamic-queue/*": ["libs/dynamic-queue/src/*"],
+            "@ubs-platform/entity-base": ["libs/entity-base/src"],
+            "@ubs-platform/entity-base/*": ["libs/entity-base/src/*"],
+            "@ubs-platform/feedback-common": ["libs/feedback-common/src"],
+            "@ubs-platform/feedback-common/*": ["libs/feedback-common/src/*"],
+            "@ubs-platform/feedback-entity-mongo": [
+                "libs/feedback-entity-mongo/src"
+            ],
+            "@ubs-platform/feedback-entity-mongo/*": [
+                "libs/feedback-entity-mongo/src/*"
+            ],
+            "@ubs-platform/feedback-webservice": [
+                "libs/feedback-webservice/src"
+            ],
+            "@ubs-platform/feedback-webservice/*": [
+                "libs/feedback-webservice/src/*"
+            ],
+            "@ubs-platform/file-helper": ["libs/file-helper/src"],
+            "@ubs-platform/file-helper/*": ["libs/file-helper/src/*"],
+            "@ubs-platform/files-entity-mongo": ["libs/files-entity-mongo/src"],
+            "@ubs-platform/files-entity-mongo/*": [
+                "libs/files-entity-mongo/src/*"
+            ],
+            "@ubs-platform/files-webservice": ["libs/files-webservice/src"],
+            "@ubs-platform/files-webservice/*": ["libs/files-webservice/src/*"],
+            "@ubs-platform/greenhat-common": ["libs/greenhat-common/src"],
+            "@ubs-platform/greenhat-common/*": ["libs/greenhat-common/src/*"],
+            "@ubs-platform/greenhat-entity-mongo": [
+                "libs/greenhat-entity-mongo/src"
+            ],
+            "@ubs-platform/greenhat-entity-mongo/*": [
+                "libs/greenhat-entity-mongo/src/*"
+            ],
+            "@ubs-platform/greenhat-webservice": [
+                "libs/greenhat-webservice/src"
+            ],
+            "@ubs-platform/greenhat-webservice/*": [
+                "libs/greenhat-webservice/src/*"
+            ],
+            "@ubs-platform/ip-blocker-entity-mongo": [
+                "libs/ip-blocker-entity-mongo/src"
+            ],
+            "@ubs-platform/ip-blocker-entity-mongo/*": [
+                "libs/ip-blocker-entity-mongo/src/*"
+            ],
+            "@ubs-platform/ip-blocker-webservice": [
+                "libs/ip-blocker-webservice/src"
+            ],
+            "@ubs-platform/ip-blocker-webservice/*": [
+                "libs/ip-blocker-webservice/src/*"
+            ],
+            "@ubs-platform/loadbalanced-proxy": ["libs/loadbalanced-proxy/src"],
+            "@ubs-platform/loadbalanced-proxy/*": [
+                "libs/loadbalanced-proxy/src/*"
+            ],
+            "@ubs-platform/microservice-setup-util": [
+                "libs/microservice-setup-util/src"
+            ],
+            "@ubs-platform/notify-common": ["libs/notify-common/src"],
+            "@ubs-platform/notify-common/*": ["libs/notify-common/src/*"],
+            "@ubs-platform/notify-entity-mongo": [
+                "libs/notify-entity-mongo/src"
+            ],
+            "@ubs-platform/notify-entity-mongo/*": [
+                "libs/notify-entity-mongo/src/*"
+            ],
+            "@ubs-platform/notify-webservice": ["libs/notify-webservice/src"],
+            "@ubs-platform/notify-webservice/*": [
+                "libs/notify-webservice/src/*"
+            ],
+            "@ubs-platform/social-common": ["libs/social-common/src"],
+            "@ubs-platform/social-common/*": ["libs/social-common/src/*"],
+            "@ubs-platform/social-consts": ["libs/social-consts/src"],
+            "@ubs-platform/social-consts/*": ["libs/social-consts/src/*"],
+            "@ubs-platform/social-entity-mongo": [
+                "libs/social-entity-mongo/src"
+            ],
+            "@ubs-platform/social-entity-mongo/*": [
+                "libs/social-entity-mongo/src/*"
+            ],
+            "@ubs-platform/social-webservice": ["libs/social-webservice/src"],
+            "@ubs-platform/social-webservice/*": [
+                "libs/social-webservice/src/*"
+            ],
+            "@ubs-platform/superlama-common": ["libs/superlama-common/src"],
+            "@ubs-platform/superlama-common/*": ["libs/superlama-common/src/*"],
+            "@ubs-platform/superlama-entity-mongo": [
+                "libs/superlama-entity-mongo/src"
+            ],
+            "@ubs-platform/superlama-entity-mongo/*": [
+                "libs/superlama-entity-mongo/src/*"
+            ],
+            "@ubs-platform/superlama-webservice": [
+                "libs/superlama-webservice/src"
+            ],
+            "@ubs-platform/superlama-webservice/*": [
+                "libs/superlama-webservice/src/*"
+            ],
+            "@ubs-platform/users-common": ["libs/users-common/src"],
+            "@ubs-platform/users-consts": ["libs/users-consts/src"],
+            "@ubs-platform/users-entity-mongo": ["libs/users-entity-mongo/src"],
+            "@ubs-platform/users-entity-mongo/*": [
+                "libs/users-entity-mongo/src/*"
+            ],
+            "@ubs-platform/users-microservice-helper": [
+                "libs/users-microservice-helper/src"
+            ],
+            "@ubs-platform/users-roles": ["libs/users-roles/src"],
+            "@ubs-platform/users-webservice": ["libs/users-webservice/src"],
+            "@ubs-platform/users-webservice/*": ["libs/users-webservice/src/*"],
+            "@ubs-platform/web-proxy": ["libs/web-proxy/src"],
+            "@ubs-platform/web-proxy/*": ["libs/web-proxy/src/*"]
+        }
     }
-  }
 }

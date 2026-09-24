@@ -24,7 +24,7 @@ export class AuthController {
         try {
             user.login = user.login?.toLowerCase();
             return await this.authService.authenticateUser(user);
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
             throw new HttpException(error, HttpStatus.BAD_REQUEST);
         }
