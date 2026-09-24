@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Get, Logger, Post, UseGuards } from '@nestjs/common';
 import { IpBlockerService } from './ip-blocker.service';
-import { EventPattern } from '@nestjs/microservices';
+import { LegacyEventPattern } from '@ubs-platform/microservice-setup-util';
 import { JwtAuthGuard } from '@ubs-platform/users-microservice-helper';
 import { Roles, RolesGuard } from '@ubs-platform/users-roles';
 
@@ -60,7 +60,7 @@ export class IpBlockerController {
     return this.ipBlockerService.unbanManually(ipAddress);
   }
 
-  @EventPattern('unban')
+  @LegacyEventPattern('unban')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(["ADMIN"])
   async handleUnbanEvent(data: { ipAddress: string }) {
@@ -74,7 +74,7 @@ export class IpBlockerController {
   }
 
 
-  @EventPattern('ban')
+  @LegacyEventPattern('ban')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(["ADMIN"])
   async handleBanEvent(data: { ipAddress: string; reason?: string }) {

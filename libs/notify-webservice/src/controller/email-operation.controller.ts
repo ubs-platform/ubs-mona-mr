@@ -1,7 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { GlobalVariableService } from '../service/global-variable.service';
 import { EmailService } from '../service/email.service';
-import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload } from '@nestjs/microservices';
+import { LegacyEventPattern } from '@ubs-platform/microservice-setup-util';
 import { EmailDto } from '@ubs-platform/notify-common';
 
 @Controller('email')
@@ -13,7 +14,7 @@ export class EmailController {
         await this.s.sendWithTemplate(mail);
     }
 
-    @EventPattern('email-reset')
+    @LegacyEventPattern('email-reset')
     public async sendMailBg(@Payload() mail: EmailDto) {
         console.info('Send mail request to ' + mail.to);
         await this.s.sendWithTemplate(mail);

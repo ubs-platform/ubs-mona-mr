@@ -3,10 +3,8 @@ import {
     HttpException,
     HttpStatus,
 } from '@nestjs/common';
-import {
-    EventPattern,
-    MessagePattern,
-} from '@nestjs/microservices';
+import { MessagePattern } from '@nestjs/microservices';
+import { LegacyEventPattern } from '@ubs-platform/microservice-setup-util';
 import { UserService } from '../services/user.service';
 import {
     UserAuthBackendDTO,
@@ -84,7 +82,7 @@ export class UserMicroserviceController {
         );
     }
 
-    @EventPattern('user-role-insert')
+    @LegacyEventPattern('user-role-insert')
     async insertRole({
         userId,
         role,
@@ -95,7 +93,7 @@ export class UserMicroserviceController {
         await this.userService.insertRole(userId, role);
     }
 
-    @EventPattern('user-role-remove')
+    @LegacyEventPattern('user-role-remove')
     async removeRole(userId: string, role: string): Promise<void> {
         await this.userService.removeRole(userId, role);
     }

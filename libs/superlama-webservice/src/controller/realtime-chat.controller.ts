@@ -20,7 +20,7 @@ import {
     UserSendingMessageDto,
 } from '@ubs-platform/superlama-common';
 import { filter, interval, map, Observable, Subject } from 'rxjs';
-import { EventPattern } from '@nestjs/microservices';
+import { LegacyEventPattern } from '@ubs-platform/microservice-setup-util';
 import { RealtimeChatFeederService } from '../service/realtime-chat-feeder.service';
 import { LlmOperationService } from '../service/llm-operation.service';
 
@@ -58,7 +58,7 @@ export class RealtimeChatController {
         );
     }
 
-    @EventPattern('llm-result')
+    @LegacyEventPattern('llm-result')
     async llmResulting(a: ChatMessageStreamDTO) {
         await this.rcsFeeder.saveGeneratedAnswer(a);
         await this.sessionListenStreams.next(a);

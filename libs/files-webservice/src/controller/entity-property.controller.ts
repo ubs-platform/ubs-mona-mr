@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { EventPattern } from '@nestjs/microservices';
+import { LegacyEventPattern } from '@ubs-platform/microservice-setup-util';
 import { EntityPropertyDto } from '../dto/entity-property-dto';
 import { EntityPropertyService } from '../service/entity-property.service';
 import { exec } from 'child_process';
@@ -8,7 +8,7 @@ import { exec } from 'child_process';
 export class EntityPropertyController {
   constructor(private epService: EntityPropertyService) {}
 
-  @EventPattern('register-category')
+  @LegacyEventPattern('register-category')
   registerCategory(ep: EntityPropertyDto) {
     console.info('Registering category', ep.category);
     this.epService.update(ep);

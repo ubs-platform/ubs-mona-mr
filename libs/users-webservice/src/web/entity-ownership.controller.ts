@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { EntityOwnershipService } from '../services/entity-ownership.service';
-import { EventPattern, MessagePattern } from '@nestjs/microservices';
+import { MessagePattern } from '@nestjs/microservices';
+import { LegacyEventPattern } from '@ubs-platform/microservice-setup-util';
 import {
     EntityOwnershipDTO,
     EntityOwnershipGroupIdCheck,
@@ -21,19 +22,19 @@ export class EntityOwnershipController {
         private cacheman: CacheManagerService,
     ) {}
 
-    @EventPattern(EOChannelConsts.editOwnership)
+    @LegacyEventPattern(EOChannelConsts.editOwnership)
     async editOwnership(oe: EntityOwnershipDTO) {
         await this.eoService.edit(oe);
         this.cacheman.invalidateRegex(/eo-*/);
     }
 
-    @EventPattern(EOChannelConsts.insertOwnership)
+    @LegacyEventPattern(EOChannelConsts.insertOwnership)
     async insertOwnership(oe: EntityOwnershipDTO) {
         await this.eoService.insert(oe);
         this.cacheman.invalidateRegex(/eo-*/);
     }
 
-    @EventPattern(EOChannelConsts.insertUserCapability)
+    @LegacyEventPattern(EOChannelConsts.insertUserCapability)
     async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO) {
         console.info(oe);
 
@@ -105,7 +106,7 @@ export class EntityOwnershipController {
         return a;
     }
 
-    @EventPattern(EOChannelConsts.deleteOwnership)
+    @LegacyEventPattern(EOChannelConsts.deleteOwnership)
     async deleteOwnership(eo: EntityOwnershipSearch) {
         await this.eoService.deleteOwnership(eo);
         this.cacheman.invalidateRegex(/eo-*/);
