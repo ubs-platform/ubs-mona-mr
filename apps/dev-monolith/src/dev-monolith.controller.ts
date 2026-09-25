@@ -1,5 +1,4 @@
 import { Controller, Get } from '@nestjs/common';
-import { DevMonolithService } from './dev-monolith.service';
 
 @Controller()
 export class DevMonolithController {
