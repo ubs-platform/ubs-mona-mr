@@ -20,7 +20,7 @@
     "childrenPrefix": "@ubs-platform"
   },
   "scripts": {
-    "build": "nest build",
+    "build": "nest build --builder tsc",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "xr": "node ./tools/xr.js",
     "xr:publish-libs": "node ./tools/xr.js publish-libs",
