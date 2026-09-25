@@ -1,4 +1,4 @@
-export interface UserSendingMessageDto {
+export class UserSendingMessageDto {
     newSession: boolean;
     sessionId?: string;
     message: string;

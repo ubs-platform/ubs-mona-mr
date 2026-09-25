@@ -1,4 +1,4 @@
-export interface PasswordChangeDto {
+export class PasswordChangeDto {
   currentPassword: string;
   newPassword: string;
 }

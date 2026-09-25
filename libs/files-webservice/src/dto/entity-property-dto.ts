@@ -1,4 +1,4 @@
-export interface EntityPropertyDto {
+export class EntityPropertyDto {
   category: String;
   serviceTcpHost: String;
   serviceTcpPort: String;

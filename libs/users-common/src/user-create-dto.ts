@@ -1,7 +1,7 @@
 /**
  * ‼️‼️ do not use in frontend ‼️‼️
  */
-export interface UserCreateDTO {
+export class UserCreateDTO {
   username: string;
   password: string;
   primaryEmail: string;

@@ -1,4 +1,4 @@
-export interface UserFullDto {
+export class UserFullDto {
   _id?: any;
 
   username: string;

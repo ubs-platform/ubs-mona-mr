@@ -1,4 +1,4 @@
-export interface GlobalVariableRenameDTO {
+export class GlobalVariableRenameDTO {
   _id: string;
   name: string;
 }

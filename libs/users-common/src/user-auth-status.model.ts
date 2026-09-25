@@ -1,4 +1,4 @@
-export interface UserAuthStatus {
+export class UserAuthStatus {
   success: boolean;
   message: string;
   token?: string;

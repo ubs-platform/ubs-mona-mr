@@ -1,7 +1,7 @@
 import { TextAssitantStage } from './text-assistant-stage';
 import { ChatMessageSenderType } from './text-sender-type.dto';
 
-export interface ChatMessageStreamDTO {
+export class ChatMessageStreamDTO {
     _id: string;
     createdAt: string;
     updatedAt: string;
