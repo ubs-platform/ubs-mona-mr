@@ -90,9 +90,11 @@ export class AllLibrariesBuilder {
                                 `Patching ${currentBuild.packageName} into ${patchDirectory}`,
                             ),
                         );
-                        FileSystem.cp(currentBuild.iksirPackage.buildDirectory, patchDirectory, {
-                            recursive: true,
-                        });
+                        await FileSystem.cp(
+                            currentBuild.iksirPackage.buildDirectory,
+                            patchDirectory,
+                            { recursive: true },
+                        );
                         console.info(
                             strColor(
                                 COLORS.FgGreen,

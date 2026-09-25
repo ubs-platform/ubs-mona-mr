@@ -44,24 +44,26 @@ export class IksirPackage {
                 this.parent!.packageObject.iksir!.childrenPrefix + '/',
                 '',
             );
-            const multipleLibBuild = await DirectoryUtil.directoryExists(
-                this.buildDirectory,
-                pkgName,
-                'src',
-            );
+            const libraryOutputCandidates = [
+                path.join(this.rawBuildDirectory, pkgName, 'src'),
+                path.join(this.rawBuildDirectory, 'libs', pkgName, 'src'),
+            ];
+            let libraryOutputDirectory: string | undefined;
+            for (const candidate of libraryOutputCandidates) {
+                if (await DirectoryUtil.directoryExists(candidate)) {
+                    libraryOutputDirectory = candidate;
+                    break;
+                }
+            }
 
-            if (multipleLibBuild) {
+            if (libraryOutputDirectory) {
                 console.warn(
                     strColor(
                         COLORS.BgYellow,
-                        'Multiple library build detected. path is changing',
+                        'Library output detected. path is changing',
                     ),
                 );
-                this.buildDirectory = path.join(
-                    this.buildDirectory,
-                    pkgName,
-                    'src',
-                );
+                this.buildDirectory = libraryOutputDirectory;
             }
         } else {
             throw 'instance-is-not-library';

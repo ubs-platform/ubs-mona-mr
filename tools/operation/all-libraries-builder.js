@@ -85,9 +85,7 @@ class AllLibrariesBuilder {
                             ? path_1.default.join(this.xrRootPackage.directory, props.patchTarget, currentBuild.packageName)
                             : path_1.default.join(props.patchTarget, currentBuild.packageName);
                         console.info((0, colors_1.strColor)(colors_1.COLORS.FgBlue, `Patching ${currentBuild.packageName} into ${patchDirectory}`));
-                        FileSystem.cp(currentBuild.iksirPackage.buildDirectory, patchDirectory, {
-                            recursive: true,
-                        });
+                        await FileSystem.cp(currentBuild.iksirPackage.buildDirectory, patchDirectory, { recursive: true });
                         console.info((0, colors_1.strColor)(colors_1.COLORS.FgGreen, `Patched ${currentBuild.packageName} into ${patchDirectory}`));
                     }
                 }
