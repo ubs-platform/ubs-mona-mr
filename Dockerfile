@@ -1,4 +1,4 @@
-ARG NODE_IMAGE=node:20-alpine
+ARG NODE_IMAGE=node:22-alpine
 
 # Build stage runs on the native host platform (no QEMU).
 # npm install + TypeScript compilation are platform-agnostic so this is safe.
