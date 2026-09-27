@@ -80,7 +80,7 @@ export class DynamicQueue {
             subscriber.next(result);
             subscriber.complete();
           }
-        } catch (error) {
+        } catch (error: any) {
           subscriber.error(error);
         }
       });

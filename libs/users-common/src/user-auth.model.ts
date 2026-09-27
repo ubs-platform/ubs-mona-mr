@@ -1,4 +1,4 @@
-export interface UserAuth {
+export class UserAuth {
   login: string;
   password: string;
 }

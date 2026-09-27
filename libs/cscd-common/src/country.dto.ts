@@ -1,4 +1,4 @@
-export interface LocalityInfoRequest {
+export class LocalityInfoRequest {
   countryCode: string;
   subdivisionCode: string;
   localityCode: string;

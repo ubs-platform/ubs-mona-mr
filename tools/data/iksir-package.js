@@ -55,10 +55,20 @@ class IksirPackage {
             });
             await exec_util_1.ExecUtil.exec(`tsc -p ${this.tsBuildConfigFile}`);
             const pkgName = this.packageName.replace(this.parent.packageObject.iksir.childrenPrefix + '/', '');
-            const multipleLibBuild = await directory_util_1.DirectoryUtil.directoryExists(this.buildDirectory, pkgName, 'src');
-            if (multipleLibBuild) {
-                console.warn((0, colors_1.strColor)(colors_1.COLORS.BgYellow, 'Multiple library build detected. path is changing'));
-                this.buildDirectory = path_1.default.join(this.buildDirectory, pkgName, 'src');
+            const libraryOutputCandidates = [
+                path_1.default.join(this.rawBuildDirectory, pkgName, 'src'),
+                path_1.default.join(this.rawBuildDirectory, 'libs', pkgName, 'src'),
+            ];
+            let libraryOutputDirectory;
+            for (const candidate of libraryOutputCandidates) {
+                if (await directory_util_1.DirectoryUtil.directoryExists(candidate)) {
+                    libraryOutputDirectory = candidate;
+                    break;
+                }
+            }
+            if (libraryOutputDirectory) {
+                console.warn((0, colors_1.strColor)(colors_1.COLORS.BgYellow, 'Library output detected. path is changing'));
+                this.buildDirectory = libraryOutputDirectory;
             }
         }
         else {

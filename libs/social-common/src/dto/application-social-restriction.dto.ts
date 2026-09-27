@@ -12,7 +12,7 @@ export interface ApplicationSocialRestrictionDTO {
   note: string;
 }
 
-export interface ApplicationSocialRestrictionAddDTO {
+export class ApplicationSocialRestrictionAddDTO {
   userId: string;
 
   restriction: 'COMMENT' | 'POST';
@@ -22,7 +22,7 @@ export interface ApplicationSocialRestrictionAddDTO {
   note: string;
 }
 
-export interface ApplicationSocialRestrictionSearchDTO {
+export class ApplicationSocialRestrictionSearchDTO {
   userId: string;
 
   restriction: 'COMMENT' | 'POST';

@@ -101,7 +101,7 @@ export class ImageFileController {
             try {
                 await this.sendCheckForVolatile(volatilityItem, currentUser);
                 acceptedVolatilities.push(volatilityItem);
-            } catch (error) {
+            } catch (error: any) {
                 const errorMessage =
                     error instanceof BadRequestException
                         ? (error.getResponse() as string)

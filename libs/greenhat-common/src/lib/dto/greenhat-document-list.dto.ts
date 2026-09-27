@@ -1,4 +1,4 @@
-export interface GreenhatDocumentListDTO {
+export class GreenhatDocumentListDTO {
   projectId: string;
   parentId?: string;
 }

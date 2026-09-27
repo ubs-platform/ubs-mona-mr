@@ -124,7 +124,7 @@ export class Engine5Connection {
         if (this.connectionStatus === 'CONNECTED') {
             try {
                 return Promise.resolve(action());
-            } catch (error) {
+            } catch (error: any) {
                 return Promise.reject(error);
             }
         }
@@ -139,7 +139,7 @@ export class Engine5Connection {
                     subscription.unsubscribe();
                     try {
                         resolve(await action());
-                    } catch (error) {
+                    } catch (error: any) {
                         reject(error);
                     }
                 },
@@ -168,7 +168,7 @@ export class Engine5Connection {
 
                             resolve(this);
                         });
-                    } catch (error) {
+                    } catch (error: any) {
                         console.error('Error encoding payload:', error);
                         reject(error);
                     }
@@ -245,7 +245,7 @@ export class Engine5Connection {
                         ? this.parseData(response.Content)
                         : undefined;
                     resolve(result);
-                } catch (error) {
+                } catch (error: any) {
                     reject(error);
                 }
             };
@@ -321,7 +321,7 @@ export class Engine5Connection {
                     this.startConnection();
                 },
             );
-        } catch (error) {
+        } catch (error: any) {
             console.error('Connection error:', error);
         }
     }
@@ -459,7 +459,7 @@ export class Engine5Connection {
 
         try {
             decoded = decode(data) as Payload;
-        } catch (error) {
+        } catch (error: any) {
             console.error(
                 'Failed to decode message. This usually indicates a TLS mismatch:',
             );
@@ -559,7 +559,7 @@ export class Engine5Connection {
 
         try {
             return JSON.parse(dataString);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to parse JSON data:', error);
             return dataString;
         }
@@ -572,7 +572,7 @@ export class Engine5Connection {
 
         try {
             return JSON.stringify(data);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to stringify data:', error);
             return String(data);
         }
@@ -591,7 +591,7 @@ export class Engine5Connection {
                     InstanceGroup: this.instanceGroup,
                     InstanceId: this.instanceId,
                 });
-            } catch (error) {
+            } catch (error: any) {
                 console.error('Error in event callback for subject ' + decoded.Subject + ':', error);
                 this.writePayload({
                     Command: CtConsumingError,
@@ -620,7 +620,7 @@ export class Engine5Connection {
             if (this.connectionStatus === 'CONNECTED') {
                 await this.writePayload({ Command: 'CLOSE' });
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error during close:', error);
         } finally {
             for (const key of Object.keys(this.ongoingRequestsToComplete)) {

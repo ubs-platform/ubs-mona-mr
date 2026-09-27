@@ -1,4 +1,4 @@
-export interface GreenhatDocumentRenameDTO {
+export class GreenhatDocumentRenameDTO {
   documentId: string;
   name: string;
 }

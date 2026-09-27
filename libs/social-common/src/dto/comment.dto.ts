@@ -1,4 +1,4 @@
-export interface CommentAddDTO {
+export class CommentAddDTO {
     _id?: string;
     entityGroup: string;
     mainEntityName: string;
@@ -9,20 +9,20 @@ export interface CommentAddDTO {
     childOfCommentId?: string;
 }
 
-export interface BanUserDTO {
+export class BanUserDTO {
     entityGroup: string;
     mainEntityName: string;
     mainEntityId: string;
     byUserId: string;
 }
 
-export interface CommentMetaSearchDTO {
+export class CommentMetaSearchDTO {
     entityGroup: string;
     mainEntityName?: string;
     mainEntityId?: string;
 }
 
-export interface CommentSearchDTO {
+export class CommentSearchDTO {
     entityGroup: string;
     mainEntityName?: string;
     mainEntityId?: string;
@@ -88,7 +88,7 @@ export interface ExistCommentAbilityDTO {
     userCommentAdmin: boolean;
 }
 
-export interface CommentEditDTO {
+export class CommentEditDTO {
     textContent: string;
 }
 
@@ -116,6 +116,6 @@ export type SORT_ROTATION = 'asc' | 'desc';
 
 export type CommentStatus = 'ALLOW' | 'DISABLE' | 'ARCHIVE';
 
-export type NewCommentingStatus = CommentMetaSearchDTO & {
+export class NewCommentingStatus extends CommentMetaSearchDTO {
     newStatus: 'ALLOW' | 'DISABLE' | 'ARCHIVE';
-};
+}

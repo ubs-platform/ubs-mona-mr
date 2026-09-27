@@ -85,7 +85,7 @@ export class LoadbalancedProxy {
                             ).port,
                         /**Math.floor(Math.random() * processCount) */
                     });
-                } catch (error) {
+                } catch (error: any) {
                     console.error(error);
                     this.stopProxyServer();
                 }

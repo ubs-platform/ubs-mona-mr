@@ -71,7 +71,7 @@ export class DirectoryUtil {
                     }
                 }
 
-            } catch (error) {
+            } catch (error: any) {
                 console.warn(
                     strColor(
                         COLORS.BgYellow,

@@ -36,7 +36,7 @@ export class UserRegisterController {
         }
         try {
             await this.userRegisterService.register(user, headers?.['origin']);
-        } catch (error) {
+        } catch (error: any) {
             throw new HttpException(error, HttpStatus.BAD_REQUEST);
         }
     }

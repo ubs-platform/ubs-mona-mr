@@ -1,4 +1,4 @@
-export interface UserAuthBackendDTO {
+export class UserAuthBackendDTO {
   username: string;
   primaryEmail: string;
   name: string;

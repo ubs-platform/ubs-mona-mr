@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import {
+import type {
     ChatMessageSenderType,
     TextAssitantStage,
 } from '@ubs-platform/superlama-common';

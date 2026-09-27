@@ -1,6 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { EntityOwnershipService } from '../services/entity-ownership.service';
-import { EventPattern, MessagePattern } from '@nestjs/microservices';
+import { MessagePattern } from '@nestjs/microservices';
+import { LegacyEventPattern } from '@ubs-platform/microservice-setup-util';
 import {
     EntityOwnershipDTO,
     EntityOwnershipInsertCapabiltyDTO,
@@ -30,25 +31,25 @@ export class EntityOwnershipGroupMicroserviceController {
         private cacheman: CacheManagerService,
     ) {}
 
-    @EventPattern(EOGroupEventConsts.getByUserIds)
+    @LegacyEventPattern(EOGroupEventConsts.getByUserIds)
     async getByUserIds(userIds: string[]): Promise<EntityOwnershipGroupCommonDTO[]> {
         return await this.eogService.findGroupsUserIn(userIds);
     }
 
-    @EventPattern(EOGroupEventConsts.fetchMembers)
+    @LegacyEventPattern(EOGroupEventConsts.fetchMembers)
     async fetchMembers(
         groupId: string,
     ): Promise<EOGUserCapabilityDTO[]> {
         return await this.eogService.fetchUsersInGroup(groupId);
     }
     
-    @EventPattern(EOGroupEventConsts.createGroup)
+    @LegacyEventPattern(EOGroupEventConsts.createGroup)
     async insertOwnershipGroup(eog: EntityOwnershipGroupCommonDTO) {
         this.cacheman.invalidateRegex(/eog-*/);
         return await this.eogService.createGroup(eog, eog.initialUserId!);
     }
 
-    @EventPattern(EOGroupEventConsts.addUserCapability)
+    @LegacyEventPattern(EOGroupEventConsts.addUserCapability)
     async addUserCapability(data: { groupId: string; userCapability: any }) {
         this.cacheman.invalidateRegex(/eog-*/);
         return await this.eogService.addUserCapability(
@@ -57,7 +58,7 @@ export class EntityOwnershipGroupMicroserviceController {
         );
     }
 
-    @EventPattern(EOGroupEventConsts.removeUserCapability)
+    @LegacyEventPattern(EOGroupEventConsts.removeUserCapability)
     async removeUserCapability(data: {
         groupId: string;
         userId: string;
@@ -69,7 +70,7 @@ export class EntityOwnershipGroupMicroserviceController {
         );
     }
 
-    @EventPattern(EOGroupEventConsts.checkUserCapability)
+    @LegacyEventPattern(EOGroupEventConsts.checkUserCapability)
     async checkUserCapability(data: EOGCheckUserGroupCapabilityDTO) {
         return await this.eogService.hasUserGroupCapability(
             data

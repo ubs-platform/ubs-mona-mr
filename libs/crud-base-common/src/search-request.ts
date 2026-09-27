@@ -1,4 +1,4 @@
-export interface SearchRequest {
+export class SearchRequest {
     page: number;
     size: number;
     sortBy?: string;

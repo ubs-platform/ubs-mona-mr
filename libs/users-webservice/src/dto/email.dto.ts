@@ -1,4 +1,4 @@
-export interface EmailDto {
+export class EmailDto {
   to: string;
   subject: string;
   templateName: string;

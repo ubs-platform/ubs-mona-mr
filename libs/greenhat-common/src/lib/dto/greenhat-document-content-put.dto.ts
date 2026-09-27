@@ -1,6 +1,6 @@
 import { GreenhatDocumentContentType } from './greenhat-document.dto';
 
-export interface GreenhatDocumentContentPutDTO {
+export class GreenhatDocumentContentPutDTO {
   locale: string;
   type: GreenhatDocumentContentType;
   content: string;

@@ -6,16 +6,16 @@ export class UserCapabilityDTO {
     capabilities: Capability[] = [];
 }
 
-export interface EntityOwnershipRemoveUserCapabilityDTO {
+export class EntityOwnershipRemoveUserCapabilityDTO {
     userId: string;
 }
 
-export interface EntityOwnershipSetGroupIdDTO {
+export class EntityOwnershipSetGroupIdDTO {
     userId: string;
     groupId: string;
 }
 
-export interface EntityOwnershipDTO {
+export class EntityOwnershipDTO {
     userCapabilities: UserCapabilityDTO[];
     entityGroup: string;
     entityName: string;
@@ -24,7 +24,7 @@ export interface EntityOwnershipDTO {
     entityOwnershipGroupId: string;
 }
 
-export interface EntityOwnershipInsertCapabiltyDTO {
+export class EntityOwnershipInsertCapabiltyDTO {
     entityGroup: string;
     entityName: string;
     entityId: string;
@@ -34,7 +34,7 @@ export interface EntityOwnershipInsertCapabiltyDTO {
 }
 
 
-export interface EntityOwnershipUserSearch {
+export class EntityOwnershipUserSearch {
     entityGroup: string;
     entityName: string;
     userId?: string;
@@ -43,13 +43,13 @@ export interface EntityOwnershipUserSearch {
 
 }
 
-export interface EntityOwnershipSearch {
+export class EntityOwnershipSearch {
     entityGroup: string;
     entityName: string;
     entityId?: string;
 }
 
-export interface EntityOwnershipUserCheck {
+export class EntityOwnershipUserCheck {
     entityGroup: string;
     entityName: string;
     entityId?: string;
@@ -58,7 +58,7 @@ export interface EntityOwnershipUserCheck {
     entityOwnershipGroupId?: string;
 }
 
-export interface EntityOwnershipGroupIdCheck {
+export class EntityOwnershipGroupIdCheck {
     entityGroup: string;
     entityName: string;
     entityId?: string;
