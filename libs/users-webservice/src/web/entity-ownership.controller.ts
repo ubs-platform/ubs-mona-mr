@@ -121,6 +121,11 @@ export class EntityOwnershipController {
         );
     }
 
+    /**
+     * Kullanıcının sahip olduğu varlık kimliklerini arar.
+     * @param eo The entity ownership user search parameters.
+     * @returns 
+     */
     @MessagePattern(EOChannelConsts.searchEntityIdsByUser)
     async searchEntityIdsByUser(eo: EntityOwnershipUserSearch) {
         return this.cacheman.getOrCallAsync(

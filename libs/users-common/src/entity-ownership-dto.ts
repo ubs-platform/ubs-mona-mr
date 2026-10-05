@@ -38,6 +38,8 @@ export class EntityOwnershipUserSearch {
     entityGroup: string;
     entityName: string;
     userId?: string;
+    // Todo: Sadece kişisel olarak ait olan varlıkları filtreleme özelliği için ekstra boolean alan.
+    // onlyPersonal?: boolean;
     entityOwnershipGroupId?: string;
     requestedCapabilities?: number[][];
 
