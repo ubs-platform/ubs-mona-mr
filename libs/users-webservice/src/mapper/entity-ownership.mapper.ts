@@ -18,7 +18,7 @@ export class EntityOwnershipMapper {
             overriderRoles: entityOwnership.overriderRoles?.map((a) => a),
             userCapabilities: entityOwnership.userCapabilities.map((a) => ({
                 userId: a.userId,
-                capability: a.capability,
+                capabilities: a.capabilities,
             })),
             entityOwnershipGroupId: entityOwnership.entityOwnershipGroupId,
         } as EntityOwnershipDTO;
