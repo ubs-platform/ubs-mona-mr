@@ -12,3 +12,11 @@ UBS Mona is a rest API framework developed around NestJS, which aims to develop 
 
 - [English US 🇺🇸](./docs/en-us/README.md)
 - [Turkish 🇹🇷](./docs/tr-tr/README.md)
+
+## Engine5 Message IDs
+
+The [Engine5 connection](./libs/microservice-setup-util/src/engine5/connection.ts)
+generates UUID v4 `MessageId` values for requests, responses, listen commands, and
+events using Node's `crypto.randomUUID()`. Responses retain the request ID in
+`ResponseOfMessageId`; event consumption success/error messages retain the event
+ID in `MessageId` for log correlation. Incoming legacy string IDs remain supported.

@@ -1,5 +1,6 @@
 import * as net from 'net';
 import * as tls from 'node:tls';
+import { randomUUID } from 'crypto';
 import { encode } from '@msgpack/msgpack';
 import { AsyncMutex } from '@ubs-platform/async-mutex';
 import { ReplaySubject } from 'rxjs';
@@ -13,7 +14,6 @@ import {
 } from './connection.types';
 import { Engine5ConnectionMessageHandler } from './connection-message-handler';
 
-export { Engine5ConnectionOptions } from './connection.types';
 
 export class Engine5Connection {
     private tcpClient: net.Socket | tls.TLSSocket = new net.Socket();
@@ -133,7 +133,7 @@ export class Engine5Connection {
 
     private writePayload(payload: Payload): Promise<Engine5Connection> {
         const outboundPayload = { ...payload, AuthKey: this.authKey };
-
+        console.debug('Writing payload:', outboundPayload);
         return this.writeMutex.run(
             () =>
                 new Promise<Engine5Connection>((resolve, reject) => {
@@ -186,7 +186,7 @@ export class Engine5Connection {
     }
 
     private generateMessageId(): string {
-        return `${Date.now()}_${Math.floor(Math.random() * 1000000)}`;
+        return randomUUID();
     }
 
     async sendRequest<T = any>(subject: string, data: any): Promise<T> {
@@ -249,6 +249,7 @@ export class Engine5Connection {
             Command: 'EVENT',
             Subject: subject,
             Content: this.messageHandler.stringifyData(data),
+            MessageId: this.generateMessageId(),
         });
     }
 
