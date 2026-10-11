@@ -1,36 +1,19 @@
 import * as net from 'net';
 import * as tls from 'node:tls';
-import {
-    CtConnectError,
-    CtResponse,
-    Payload,
-    CtRequest,
-    CtEvent,
-    CtResponseError,
-    CtConsumingSuccess,
-    CtConsumingError,
-} from './payload';
-import { encode, decode } from '@msgpack/msgpack';
+import { encode } from '@msgpack/msgpack';
 import { AsyncMutex } from '@ubs-platform/async-mutex';
 import { ReplaySubject } from 'rxjs';
+import { CtResponseError, Payload } from './payload';
+import {
+    CallbackFunction,
+    ConnectionStatus,
+    Engine5ConnectionOptions,
+    RequestCallback,
+    TLSClientOptions,
+} from './connection.types';
+import { Engine5ConnectionMessageHandler } from './connection-message-handler';
 
-type ConnectionStatus = 'CONNECTING' | 'CLOSED' | 'CONNECTED';
-type CallbackFunction = (data: any) => any;
-type RequestCallback = (response: Payload) => void;
-type TLSClientOptions = Pick<
-    tls.ConnectionOptions,
-    'ca' | 'cert' | 'key' | 'servername' | 'rejectUnauthorized'
->;
-
-export interface Engine5ConnectionOptions {
-    host: string;
-    port: string | number;
-    instanceGroup?: string;
-    instanceId?: string;
-    tlsEnabled?: boolean;
-    tlsOptions?: TLSClientOptions;
-    authKey?: string;
-}
+export { Engine5ConnectionOptions } from './connection.types';
 
 export class Engine5Connection {
     private tcpClient: net.Socket | tls.TLSSocket = new net.Socket();
@@ -41,6 +24,7 @@ export class Engine5Connection {
         {};
     private readonly ongoingRequestsToComplete: Record<string, RequestCallback> =
         {};
+    private readonly messageHandler: Engine5ConnectionMessageHandler;
     // Keep socket I/O and control-plane operations on separate mutexes so a locked
     // task that awaits another mutex cannot deadlock the whole pipeline.
     private readonly writeMutex = new AsyncMutex();
@@ -57,8 +41,6 @@ export class Engine5Connection {
     private tlsEnabled: boolean = false;
     private tlsOptions?: TLSClientOptions;
     private authKey?: string;
-    private readonly processedEventMessageIds = new Map<string, number>();
-    private readonly processedEventTtlMs = 2 * 60 * 1000;
 
     constructor(connectOptions: Engine5ConnectionOptions) {
         this.host = connectOptions.host;
@@ -69,32 +51,34 @@ export class Engine5Connection {
         this.tlsOptions = connectOptions.tlsOptions;
         this.authKey = connectOptions.authKey;
 
+        this.messageHandler = new Engine5ConnectionMessageHandler({
+            clearConnectionTimeout: () => this.clearConnectionTimeout(),
+            setConnectionStatus: (status) => this.setConnectionStatus(status),
+            destroySocket: () => this.tcpClient.destroy(),
+            setInstanceIdentity: (instanceId, instanceGroup) => {
+                this.instanceId = instanceId;
+                this.instanceGroup = instanceGroup;
+            },
+            getInstanceIdentity: () => ({
+                instanceId: this.instanceId,
+                instanceGroup: this.instanceGroup,
+            }),
+            getCallbacks: (subject) =>
+                this.listeningSubjectCallbacks[subject] ?? [],
+            takeRequestCallback: (messageId) => {
+                if (!messageId) {
+                    return undefined;
+                }
+                const callback = this.ongoingRequestsToComplete[messageId];
+                delete this.ongoingRequestsToComplete[messageId];
+                return callback;
+            },
+            generateMessageId: () => this.generateMessageId(),
+            writePayload: (payload) => this.writePayload(payload),
+        });
+
         this.connectionStatusSubject.next('CLOSED');
         this.startReconnectTimer();
-    }
-
-    private cleanupProcessedEventMessageIds(now = Date.now()): void {
-        for (const [messageId, timestamp] of this.processedEventMessageIds) {
-            if (now - timestamp > this.processedEventTtlMs) {
-                this.processedEventMessageIds.delete(messageId);
-            }
-        }
-    }
-
-    private isDuplicateEventMessage(messageId?: string): boolean {
-        if (!messageId) {
-            return false;
-        }
-
-        const now = Date.now();
-        this.cleanupProcessedEventMessageIds(now);
-
-        if (this.processedEventMessageIds.has(messageId)) {
-            return true;
-        }
-
-        this.processedEventMessageIds.set(messageId, now);
-        return false;
     }
 
     private startReconnectTimer(): void {
@@ -219,7 +203,7 @@ export class Engine5Connection {
         await this.writePayload({
             Command: 'REQUEST',
             Subject: subject,
-            Content: this.stringifyData(data),
+            Content: this.messageHandler.stringifyData(data),
             MessageId: messageId,
         });
 
@@ -242,7 +226,7 @@ export class Engine5Connection {
 
                 try {
                     const result = response.Content
-                        ? this.parseData(response.Content)
+                        ? this.messageHandler.parseData(response.Content)
                         : undefined;
                     resolve(result);
                 } catch (error: any) {
@@ -264,7 +248,7 @@ export class Engine5Connection {
         await this.writePayload({
             Command: 'EVENT',
             Subject: subject,
-            Content: this.stringifyData(data),
+            Content: this.messageHandler.stringifyData(data),
         });
     }
 
@@ -455,154 +439,9 @@ export class Engine5Connection {
             value: Engine5Connection | PromiseLike<Engine5Connection>,
         ) => void,
     ) {
-        let decoded: Payload;
-
-        try {
-            decoded = decode(data) as Payload;
-        } catch (error: any) {
-            console.error(
-                'Failed to decode message. This usually indicates a TLS mismatch:',
-            );
-            console.error(
-                'If the server requires TLS but client is not using TLS, or vice versa, decoding will fail.',
-            );
-            console.error('Decode error:', error);
-            this.tcpClient.destroy();
-            this.setConnectionStatus('CLOSED');
-            return;
-        }
-
-        switch (decoded.Command) {
-            case 'CONNECT_SUCCESS': {
-                this.clearConnectionTimeout();
-                this.setConnectionStatus('CONNECTED');
-                this.instanceId = decoded.InstanceId!;
-                this.instanceGroup = decoded.InstanceGroup!;
-                promiseResolveFunc?.(this);
-                console.info('Connected Successfully');
-                break;
-            }
-            case CtConnectError: {
-                this.clearConnectionTimeout();
-                console.error('Connection failed: ' + decoded.Content);
-                this.tcpClient.destroy();
-                this.setConnectionStatus('CLOSED');
-                break;
-            }
-            case CtEvent: {
-                if (this.isDuplicateEventMessage(decoded.MessageId)) {
-                    console.warn(
-                        'Duplicate event ignored for subject:',
-                        decoded.Subject,
-                    );
-                    break;
-                }
-                console.info('Event recieved', decoded.Subject);
-                await this.processReceivedEvent(decoded);
-                break;
-            }
-            case CtRequest: {
-                console.info('Request recieved: ', decoded.Subject);
-                try {
-                    const callback = this.listeningSubjectCallbacks[decoded.Subject!]?.[0];
-                    if (!callback) {
-                        console.warn('No callback registered for subject:', decoded.Subject);
-                        return;
-                    }
-
-                    const responseContent = await callback(this.parseData(decoded.Content!));
-                    await this.writePayload({
-                        Command: CtResponse,
-                        Content: this.stringifyData(responseContent),
-                        MessageId: this.generateMessageId(),
-                        Subject: decoded.Subject,
-                        ResponseOfMessageId: decoded.MessageId,
-                    });
-                } catch (ex) {
-                    console.error(ex);
-                }
-                break;
-            }
-            case CtResponse: {
-                const responseOfMessageId = decoded.ResponseOfMessageId!;
-                const callback =
-                    this.ongoingRequestsToComplete[responseOfMessageId];
-                if (callback) {
-                    delete this.ongoingRequestsToComplete[responseOfMessageId];
-                    await callback(decoded);
-                }
-                break;
-            }
-            case CtResponseError: {
-                const errorSide = decoded.ResponseErrorSide || 'E5';
-                const errorMessage = `Response error from ${errorSide === 'E5' ? 'server' : 'client'}: ${decoded.Content}`;
-                console.error(errorMessage);
-
-                const responseOfMessageId = decoded.ResponseOfMessageId!;
-                const callback =
-                    this.ongoingRequestsToComplete[responseOfMessageId];
-                if (callback) {
-                    delete this.ongoingRequestsToComplete[responseOfMessageId];
-                    await callback(decoded);
-                }
-                break;
-            }
-            default:
-                break;
-        }
-    }
-
-    private parseData(dataString: string): any {
-        if (dataString === 'undefined' || dataString === '') {
-            return undefined;
-        }
-
-        try {
-            return JSON.parse(dataString);
-        } catch (error: any) {
-            console.error('Failed to parse JSON data:', error);
-            return dataString;
-        }
-    }
-
-    private stringifyData(data: any): string {
-        if (data === undefined) {
-            return 'undefined';
-        }
-
-        try {
-            return JSON.stringify(data);
-        } catch (error: any) {
-            console.error('Failed to stringify data:', error);
-            return String(data);
-        }
-    }
-
-    // TODO: Bunu async/await yapmak lazım. Callback'in bitmesini beklemeden success yazmayalım...
-    private async processReceivedEvent(decoded: Payload) {
-        const callbacks = this.listeningSubjectCallbacks[decoded.Subject!] ?? [];
-        for (const callback of callbacks) {
-            try {
-                await callback(this.parseData(decoded.Content!));
-                this.writePayload({
-                    Command: CtConsumingSuccess,
-                    Subject: decoded.Subject,
-                    MessageId: decoded.MessageId,
-                    InstanceGroup: this.instanceGroup,
-                    InstanceId: this.instanceId,
-                });
-            } catch (error: any) {
-                console.error('Error in event callback for subject ' + decoded.Subject + ':', error);
-                this.writePayload({
-                    Command: CtConsumingError,
-                    Subject: decoded.Subject,
-                    MessageId: decoded.MessageId,
-                    InstanceGroup: this.instanceGroup,
-                    InstanceId: this.instanceId,
-                    Content: `Error in event callback: ${error instanceof Error ? error.message : String(error)}`,
-                })
-            }
-        }
+        await this.messageHandler.processIncomingData(data, () =>
+            promiseResolveFunc?.(this),
+        );
     }
 
     async close(): Promise<void> {
@@ -626,7 +465,7 @@ export class Engine5Connection {
             for (const key of Object.keys(this.ongoingRequestsToComplete)) {
                 delete this.ongoingRequestsToComplete[key];
             }
-            this.processedEventMessageIds.clear();
+            this.messageHandler.clearProcessedEvents();
             this.tcpClient.destroy();
             this.setConnectionStatus('CLOSED');
         }
