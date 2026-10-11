@@ -17,11 +17,11 @@ export class UserService implements OnModuleInit {
 
     async findUserAuth(userId: any): Promise<UserDTO> {
         
-        console.debug('Fetching user');
+        // console.debug('Fetching user');
         const user = (await firstValueFrom(
             this.kafkaClient.send('user-by-id', userId),
         )) as UserDTO;
-        console.debug(`The request made by: ${user.name} ${user.surname}`);
+        // console.debug(`The request made by: ${user.name} ${user.surname}`);
         return user;
     }
 

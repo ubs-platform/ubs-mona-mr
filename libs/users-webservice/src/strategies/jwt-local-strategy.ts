@@ -20,7 +20,7 @@ export class JwtLocalStrategy extends PassportStrategy(Strategy) {
     async validate(validationPayload: {
         userId: any;
     }): Promise<UserDTO | null> {
-        console.debug(validationPayload.userId);
+        // console.debug(validationPayload.userId);
         return this.userService.findUserAuthBackend(validationPayload.userId);
     }
 }

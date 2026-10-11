@@ -118,7 +118,7 @@ export class CommentService {
         currentUser: Optional<UserAuthBackendDTO>,
         ...commentsSearchs: CommentSearchDTO[]
     ): Promise<SearchResult<CommentDTO>> {
-        console.debug('searchComments called with', { pagination, commentsSearchs });
+        // console.debug('searchComments called with', { pagination, commentsSearchs });
 
         const sortingRotation = pagination.sortRotation == 'asc' ? 1 : -1;
 

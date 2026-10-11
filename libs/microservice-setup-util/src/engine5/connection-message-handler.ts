@@ -70,7 +70,7 @@ export class Engine5ConnectionMessageHandler {
 
         try {
             decoded = decode(data) as Payload;
-            console.debug('Decoded payload:', decoded);
+            // console.debug('Decoded payload:', decoded);
         } catch (error: any) {
             console.error(
                 'Failed to decode message. This usually indicates a TLS mismatch:',
@@ -205,7 +205,7 @@ export class Engine5ConnectionMessageHandler {
             this.context.getInstanceIdentity();
         for (const callback of callbacks) {
             try {
-                console.debug('Processing received event for message:', decoded.MessageId);
+                // console.debug('Processing received event for message:', decoded.MessageId);
                 await callback(this.parseData(decoded.Content!));
                 this.context.writePayload({
                     Command: CtConsumingSuccess,
@@ -214,7 +214,7 @@ export class Engine5ConnectionMessageHandler {
                     InstanceGroup: instanceGroup,
                     InstanceId: instanceId,
                 }).then(() => {
-                    console.debug('Successfully wrote consuming success payload for message:', decoded.MessageId);
+                    // console.debug('Successfully wrote consuming success payload for message:', decoded.MessageId);
                 }).catch((error) => {
                     console.error('Failed to write consuming success payload for message:', decoded.MessageId, error);
                 });

@@ -133,7 +133,7 @@ export class Engine5Connection {
 
     private writePayload(payload: Payload): Promise<Engine5Connection> {
         const outboundPayload = { ...payload, AuthKey: this.authKey };
-        console.debug('Writing payload:', outboundPayload);
+        // console.debug('Writing payload:', outboundPayload);
         return this.writeMutex.run(
             () =>
                 new Promise<Engine5Connection>((resolve, reject) => {
