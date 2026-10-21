@@ -21,6 +21,7 @@ export class EntityOwnershipService implements OnModuleInit {
     ) { }
 
     onModuleInit() {
+        (this.kafkaClient as ClientKafka).subscribeToResponseOf?.(EOChannelConsts.ensureTeamOwnership);
         // Object.entries(EOChannelConsts).forEach(([key, val]) => {
         //     if (val instanceof String) {
         //         console.info(`Registering reply of ${val}`);
@@ -53,6 +54,10 @@ export class EntityOwnershipService implements OnModuleInit {
 
     async insertOwnership(oe: EntityOwnershipDTO) {
         this.kafkaClient.emit(EOChannelConsts.insertOwnership, oe);
+    }
+
+    ensureTeamOwnership(ownership: EntityOwnershipDTO): Observable<boolean> {
+        return this.kafkaClient.send<boolean>(EOChannelConsts.ensureTeamOwnership, ownership);
     }
 
     async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO) {

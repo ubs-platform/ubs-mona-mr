@@ -1,4 +1,5 @@
-import { ConflictException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { createHash } from 'node:crypto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
 import { Document, Model, Types } from 'mongoose';
@@ -54,6 +55,7 @@ export class EntityOwnershipGroupService {
 
 
     public async onModuleInit() {
+        await this.eogModel.collection.createIndex({ creationKey: 1 }, { unique: true, sparse: true });
         this.logger.debug('EntityOwnershipGroupService initialized');
         await Promise.all([
             this.migrateAllGroupCapabilityToNewStructure(),
@@ -146,6 +148,37 @@ export class EntityOwnershipGroupService {
         userId: string,
     ): Promise<EntityOwnershipGroupCommonDTO> {
         this.logger.debug('EOG CREATE', eogDto.name);
+        if (eogDto.creationKey !== undefined) {
+            if (typeof eogDto.creationKey !== 'string' || !eogDto.creationKey.trim() || eogDto.creationKey.length > 200) {
+                throw new BadRequestException('Invalid group creation key');
+            }
+            const key = createHash('sha256').update(`${userId}:${eogDto.creationKey}`).digest('hex');
+            const fingerprint = createHash('sha256').update(JSON.stringify({
+                name: eogDto.name,
+                description: eogDto.description,
+                capabilities: eogDto.initialUserEntityCapabilities,
+            })).digest('hex');
+            const reuse = (group: EntityOwnershipGroup) => {
+                if (group.creationFingerprint !== fingerprint) {
+                    throw new ConflictException('Group creation key was already used with different input');
+                }
+                return this.mapper.toDto(group);
+            };
+            const existing = await this.eogModel.findOne({ creationKey: key }).exec();
+            if (existing) return reuse(existing);
+            const entity = await this.mapper.toEntityCreate(eogDto, userId);
+            entity.creationKey = key;
+            entity.creationFingerprint = fingerprint;
+            try {
+                await entity.save();
+            } catch (error: unknown) {
+                if (typeof error !== 'object' || error === null || !('code' in error) || error.code !== 11000) throw error;
+                const concurrent = await this.eogModel.findOne({ creationKey: key }).exec();
+                if (!concurrent) throw error;
+                return reuse(concurrent);
+            }
+            return this.mapper.toDto(entity);
+        }
         const entity = await this.mapper.toEntityCreate(eogDto, userId);
         await entity.save();
         return this.mapper.toDto(entity);

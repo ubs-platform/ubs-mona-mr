@@ -34,6 +34,13 @@ export class EntityOwnershipController {
         this.cacheman.invalidateRegex(/eo-*/);
     }
 
+    @MessagePattern(EOChannelConsts.ensureTeamOwnership)
+    async ensureTeamOwnership(ownership: EntityOwnershipDTO) {
+        await this.eoService.ensureTeamOwnership(ownership);
+        this.cacheman.invalidateRegex(/eo-*/);
+        return true;
+    }
+
     @LegacyEventPattern(EOChannelConsts.insertUserCapability)
     async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO) {
         console.info(oe);

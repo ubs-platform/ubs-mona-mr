@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, Logger } from '@nestjs/common';
 import { Model } from 'mongoose';
 import {
     EntityOwnership,
@@ -38,6 +38,25 @@ export class EntityOwnershipService {
         private userService: UserService,
         private mapper: EntityOwnershipMapper,
     ) { }
+
+    async ensureTeamOwnership(dto: EntityOwnershipDTO): Promise<void> {
+        if (!dto.entityGroup || !dto.entityName || !dto.entityId || !dto.entityOwnershipGroupId || dto.userCapabilities?.length) {
+            throw new BadRequestException('A team and an entity identity are required');
+        }
+        const identity = { entityGroup: dto.entityGroup, entityName: dto.entityName, entityId: dto.entityId };
+        try {
+            await this.eoModel.updateOne(identity, { $setOnInsert: {
+                ...identity, entityOwnershipGroupId: dto.entityOwnershipGroupId,
+                userCapabilities: [], overriderRoles: dto.overriderRoles,
+            } }, { upsert: true });
+        } catch (error: unknown) {
+            if (typeof error !== 'object' || error === null || !('code' in error) || error.code !== 11000) throw error;
+        }
+        const ownership = await this.eoModel.findOne(identity).exec();
+        if (!ownership || ownership.entityOwnershipGroupId !== dto.entityOwnershipGroupId || ownership.userCapabilities.length) {
+            throw new ConflictException('Entity already has a different owner');
+        }
+    }
 
     public async onModuleInit() {
         // Migrate old capability field to new capabilities array

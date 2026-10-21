@@ -18,6 +18,12 @@ export class GroupUserCapability {
 export class EntityOwnershipGroup {
     _id?: any;
 
+    @Prop({ type: String, unique: true, sparse: true })
+    creationKey?: string;
+
+    @Prop({ type: String })
+    creationFingerprint?: string;
+
     @Prop([GroupUserCapability])
     userCapabilities: GroupUserCapability[] = [];
 

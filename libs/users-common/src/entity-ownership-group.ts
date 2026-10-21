@@ -1,6 +1,8 @@
 import { Capability } from "./capability";
 
 export class EntityOwnershipGroupCommonDTO {
+    /** Optional retry key, scoped to the creating user. */
+    creationKey?: string;
     // required when editing the EOG
     id?: string;
     name!: string;
@@ -102,5 +104,4 @@ export class EOGCheckUserGroupCapabilityDTO {
      */
     requestedCapabilities: number[][] = [];
 }
-
 
