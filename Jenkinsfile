@@ -93,17 +93,18 @@ NODE
             }
         }
 
-        stage('Commit version changes') {
-            steps {
-                sh '''
-                    git config user.name "Hüseyin Can Gündüz"
-                    git config user.email "hcangunduz@gmail.com"
-                    git add .
-                    git commit -m "JENKINS: Version upgrade to ${RELEASE_VERSION} and publish completion" || echo "No changes to commit"
-                    git push origin HEAD:${BRANCH_NAME} || echo "Nothing to push"
-                '''
-            }
-        }
+        // Disabled: version commit/push from Jenkins caused recurring problems.
+        // stage('Commit version changes') {
+        //     steps {
+        //         sh '''
+        //             git config user.name "Hüseyin Can Gündüz"
+        //             git config user.email "hcangunduz@gmail.com"
+        //             git add .
+        //             git commit -m "JENKINS: Version upgrade to ${RELEASE_VERSION} and publish completion" || echo "No changes to commit"
+        //             git push origin HEAD:${BRANCH_NAME} || echo "Nothing to push"
+        //         '''
+        //     }
+        // }
 
         // if not provided, it will skip the notification stage
         stage('Telegram Notification') {
