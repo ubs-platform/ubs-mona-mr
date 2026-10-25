@@ -38,4 +38,5 @@ export interface Payload {
   InstanceGroup?: string;
   AuthKey?: string;
   ResponseErrorSide?: ErrorSide;
+  IsError?: boolean;
 }

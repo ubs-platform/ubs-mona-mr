@@ -141,11 +141,12 @@ export class Engine5ConnectionMessageHandler {
                         MessageId: this.context.generateMessageId(),
                         Subject: decoded.Subject,
                         ResponseOfMessageId: decoded.MessageId,
+                        IsError: false,
                     });
                 } catch (ex) {
                     console.error(ex);
                     await this.context.writePayload({
-                        Command: CtResponseError,
+                        Command: CtResponse,
                         Content: this.stringifyData(
                             ex instanceof Error
                                 ? { message: ex.message }
@@ -155,6 +156,7 @@ export class Engine5ConnectionMessageHandler {
                         Subject: decoded.Subject,
                         ResponseOfMessageId: decoded.MessageId,
                         ResponseErrorSide: CtResponseErrorSideClient,
+                        IsError: true,
                     });
                 }
                 break;

@@ -228,7 +228,11 @@ export class Engine5Connection {
                     const result = response.Content
                         ? this.messageHandler.parseData(response.Content)
                         : undefined;
-                    resolve(result);
+                    if (response.IsError) {
+                        reject(result);
+                    } else {
+                        resolve(result);
+                    }
                 } catch (error: any) {
                     reject(error);
                 }
