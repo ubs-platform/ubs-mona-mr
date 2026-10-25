@@ -39,7 +39,7 @@ export class DevMonolithController {
     // pong(data: any): string {
     //   throw new Error('Örnek hata');
     //   console.info(data);  
-    //   return '31 çek';
+    //   return 'response testi';
     // }
 
     // @Get('send-ping-self')
