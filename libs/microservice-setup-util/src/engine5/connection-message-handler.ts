@@ -1,4 +1,5 @@
 import { decode } from '@msgpack/msgpack';
+import { isObservable, lastValueFrom } from 'rxjs';
 import {
     CtConnectError,
     CtConsumingError,
@@ -7,6 +8,7 @@ import {
     CtRequest,
     CtResponse,
     CtResponseError,
+    CtResponseErrorSideClient,
     Payload,
 } from './payload';
 import {
@@ -129,7 +131,8 @@ export class Engine5ConnectionMessageHandler {
                         return;
                     }
 
-                    const responseContent = await callback(
+                    const responseContent = await this.resolveCallbackResult(
+                        callback,
                         this.parseData(decoded.Content!),
                     );
                     await this.context.writePayload({
@@ -141,6 +144,18 @@ export class Engine5ConnectionMessageHandler {
                     });
                 } catch (ex) {
                     console.error(ex);
+                    await this.context.writePayload({
+                        Command: CtResponseError,
+                        Content: this.stringifyData(
+                            ex instanceof Error
+                                ? { message: ex.message }
+                                : ex,
+                        ),
+                        MessageId: this.context.generateMessageId(),
+                        Subject: decoded.Subject,
+                        ResponseOfMessageId: decoded.MessageId,
+                        ResponseErrorSide: CtResponseErrorSideClient,
+                    });
                 }
                 break;
             }
@@ -154,7 +169,6 @@ export class Engine5ConnectionMessageHandler {
                 break;
             }
             case CtResponseError: {
-                // TODO: Eğer Observable geliyorsa ve düzgün content gelmiyorsa parse et
                 const errorSide = decoded.ResponseErrorSide || 'E5';
                 const errorMessage = `Response error from ${errorSide === 'E5' ? 'server' : 'client'}: ${decoded.Content}`;
                 console.error(errorMessage);
@@ -174,6 +188,14 @@ export class Engine5ConnectionMessageHandler {
 
     clearProcessedEvents(): void {
         this.processedEventMessageIds.clear();
+    }
+
+    private async resolveCallbackResult(
+        callback: CallbackFunction,
+        data: unknown,
+    ): Promise<unknown> {
+        const result = await callback(data);
+        return isObservable(result) ? lastValueFrom(result) : result;
     }
 
     private cleanupProcessedEventMessageIds(now = Date.now()): void {
@@ -207,7 +229,10 @@ export class Engine5ConnectionMessageHandler {
         for (const callback of callbacks) {
             try {
                 // console.debug('Processing received event for message:', decoded.MessageId);
-                await callback(this.parseData(decoded.Content!));
+                await this.resolveCallbackResult(
+                    callback,
+                    this.parseData(decoded.Content!),
+                );
                 this.context.writePayload({
                     Command: CtConsumingSuccess,
                     Subject: decoded.Subject,
