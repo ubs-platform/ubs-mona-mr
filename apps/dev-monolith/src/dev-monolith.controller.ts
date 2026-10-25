@@ -35,16 +35,17 @@ export class DevMonolithController {
         }
     }
 
-    @MessagePattern('ping')
-    pong(data: any): string {
-      console.info(data);  
-      return 'pong';
-    }
+    // @MessagePattern('ping')
+    // pong(data: any): string {
+    //   throw new Error('Örnek hata');
+    //   console.info(data);  
+    //   return '31 çek';
+    // }
 
-    @Get('send-ping-self')
-    sendPing() {
-        this.client.send('ping', {
-            text: 'ping',
-        });
-    }
+    // @Get('send-ping-self')
+    // async sendPing() {
+    //     return await this.client.send('ping', {
+    //         text: 'ping',
+    //     });
+    // }
 }
