@@ -154,6 +154,7 @@ export class Engine5ConnectionMessageHandler {
                 break;
             }
             case CtResponseError: {
+                // TODO: Eğer Observable geliyorsa ve düzgün content gelmiyorsa parse et
                 const errorSide = decoded.ResponseErrorSide || 'E5';
                 const errorMessage = `Response error from ${errorSide === 'E5' ? 'server' : 'client'}: ${decoded.Content}`;
                 console.error(errorMessage);

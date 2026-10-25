@@ -41,3 +41,11 @@ generates UUID v4 `MessageId` values for requests, responses, listen commands, a
 events using Node's `crypto.randomUUID()`. Responses retain the request ID in
 `ResponseOfMessageId`; event consumption success/error messages retain the event
 ID in `MessageId` for log correlation. Incoming legacy string IDs remain supported.
+
+Engine5 callbacks support plain values, promises and RxJS Observables (including
+promises resolving to Observables returned by Nest RPC handlers). Observables
+are subscribed and their final value is serialized, rather than sending the
+Observable object as `{}`. Failed request callbacks return a correlated
+`RESPONSE_ERROR` with `ResponseErrorSide: CLIENT`; callers reject instead of
+receiving an empty success or waiting for a timeout. Event consumption success
+is acknowledged only after the callback's Observable completes.
