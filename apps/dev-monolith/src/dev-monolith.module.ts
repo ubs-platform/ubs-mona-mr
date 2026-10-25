@@ -11,6 +11,8 @@ import { SuperlamaWebserviceModule } from '@ubs-platform/superlama-webservice';
 import { IpBlockerWebserviceModule } from '@ubs-platform/ip-blocker-webservice';
 import { GreenhatWebserviceModule } from '@ubs-platform/greenhat-webservice';
 import { CscdWebserviceModule } from '@ubs-platform/cscd-webservice';
+import { ClientsModule } from '@nestjs/microservices';
+import { MicroserviceSetupUtil } from 'libs/microservice-setup-util/src/microservice-setup-util';
 
 @Module({
     imports: [
@@ -32,9 +34,11 @@ import { CscdWebserviceModule } from '@ubs-platform/cscd-webservice';
         IpBlockerWebserviceModule,
         GreenhatWebserviceModule,
         CscdWebserviceModule,
+        ClientsModule.register([
+            MicroserviceSetupUtil.setupClient('', 'MICROSERVICE_CLIENT'),
+        ]),
     ],
     controllers: [DevMonolithController],
     providers: [],
 })
 export class DevMonolithModule {}
-
