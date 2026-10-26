@@ -71,6 +71,7 @@
     "http-proxy-middleware": "^4.2.0",
     "kafkajs": "^2.2.4",
     "mongoose": "^8.10.2",
+    "nodemailer": "^10.2.1",
     "ollama": "^0.6.3",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
@@ -166,5 +167,11 @@
       "^@ubs-platform/web-proxy(|/.*)$": "<rootDir>/libs/web-proxy/src/$1",
       "^mona/core(|/.*)$": "<rootDir>/libs/core/src/$1"
     }
+  },
+  "___overrideNotu": "TODO: Sonraki güncellemede multer sürümünü kontrol et, eğer nestjs tarafında yükseltilmişse buradaki sürümü de güncelle (Ya da override'ı kaldır)",
+  "overrides": {
+    "multer": "^2.5.0",
+    "nodemailer": "$nodemailer",
+    "mailparser": "^3.12.4"
   }
 }
