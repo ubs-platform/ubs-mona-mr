@@ -7,3 +7,7 @@ export * from './greenhat-document-content-put.dto';
 export * from './greenhat-document-remove-result.dto';
 export * from './greenhat-document-list.dto';
 export * from './greenhat-document-remove-preview.dto';
+export * from './greenhat-blog.dto';
+export * from './greenhat-blog-save.dto';
+export * from './greenhat-blog-search.dto';
+export * from './greenhat-blog-public.dto';

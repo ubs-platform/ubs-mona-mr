@@ -130,11 +130,72 @@ DocArticleSchema.index({ projectId: 1, ancestors: 1 });
 // Text search over name and localized titles.
 DocArticleSchema.index({ name: 'text', titlesByLocale: 'text' });
 
+@Schema({ _id: false })
+export class BlogLocalizedContent {
+  @Prop({ type: String, default: '' })
+  markdown: string = '';
+
+  @Prop({ type: String })
+  updatedBy?: string;
+
+  @Prop({ type: Date })
+  updatedAt?: Date;
+}
+export const BlogLocalizedContentSchema =
+  SchemaFactory.createForClass(BlogLocalizedContent);
+
+/**
+ * Blog yazısı: dil bazlı başlık ve markdown içerik
+ */
+@Schema({ collection: 'doc_blog_posts', timestamps: true })
+export class DocBlogPost {
+  _id!: Types.ObjectId;
+
+  @Prop({ type: String, required: true })
+  slug!: string;
+
+  @Prop({ type: String, enum: ['draft', 'published'], default: 'draft', index: true })
+  status: 'draft' | 'published' = 'draft';
+
+  @Prop({ type: Date })
+  publishedAt?: Date;
+
+  @Prop({ type: String, default: 'tr-tr' })
+  defaultLocale: string = 'tr-tr';
+
+  @Prop({ type: Map, of: String, default: {} })
+  titlesByLocale: Map<string, string> = new Map();
+
+  @Prop({ type: Map, of: BlogLocalizedContentSchema, default: {} })
+  contentsByLocale: Map<string, BlogLocalizedContent> = new Map();
+
+  @Prop({ type: String, required: true })
+  createdBy!: string;
+
+  @Prop({ type: String })
+  updatedBy?: string;
+
+  @Prop({ type: Boolean, default: false, index: true })
+  deactivated: boolean = false;
+}
+
+export type DocBlogPostDoc = HydratedDocument<DocBlogPost>;
+export const DocBlogPostSchema = SchemaFactory.createForClass(DocBlogPost);
+
+DocBlogPostSchema.index(
+  { slug: 1 },
+  { unique: true, partialFilterExpression: { deactivated: false } },
+);
+
+// Public list: published posts, newest first.
+DocBlogPostSchema.index({ status: 1, deactivated: 1, publishedAt: -1 });
+
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: DocProject.name, schema: DocProjectSchema },
       { name: DocArticle.name, schema: DocArticleSchema },
+      { name: DocBlogPost.name, schema: DocBlogPostSchema },
     ]),
   ],
   exports: [MongooseModule],
