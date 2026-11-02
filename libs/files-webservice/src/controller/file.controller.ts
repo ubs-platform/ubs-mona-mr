@@ -223,7 +223,7 @@ export class ImageFileController {
         if (fil) {
             return response.status(200).type(fil.mimetype).send(fil.file);
         } else {
-            return response.redirect('/assets/not-found.image.png', 303);
+            return response.status(404).send('File not found');
         }
     }
 

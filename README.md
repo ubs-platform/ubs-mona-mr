@@ -13,6 +13,13 @@ UBS Mona is a rest API framework developed around NestJS, which aims to develop 
 - [English US 🇺🇸](./docs/en-us/README.md)
 - [Turkish 🇹🇷](./docs/tr-tr/README.md)
 
+## Missing files
+
+`GET /file/:category/:name` returns HTTP 404 when no file exists, rather than a
+303 redirect to a placeholder image. Clients should supply their own missing-image
+fallback (for example via the image error event). Existing-file responses and
+view authorization checks are unchanged.
+
 ## Retry-safe team provisioning
 
 `EntityOwnershipGroupCommonDTO.creationKey` is an optional create-retry key.
