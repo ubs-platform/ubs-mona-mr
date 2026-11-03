@@ -1,6 +1,7 @@
 import { IksirPackage } from '../data/iksir-package';
 export interface EntireBuildOptions {
     publishNpm?: boolean;
+    directPublish?: boolean;
     patchAnotherDirectory?: boolean;
     patchTarget?: string;
 }

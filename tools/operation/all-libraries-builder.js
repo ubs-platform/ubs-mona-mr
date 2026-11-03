@@ -78,7 +78,7 @@ class AllLibrariesBuilder {
                 const currentBuild = packageBuildersArranged[index];
                 if (currentBuild.iksirPackage.libraryMode == 'PEER') {
                     if (props.publishNpm) {
-                        await this.publishOnNpm(currentBuild, versionTag, versionVisibility);
+                        await this.publishOnNpm(currentBuild, versionTag, versionVisibility, props.directPublish === true);
                     }
                     else {
                         const patchDirectory = props.patchTarget.startsWith('/')
@@ -95,7 +95,7 @@ class AllLibrariesBuilder {
             console.info('These packages will not published or another project will not be patched');
         }
     }
-    async publishOnNpm(currentBuild, versionTag, versionVisibility) {
+    async publishOnNpm(currentBuild, versionTag, versionVisibility, directPublish) {
         const publishWithProvenance = process.env.XR_NPM_PROVENANCE === 'true';
         const publishAccess = publishWithProvenance
             ? 'public'
@@ -103,8 +103,10 @@ class AllLibrariesBuilder {
         const publishOptions = publishWithProvenance
             ? `--tag ${versionTag} --provenance --access ${publishAccess}`
             : `--tag ${versionTag} --access ${publishAccess}`;
-        console.info(`${currentBuild.packageName} is about to be published on NPM Registry`);
-        await exec_util_1.ExecUtil.exec(`cd "${currentBuild.iksirPackage.buildDirectory}" && npm publish ${publishOptions}`);
+        const publishCommand = directPublish ? 'npm publish' : 'npm stage publish';
+        console.info(`${currentBuild.packageName} is about to be ${directPublish ? 'published' : 'staged for approval'} on NPM Registry`);
+        const output = await exec_util_1.ExecUtil.exec(`cd "${currentBuild.iksirPackage.buildDirectory}" && ${publishCommand} ${publishOptions}`);
+        console.info(output);
     }
 }
 exports.AllLibrariesBuilder = AllLibrariesBuilder;

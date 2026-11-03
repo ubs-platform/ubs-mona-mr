@@ -7,6 +7,7 @@ import path from 'path';
 import { strColor, COLORS } from '../util/colors';
 export interface EntireBuildOptions {
     publishNpm?: boolean;
+    directPublish?: boolean;
     patchAnotherDirectory?: boolean;
     patchTarget?: string;
 }
@@ -72,6 +73,7 @@ export class AllLibrariesBuilder {
                             currentBuild,
                             versionTag,
                             versionVisibility,
+                            props.directPublish === true,
                         );
                     } else {
                         const patchDirectory = props.patchTarget.startsWith('/')
@@ -115,6 +117,7 @@ export class AllLibrariesBuilder {
         currentBuild: PackageBuilder,
         versionTag: string,
         versionVisibility: string,
+        directPublish: boolean,
     ) {
         const publishWithProvenance = process.env.XR_NPM_PROVENANCE === 'true';
         const publishAccess = publishWithProvenance
@@ -124,12 +127,14 @@ export class AllLibrariesBuilder {
             ? `--tag ${versionTag} --provenance --access ${publishAccess}`
             : `--tag ${versionTag} --access ${publishAccess}`;
 
+        const publishCommand = directPublish ? 'npm publish' : 'npm stage publish';
         console.info(
-            `${currentBuild.packageName} is about to be published on NPM Registry`,
+            `${currentBuild.packageName} is about to be ${directPublish ? 'published' : 'staged for approval'} on NPM Registry`,
         );
 
-        await ExecUtil.exec(
-            `cd "${currentBuild.iksirPackage.buildDirectory}" && npm publish ${publishOptions}`,
+        const output = await ExecUtil.exec(
+            `cd "${currentBuild.iksirPackage.buildDirectory}" && ${publishCommand} ${publishOptions}`,
         );
+        console.info(output);
     }
 }

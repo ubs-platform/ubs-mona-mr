@@ -65,11 +65,15 @@ program
 });
 program
     .command('publish-libs')
-    .description('Kütüphaneleri derler ve NPM Registry\'ye gönderir')
-    .action(async () => {
+    .description('Kütüphaneleri derler ve NPM Registry\'de onay için hazırlar')
+    .option('--direct', 'Onay beklemeden npm publish ile doğrudan yayınlar')
+    .action(async (options) => {
     const paket = await iksir_package_1.IksirPackage.scanRoot(workingDirectory);
     const paketBuilder = new all_libraries_builder_1.AllLibrariesBuilder(paket);
-    await paketBuilder.initiateBuildPublish({ publishNpm: true });
+    await paketBuilder.initiateBuildPublish({
+        publishNpm: true,
+        directPublish: options.direct === true,
+    });
 });
 program
     .command('patch-libs <targetDirectory>')
@@ -120,5 +124,6 @@ program
     .catch((error) => {
     console.info((0, colors_1.strColor)(colors_1.COLORS.FgRed, 'Task has been failed. You can review error via following output'));
     console.error(error);
+    process.exitCode = 1;
 });
 //# sourceMappingURL=xr.js.map

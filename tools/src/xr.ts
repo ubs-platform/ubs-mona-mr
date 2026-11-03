@@ -105,11 +105,15 @@ program
 
 program
     .command('publish-libs')
-    .description('Kütüphaneleri derler ve NPM Registry\'ye gönderir')
-    .action(async () => {
+    .description('Kütüphaneleri derler ve NPM Registry\'de onay için hazırlar')
+    .option('--direct', 'Onay beklemeden npm publish ile doğrudan yayınlar')
+    .action(async (options: { direct?: boolean }) => {
         const paket = await IksirPackage.scanRoot(workingDirectory);
         const paketBuilder = new AllLibrariesBuilder(paket);
-        await paketBuilder.initiateBuildPublish({ publishNpm: true });
+        await paketBuilder.initiateBuildPublish({
+            publishNpm: true,
+            directPublish: options.direct === true,
+        });
     });
 
 program
@@ -170,4 +174,5 @@ program
             strColor(COLORS.FgRed, 'Task has been failed. You can review error via following output'),
         );
         console.error(error);
+        process.exitCode = 1;
     });
