@@ -33,6 +33,24 @@ export class EntityOwnershipInsertCapabiltyDTO {
 
 }
 
+/**
+ * Tüm ownership aramalarının ortak sorgu modeli. Alanların hepsi opsiyoneldir; her servis metodu kendi ihtiyacı olan
+ * alanları zorunlu kılar ve eksikse hata verir:
+ * - searchV2: entityGroup, entityName
+ * - searchEntityIdsV2: entityGroup, entityName, userId veya entityOwnershipGroupId
+ * - findUserCapabilityV2: entityGroup, entityName, entityId, userId
+ *
+ * userId ve entityOwnershipGroupId birlikte verilirse ikisi de sağlanmalıdır (VE).
+ * requestedCapabilities yalnızca userId ile birlikte anlamlıdır.
+ */
+export class EntityOwnershipUserSearchV2 {
+    entityGroup?: string;
+    entityName?: string;
+    entityId?: string;
+    requestedCapabilities?: number[][];
+    userId?: string;
+    entityOwnershipGroupId?: string;
+}
 
 export class EntityOwnershipUserSearch {
     entityGroup: string;

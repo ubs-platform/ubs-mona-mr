@@ -13,7 +13,6 @@ import {
 } from '@ubs-platform/users-common';
 import { EOChannelConsts } from '@ubs-platform/users-consts';
 import { CacheManagerService } from '@ubs-platform/cache-manager';
-import { exec } from 'child_process';
 
 @Controller('entity-ownership')
 export class EntityOwnershipController {
@@ -43,8 +42,6 @@ export class EntityOwnershipController {
 
     @LegacyEventPattern(EOChannelConsts.insertUserCapability)
     async insertUserCapability(oe: EntityOwnershipInsertCapabiltyDTO) {
-        console.info(oe);
-
         await this.eoService.insertUserCapability(oe);
         this.cacheman.invalidateRegex(/eo-*/);
     }
@@ -122,7 +119,7 @@ export class EntityOwnershipController {
     @MessagePattern(EOChannelConsts.searchOwnershipUser)
     async searchOwnershipUser(eo: EntityOwnershipUserSearch) {
         return this.cacheman.getOrCallAsync(
-            `eo-searchOwnershipUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${requestedCapabilitiesToString(eo.requestedCapabilities)}`,
+            `eo-searchOwnershipUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${requestedCapabilitiesToString(eo.requestedCapabilities)}`,
             () => this.eoService.searchByUser(eo),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
@@ -136,7 +133,7 @@ export class EntityOwnershipController {
     @MessagePattern(EOChannelConsts.searchEntityIdsByUser)
     async searchEntityIdsByUser(eo: EntityOwnershipUserSearch) {
         return this.cacheman.getOrCallAsync(
-            `eo-searchEntityIdsByUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}  ${requestedCapabilitiesToString(eo.requestedCapabilities)}`,
+            `eo-searchEntityIdsByUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${requestedCapabilitiesToString(eo.requestedCapabilities)}`,
             () => this.eoService.searchEntityIdsByUser(eo),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
