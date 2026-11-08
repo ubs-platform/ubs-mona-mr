@@ -62,3 +62,5 @@ EntityOwnershipSchema.index(
     { unique: true },
 );
 EntityOwnershipSchema.index({ entityOwnershipGroupId: 1 });
+// Kullanıcının varlık id'lerini (sayfalı) aramak için: searchEntityIdsV2'deki userId dalı
+EntityOwnershipSchema.index({ entityGroup: 1, entityName: 1, 'userCapabilities.userId': 1 });

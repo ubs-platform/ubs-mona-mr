@@ -22,6 +22,10 @@ import {
 } from '@ubs-platform/users-common';
 import { UserService } from './user.service';
 import { Optional } from '@ubs-platform/crud-base-common/utils';
+import { RawSearchResult, SearchResult } from '@ubs-platform/crud-base-common';
+
+/** Sayfalı id aramasında tek seferde istenebilecek en fazla kayıt */
+const MAX_ENTITY_ID_PAGE_SIZE = 100;
 
 /**
  * Verilen alanlar boşsa BadRequestException fırlatır; sonrasında derleyici bu alanları dolu kabul eder.
@@ -177,15 +181,61 @@ export class EntityOwnershipService {
 
     /** Yalnızca entityId'leri döner. entityGroup, entityName ve userId ya da entityOwnershipGroupId zorunludur. */
     public async searchEntityIdsV2(s: EntityOwnershipUserSearchV2): Promise<string[]> {
-        requireFields(s, ['entityGroup', 'entityName'], 'searchEntityIdsV2');
-        if (!s.userId && !s.entityOwnershipGroupId) {
-            throw new BadRequestException('searchEntityIdsV2: userId veya entityOwnershipGroupId zorunludur');
-        }
+        this.validateEntityIdSearch(s, 'searchEntityIdsV2');
         const found = await this.eoModel
             .find(await this.buildFilter(s, true), { entityId: 1 })
             .lean()
             .exec();
         return found.map((a) => String(a.entityId));
+    }
+
+    /**
+     * searchEntityIdsV2'nin sayfalı hâli. Sıralama en yeni ownership önce (_id azalan) olacak şekilde sabittir;
+     * böylece sayfalar arasında kayma olmaz. page 0'dan başlar, size 1..MAX_ENTITY_ID_PAGE_SIZE aralığındadır.
+     */
+    public async searchEntityIdsPagedV2(s: EntityOwnershipUserSearchV2): Promise<SearchResult<string>> {
+        this.validateEntityIdSearch(s, 'searchEntityIdsPagedV2');
+        const page = Number(s.page);
+        const size = Number(s.size);
+        if (!Number.isInteger(page) || page < 0) {
+            throw new BadRequestException('searchEntityIdsPagedV2: page 0 veya daha büyük bir tam sayı olmalıdır');
+        }
+        if (!Number.isInteger(size) || size < 1 || size > MAX_ENTITY_ID_PAGE_SIZE) {
+            throw new BadRequestException(
+                `searchEntityIdsPagedV2: size 1 ile ${MAX_ENTITY_ID_PAGE_SIZE} arasında bir tam sayı olmalıdır`,
+            );
+        }
+        const filter = await this.buildFilter(s, true);
+        const [found, total] = await Promise.all([
+            this.eoModel
+                .find(filter, { entityId: 1 })
+                .sort({ _id: -1 })
+                .skip(page * size)
+                .limit(size)
+                .lean()
+                .exec(),
+            this.eoModel.countDocuments(filter).exec(),
+        ]);
+        const maxPagesIndex = Math.max(Math.ceil(total / size) - 1, 0);
+        return new RawSearchResult(
+            found.map((a) => String(a.entityId)),
+            page,
+            size,
+            total,
+            maxPagesIndex,
+            page >= maxPagesIndex,
+            page === 0,
+        );
+    }
+
+    private validateEntityIdSearch(
+        s: EntityOwnershipUserSearchV2,
+        ctx: string,
+    ): asserts s is EntityOwnershipUserSearchV2 & { entityGroup: string; entityName: string } {
+        requireFields(s, ['entityGroup', 'entityName'], ctx);
+        if (!s.userId && !s.entityOwnershipGroupId) {
+            throw new BadRequestException(`${ctx}: userId veya entityOwnershipGroupId zorunludur`);
+        }
     }
 
     /**
@@ -245,7 +295,7 @@ export class EntityOwnershipService {
         s: EntityOwnershipUserSearchV2,
     ): Optional<UserCapabilityDTO> {
         for (const uc of group?.userCapabilities ?? []) {
-            if (uc.userId !== s.userId) continue;
+            if (!uc.userId || uc.userId !== s.userId) continue;
             const match = uc.entityCapabilities?.find(
                 (ec) =>
                     ec.entityGroup === s.entityGroup &&
@@ -317,9 +367,14 @@ export class EntityOwnershipService {
         return this.searchV2(this.fromUserSearch(eo));
     }
 
-    /** search-entity-ids-by-user */
-    async searchEntityIdsByUser(eo: EntityOwnershipUserSearch): Promise<string[]> {
+    /**
+     * search-entity-ids-by-user: page ve size ikisi de verilirse SearchResult<string>, aksi hâlde tüm id'ler (string[]).
+     */
+    async searchEntityIdsByUser(eo: EntityOwnershipUserSearch): Promise<string[] | SearchResult<string>> {
         requireFields(eo, ['userId'], 'searchEntityIdsByUser');
+        if (eo.page != null && eo.size != null) {
+            return this.searchEntityIdsPagedV2({ ...this.fromUserSearch(eo), page: eo.page, size: eo.size });
+        }
         return this.searchEntityIdsV2(this.fromUserSearch(eo));
     }
 

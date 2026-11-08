@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { MailerModule } from '@nestjs-modules/mailer';
+import { MailerModule, MailerOptions } from '@nestjs-modules/mailer';
 import { UserMicroserviceHelperModule } from '@ubs-platform/users-microservice-helper';
 import { NotifyEntityMongoModule } from '@ubs-platform/notify-entity-mongo';
 import { EmailTemplateController } from './controller/email-template.controller';
@@ -21,9 +21,10 @@ import { EmailService } from './service/email.service';
           ? ':' + process.env.UNOTIFY_MAIL_SERVER_PORT
           : ''
       }`,
+      // nodemailer 10'un kendi tipleri mailer'ın `defaults` tipinde `from`u göstermiyor; çalışma zamanında geçerli.
       defaults: {
         from: process.env.UNOTIFY_MAIL_FROM,
-      },
+      } as MailerOptions['defaults'],
     }),
   ],
   controllers: [EmailTemplateController, GlobalVariableController, EmailController],

@@ -42,6 +42,7 @@ export class EntityOwnershipInsertCapabiltyDTO {
  *
  * userId ve entityOwnershipGroupId birlikte verilirse ikisi de sağlanmalıdır (VE).
  * requestedCapabilities yalnızca userId ile birlikte anlamlıdır.
+ * page ve size yalnızca searchEntityIdsV2'de anlamlıdır (bkz. EntityOwnershipPaging).
  */
 export class EntityOwnershipUserSearchV2 {
     entityGroup?: string;
@@ -50,6 +51,17 @@ export class EntityOwnershipUserSearchV2 {
     requestedCapabilities?: number[][];
     userId?: string;
     entityOwnershipGroupId?: string;
+    page?: number;
+    size?: number;
+}
+
+/**
+ * Entity id aramaları için opsiyonel sayfalama. page (0'dan başlar) ve size birlikte verilirse sonuç
+ * SearchResult<string> olarak, en yeni ownership önce gelecek şekilde döner; verilmezse tüm id'ler string[] olarak döner.
+ */
+export class EntityOwnershipPaging {
+    page: number;
+    size: number;
 }
 
 export class EntityOwnershipUserSearch {
@@ -60,7 +72,9 @@ export class EntityOwnershipUserSearch {
     // onlyPersonal?: boolean;
     entityOwnershipGroupId?: string;
     requestedCapabilities?: number[][];
-
+    /** Bkz. EntityOwnershipPaging */
+    page?: number;
+    size?: number;
 }
 
 export class EntityOwnershipSearch {

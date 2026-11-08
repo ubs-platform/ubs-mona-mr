@@ -5,12 +5,14 @@ import {
     EntityOwnershipDTO,
     EntityOwnershipGroupIdCheck,
     EntityOwnershipInsertCapabiltyDTO,
+    EntityOwnershipPaging,
     EntityOwnershipSearch,
     EntityOwnershipUserCheck,
     EntityOwnershipUserSearch,
     UserCapabilityDTO,
 } from '@ubs-platform/users-common';
 import { EOChannelConsts } from '@ubs-platform/users-consts';
+import { SearchResult } from '@ubs-platform/crud-base-common';
 import { Observable } from 'rxjs';
 
 @Injectable()
@@ -95,9 +97,18 @@ export class EntityOwnershipService implements OnModuleInit {
         return this.kafkaClient.send(EOChannelConsts.removeOwnershipUserCapability, eo);
     }
 
+    /** Kullanıcının erişebildiği tüm varlık id'leri. page/size gönderilmez; sayfalı arama için ...Paged kullanılmalı. */
     searchOwnershipEntityIdsByUser(
-        eo: EntityOwnershipUserSearch,
+        eo: Omit<EntityOwnershipUserSearch, 'page' | 'size'>,
     ): Observable<string[]> {
+        const { page, size, ...rest } = eo as EntityOwnershipUserSearch;
+        return this.kafkaClient.send(EOChannelConsts.searchEntityIdsByUser, rest);
+    }
+
+    /** Kullanıcının erişebildiği varlık id'lerinin bir sayfası (en yeni ownership önce, page 0'dan başlar). */
+    searchOwnershipEntityIdsByUserPaged(
+        eo: EntityOwnershipUserSearch & EntityOwnershipPaging,
+    ): Observable<SearchResult<string>> {
         return this.kafkaClient.send(EOChannelConsts.searchEntityIdsByUser, eo);
     }
 

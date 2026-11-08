@@ -133,7 +133,7 @@ export class EntityOwnershipController {
     @MessagePattern(EOChannelConsts.searchEntityIdsByUser)
     async searchEntityIdsByUser(eo: EntityOwnershipUserSearch) {
         return this.cacheman.getOrCallAsync(
-            `eo-searchEntityIdsByUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${requestedCapabilitiesToString(eo.requestedCapabilities)}`,
+            `eo-searchEntityIdsByUser ${eo.entityGroup} ${eo.entityName} ${eo.userId}/${eo.entityOwnershipGroupId}/${requestedCapabilitiesToString(eo.requestedCapabilities)}/${eo.page ?? ''}:${eo.size ?? ''}`,
             () => this.eoService.searchEntityIdsByUser(eo),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );
