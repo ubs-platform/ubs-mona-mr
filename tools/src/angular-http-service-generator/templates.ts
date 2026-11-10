@@ -23,7 +23,9 @@ export class ${className} {
   
   interceptUrl(url: string): string {
     // you can modify url here if needed
-    return this.basePath + (!url || this.basePath.endsWith("/") ? "" : "/") + url;
+    const base = this.basePath.endsWith("/") ? this.basePath.slice(0, -1) : this.basePath;
+    const path = url.split("/").filter(Boolean).join("/");
+    return path ? base + "/" + path : base;
   }  
   
 `;
