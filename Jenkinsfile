@@ -43,6 +43,14 @@ pipeline {
         }
 
         stage('Install dependencies') {
+            agent {
+                docker {
+                    image 'node:24'
+                    reuseNode true
+                    // npm cache/config inside the container; keeps the npm token out of the workspace and host HOME
+                    args '-e npm_config_cache=/tmp/npm-cache -e NPM_CONFIG_USERCONFIG=/tmp/npmrc'
+                }
+            }
             steps {
                 // sh 'npm ci'
                 sh 'npm install --force --legacy-peer-deps --no-audit --no-fund'
@@ -50,6 +58,14 @@ pipeline {
         }
 
         stage('Update package.json') {
+            agent {
+                docker {
+                    image 'node:24'
+                    reuseNode true
+                    // npm cache/config inside the container; keeps the npm token out of the workspace and host HOME
+                    args '-e npm_config_cache=/tmp/npm-cache -e NPM_CONFIG_USERCONFIG=/tmp/npmrc'
+                }
+            }
             steps {
                 sh '''
 node <<'NODE'
@@ -58,9 +74,8 @@ const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 
 packageJson.version = process.env.RELEASE_VERSION;
 
-if (process.env.RELEASE_VERSION_TAG) {
-    packageJson.childrenVersionTag = process.env.RELEASE_VERSION_TAG;
-}
+packageJson.iksir = packageJson.iksir || {};
+packageJson.iksir.childrenVersionTag = process.env.RELEASE_VERSION_TAG || '';
 
 fs.writeFileSync('package.json', JSON.stringify(packageJson, null, 2) + '\\n');
 NODE
@@ -69,6 +84,14 @@ NODE
         }
 
         stage('Publish libraries') {
+            agent {
+                docker {
+                    image 'node:24'
+                    reuseNode true
+                    // npm cache/config inside the container; keeps the npm token out of the workspace and host HOME
+                    args '-e npm_config_cache=/tmp/npm-cache -e NPM_CONFIG_USERCONFIG=/tmp/npmrc'
+                }
+            }
             when {
                 expression { return !params.SKIP_LIB_PUBLISH }
             }
