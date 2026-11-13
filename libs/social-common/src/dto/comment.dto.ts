@@ -32,6 +32,8 @@ export class CommentSearchDTO {
     childEntityId?: string;
     childOfCommentId?: string;
     contentTextIn?: string;
+    /** Sadece moderatör: virgülle ayrılmış flag listesi, herhangi biri eşleşirse getirir */
+    flags?: string;
 }
 
 export interface CommentDTO {
@@ -74,6 +76,12 @@ export interface CommentDTO {
     userBanned: boolean;
 
     commenterIpAddress: string;
+
+    /** Sadece moderatöre doldurulur */
+    flags?: string[];
+
+    /** Sadece moderatöre doldurulur */
+    moderationStatus?: 'VISIBLE' | 'SHADOW';
 }
 
 export interface CommentAbilityDTO {

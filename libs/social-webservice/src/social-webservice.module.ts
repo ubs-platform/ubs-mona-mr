@@ -11,6 +11,8 @@ import { CommentService } from './service/comment.service';
 import { CommentMetaService } from './service/comment-meta.service';
 import { CommentAbilityCheckService } from './service/comment-ability-check.service';
 import { ApplicationSocialRestrictionService } from './service/application-social-restriction.service';
+import { CommentFilterService } from './service/comment-filter.service';
+import { CommentModerationService } from './service/comment-moderation.service';
 import { CommentMapper } from './mapper/comment.mapper';
 import { UserIntercept } from './guard/UserIntercept';
 
@@ -35,6 +37,8 @@ import { UserIntercept } from './guard/UserIntercept';
     CommentMetaService,
     CommentAbilityCheckService,
     ApplicationSocialRestrictionService,
+    CommentFilterService,
+    CommentModerationService,
   ],
   exports: [CommentService, CommentMetaService, ApplicationSocialRestrictionService],
 })

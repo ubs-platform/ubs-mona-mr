@@ -9,6 +9,7 @@ import { UserAuthBackendDTO } from '@ubs-platform/users-common';
 import { lastValueFrom } from 'rxjs';
 import { CommentAbilityCheckService } from '../service/comment-ability-check.service';
 import { SocialCommentMeta } from '@ubs-platform/social-entity-mongo';
+import { isModerator } from '../consts/role-consts';
 
 @Injectable()
 export class CommentMapper {
@@ -22,6 +23,7 @@ export class CommentMapper {
         commentMeta: SocialCommentMeta,
         currentUser?: UserAuthBackendDTO,
     ) {
+        const moderator = isModerator(currentUser);
         return {
             byFullName: comment.byFullName,
             byUserId: comment.byUserId,
@@ -47,6 +49,13 @@ export class CommentMapper {
             userUpVoted:
                 currentUser != null &&
                 comment.upvoteUserIds?.includes(currentUser.id),
+            // flag ve shadow durumu yazara da gösterilmez, sadece moderatöre
+            ...(moderator
+                ? {
+                      flags: comment.flags ?? [],
+                      moderationStatus: comment.moderationStatus ?? 'VISIBLE',
+                  }
+                : {}),
             userBanned: commentMeta.commentingDisabledUserIds.includes(
                 comment.byUserId + '',
             ),

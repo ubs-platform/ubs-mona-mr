@@ -1,9 +1,10 @@
 import {
+    BadRequestException,
     Injectable,
     NotFoundException,
     UnauthorizedException,
 } from '@nestjs/common';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { SocialComment } from '@ubs-platform/social-entity-mongo';
 
 import { Capability, UserAuthBackendDTO } from '@ubs-platform/users-common';
@@ -19,6 +20,10 @@ import { CommentMapper } from '../mapper/comment.mapper';
 import { InjectModel } from '@nestjs/mongoose';
 import { CommentMetaService } from './comment-meta.service';
 import { CommentAbilityCheckService } from './comment-ability-check.service';
+import { CommentFilterService } from './comment-filter.service';
+import { ApplicationSocialRestrictionService } from './application-social-restriction.service';
+import { isModerator } from '../consts/role-consts';
+import { FilterDecision } from '../filter/comment-filter.engine';
 import { MongooseSearchUtil } from '@ubs-platform/crud-base';
 import { SearchRequest, SearchResult } from '@ubs-platform/crud-base-common';
 import { filter, lastValueFrom } from 'rxjs';
@@ -34,7 +39,83 @@ export class CommentService {
         private commentMapper: CommentMapper,
         private commentMetaService: CommentMetaService,
         private commentAbilityCheckService: CommentAbilityCheckService,
+        private commentFilterService: CommentFilterService,
+        private restrictionService: ApplicationSocialRestrictionService,
     ) { }
+
+    /** Shadow yorumlar bu kadar gün sonra Mongo TTL ile silinir (moderatör "sakla" demezse). */
+    private shadowRetentionMs() {
+        const days = Number(process.env['SOCIAL_SHADOW_RETENTION_DAYS']) || 30;
+        return days * 24 * 60 * 60 * 1000;
+    }
+
+    /**
+     * Filtre kararının yorum akışını kesen kısmı. Dönen değer:
+     * - 'DROP': hiçbir şey kaydetme, kullanıcıya başarılı gibi dön
+     * - 'SHADOW' veya null: devam et (flag'ler decision'dan alınır)
+     * REJECT_ERROR ve BAN_USER hata fırlatır.
+     * Yorum metni hiçbir yere loglanmaz.
+     */
+    private async applyFilterDecision(
+        decision: FilterDecision,
+        currentUser: UserAuthBackendDTO,
+    ): Promise<'DROP' | 'CONTINUE'> {
+        if (decision.penaltyPoints > 0) {
+            // TODO: user servise ceza puanı olayı gönderilecek (kapsam dışı). Şimdilik sadece işaret.
+        }
+        switch (decision.action) {
+            case 'BAN_USER': {
+                const until = new Date(
+                    Date.now() + (decision.banDurationHours ?? 0) * 3600_000,
+                );
+                await this.restrictionService.restrictUser({
+                    userId: currentUser.id,
+                    restriction: 'COMMENT',
+                    until: until.toISOString(),
+                    note: 'auto-moderation',
+                });
+                throw new UnauthorizedException(
+                    'commenting-not-allowed',
+                    'mona.comments.userCommentBlockReason.disabled',
+                );
+            }
+            case 'REJECT_ERROR':
+                throw new BadRequestException('mona.comments.rejected-by-filter');
+            case 'DROP':
+                return 'DROP';
+            default:
+                return 'CONTINUE';
+        }
+    }
+
+    /** DROP'ta kullanıcıya dönen sahte ama geçerli biçimli yorum. DB'ye yazılmaz. */
+    private droppedCommentDto(
+        commentDto: CommentAddDTO,
+        currentUser: UserAuthBackendDTO,
+    ): CommentDTO {
+        const now = new Date();
+        return {
+            _id: new Types.ObjectId().toString(),
+            entityGroup: commentDto.entityGroup,
+            mainEntityName: commentDto.mainEntityName,
+            mainEntityId: commentDto.mainEntityId,
+            childEntityName: commentDto.childEntityName || commentDto.mainEntityName,
+            childEntityId: commentDto.childEntityId || commentDto.mainEntityId,
+            textContent: commentDto.textContent,
+            byUserId: currentUser.id,
+            byFullName: currentUser.name + ' ' + currentUser.surname,
+            creationDate: now,
+            lastEditDate: now,
+            editCount: 0,
+            isChild: !!commentDto.childOfCommentId?.trim(),
+            childOfCommentId: commentDto.childOfCommentId || '',
+            userDownVoted: false,
+            userUpVoted: false,
+            votesLength: 0,
+            childCommentsCount: 0,
+            userBanned: false,
+        } as CommentDTO;
+    }
 
     async renameCommenterUserFullname(u: UserAuthBackendDTO) {
         //todo: bunu tekrar gözden geçir sanırım çalışmıyor?...
@@ -83,8 +164,22 @@ export class CommentService {
                 status.userCommentBlockReason,
             );
         }
+        const decision = await this.commentFilterService.evaluate(
+            commentDto.textContent,
+            commentDto.entityGroup,
+        );
+        if ((await this.applyFilterDecision(decision, currentUser)) == 'DROP') {
+            return this.droppedCommentDto(commentDto, currentUser);
+        }
+
         let commentMeta =
             await this.commentMetaService.findOrCreateNewMeta(commentDto);
+        const parent = commentDto.childOfCommentId
+            ? await this.commentModel.findById(commentDto.childOfCommentId)
+            : null;
+        // Shadow yoruma verilen cevap da shadow olur
+        const shadow =
+            decision.action == 'SHADOW' || parent?.moderationStatus == 'SHADOW';
         // this.fillChildrenWithParentIfEmpty();
         commentDto.childEntityId =
             commentDto.childEntityId || commentDto.mainEntityId;
@@ -96,11 +191,16 @@ export class CommentService {
         commentModel.byFullName = currentUser.name + ' ' + currentUser.surname;
         commentModel.votesLength = 0;
         commentModel.ipAddress = ip;
-        const saved = await commentModel.save();
-        if (commentDto.childOfCommentId) {
-            const parent = await this.commentModel.findById(
-                commentDto.childOfCommentId,
+        commentModel.flags = decision.flags;
+        if (shadow) {
+            commentModel.moderationStatus = 'SHADOW';
+            commentModel.shadowExpiresAt = new Date(
+                Date.now() + this.shadowRetentionMs(),
             );
+        }
+        const saved = await commentModel.save();
+        // Shadow yorum sayaçlara yansımaz; moderatör serbest bırakırsa o zaman artar
+        if (!shadow) {
             if (parent) {
                 parent.childCommentsCount = !parent.childCommentsCount
                     ? 1
@@ -108,7 +208,9 @@ export class CommentService {
                 await parent.save();
             }
         }
-        await this.commentMetaService.increaseExisting(commentDto, commentMeta);
+        if (!shadow) {
+            await this.commentMetaService.increaseExisting(commentDto, commentMeta);
+        }
 
         return this.commentMapper.toDto(saved, commentMeta, currentUser);
     }
@@ -136,6 +238,7 @@ export class CommentService {
                 $or: await this.commentFilterMatch(
                     commentsSearchs,
                     currentUser?.id,
+                    currentUser,
                 ),
             },
         };
@@ -175,12 +278,31 @@ export class CommentService {
     private async commentFilterMatch(
         commentsSearch: CommentSearchDTO[],
         userId?: string,
+        currentUser?: Optional<UserAuthBackendDTO>,
     ): Promise<FilterQuery<any>[]> {
         const filters: FilterQuery<any>[] = [];
+        const moderator = isModerator(currentUser);
+        // Shadow yorumlar sadece yazarına ve moderatöre görünür
+        const shadowVisibility: FilterQuery<any> = moderator
+            ? {}
+            : {
+                $or: [
+                    { moderationStatus: { $ne: 'SHADOW' } },
+                    ...(userId ? [{ byUserId: userId }] : []),
+                ],
+            };
 
         for (let index = 0; index < commentsSearch.length; index++) {
             const commentSearch = commentsSearch[index];
+            const flagList = moderator
+                ? (commentSearch.flags ?? '')
+                    .split(',')
+                    .map((f) => f.trim())
+                    .filter(Boolean)
+                : [];
             const currentCommentSearch = {
+                ...shadowVisibility,
+                ...(flagList.length ? { flags: { $in: flagList } } : {}),
                 ...(commentSearch.mainEntityName ? { mainEntityName: commentSearch.mainEntityName } : {}),
                 ...(commentSearch.mainEntityId ? { mainEntityId: commentSearch.mainEntityId } : {}),
                 ...(commentSearch.entityGroup ? { entityGroup: commentSearch.entityGroup } : {}),
@@ -266,6 +388,36 @@ export class CommentService {
             );
 
             if (allow) {
+                const decision = await this.commentFilterService.evaluate(
+                    newCommetn.textContent,
+                    comment.entityGroup,
+                );
+                if (
+                    (await this.applyFilterDecision(decision, currentUser)) ==
+                    'DROP'
+                ) {
+                    // düzenleme sessizce uygulanmaz, eski hali döner
+                    const meta =
+                        await this.commentMetaService.findOrCreateNewMeta(comment);
+                    return this.commentMapper.toDto(comment, meta, currentUser);
+                }
+                if (decision.flags.length) {
+                    comment.flags = [
+                        ...new Set([...(comment.flags ?? []), ...decision.flags]),
+                    ];
+                }
+                if (
+                    decision.action == 'SHADOW' &&
+                    comment.moderationStatus != 'SHADOW'
+                ) {
+                    // Zaten yayındaki yorum sayaçlara girmişti; shadow'a çekmek sayaçları bozmasın diye
+                    // sadece görünürlüğü kapatıyoruz. Moderatör serbest bırakırsa sayaç tekrar artmaz.
+                    comment.moderationStatus = 'SHADOW';
+                    comment.shadowCounted = true;
+                    comment.shadowExpiresAt = new Date(
+                        Date.now() + this.shadowRetentionMs(),
+                    );
+                }
                 comment.textContent = newCommetn.textContent;
                 comment.editCount = 1 + comment.editCount;
                 comment.lastEditDate = new Date();

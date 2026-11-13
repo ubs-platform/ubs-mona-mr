@@ -57,6 +57,21 @@ export class SocialComment {
 
     @Prop(String)
     ipAddress: string;
+
+    /** Moderasyon flagleri. Sadece moderatöre gösterilir, ceza anlamı taşımaz. */
+    @Prop({ type: [String], default: [] })
+    flags: string[];
+
+    @Prop({ type: String, default: 'VISIBLE' })
+    moderationStatus: 'VISIBLE' | 'SHADOW';
+
+    /** Dolu ise Mongo TTL index bu tarihte yorumu siler. Moderatör "sakla" derse kaldırılır. */
+    @Prop({ type: Date })
+    shadowExpiresAt?: Date;
+
+    /** Yayındayken düzenlemeyle shadow'a çekildiyse sayaçlara zaten girmiştir; release'te tekrar artırılmaz. */
+    @Prop({ type: Boolean })
+    shadowCounted?: boolean;
 }
 
  const SocialCommentSchema = SchemaFactory.createForClass(SocialComment);
@@ -78,4 +93,10 @@ SocialCommentSchema.index({ childOfCommentId: 1, isChild: 1 });
 
 // Kullanıcının yorumlarını tarihe göre sıralı getirmek için
 SocialCommentSchema.index({ byUserId: 1, creationDate: -1 });
+
+// Shadow yorumları süre dolunca otomatik silmek için (alanı olmayan dokümanlar etkilenmez)
+SocialCommentSchema.index({ shadowExpiresAt: 1 }, { expireAfterSeconds: 0 });
+
+// Moderatör flag aramaları için
+SocialCommentSchema.index({ flags: 1, creationDate: -1 });
 export {SocialCommentSchema};
