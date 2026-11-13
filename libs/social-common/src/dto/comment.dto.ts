@@ -34,6 +34,8 @@ export class CommentSearchDTO {
     contentTextIn?: string;
     /** Sadece moderatör: virgülle ayrılmış flag listesi, herhangi biri eşleşirse getirir */
     flags?: string;
+    /** Sadece moderatör: görünürlük durumuna göre filtreler */
+    moderationStatus?: 'VISIBLE' | 'SHADOW';
 }
 
 export interface CommentDTO {
@@ -82,6 +84,9 @@ export interface CommentDTO {
 
     /** Sadece moderatöre doldurulur */
     moderationStatus?: 'VISIBLE' | 'SHADOW';
+
+    /** Sadece moderatöre doldurulur: shadow yorumun otomatik silineceği tarih (yoksa saklanıyor) */
+    shadowExpiresAt?: Date;
 }
 
 export interface CommentAbilityDTO {

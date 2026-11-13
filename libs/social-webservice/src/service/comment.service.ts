@@ -303,6 +303,12 @@ export class CommentService {
             const currentCommentSearch = {
                 ...shadowVisibility,
                 ...(flagList.length ? { flags: { $in: flagList } } : {}),
+                ...(moderator && commentSearch.moderationStatus == 'SHADOW'
+                    ? { moderationStatus: 'SHADOW' }
+                    : {}),
+                ...(moderator && commentSearch.moderationStatus == 'VISIBLE'
+                    ? { moderationStatus: { $ne: 'SHADOW' } }
+                    : {}),
                 ...(commentSearch.mainEntityName ? { mainEntityName: commentSearch.mainEntityName } : {}),
                 ...(commentSearch.mainEntityId ? { mainEntityId: commentSearch.mainEntityId } : {}),
                 ...(commentSearch.entityGroup ? { entityGroup: commentSearch.entityGroup } : {}),

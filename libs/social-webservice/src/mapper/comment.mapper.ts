@@ -54,6 +54,7 @@ export class CommentMapper {
                 ? {
                       flags: comment.flags ?? [],
                       moderationStatus: comment.moderationStatus ?? 'VISIBLE',
+                      shadowExpiresAt: comment.shadowExpiresAt,
                   }
                 : {}),
             userBanned: commentMeta.commentingDisabledUserIds.includes(
