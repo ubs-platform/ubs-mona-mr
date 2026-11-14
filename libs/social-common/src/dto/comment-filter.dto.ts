@@ -36,8 +36,8 @@ export class CommentFilterPatternAddDTO {
     /** REGEX ise normalize edilmiş (küçük harf, ascii) metne uygulanır. STRING ise tam kelime/ifade eşleşir. */
     pattern: string;
     type: CommentFilterPatternType;
-    /** Eşleşen yoruma eklenecek flag */
-    flag: string;
+    /** Eşleşen yoruma eklenecek flag. DROP / REJECT_ERROR / BAN_USER'da yorum saklanmadığı için istenmez. */
+    flag?: string;
     action: CommentFilterAction;
     /** Sadece BAN_USER için zorunlu: ban süresi (saat) */
     banDurationHours?: number;
@@ -64,4 +64,22 @@ export class CommentModerationSearchDTO {
     flags?: string;
     moderationStatus?: CommentModerationStatus;
     entityGroup?: string;
+}
+
+/** JSON export biçimi. Import bunu ya da düz CommentFilterPatternAddDTO[] kabul eder. */
+export interface CommentFilterPatternExportDTO {
+    version: 1;
+    exportedAt: string;
+    patterns: CommentFilterPatternAddDTO[];
+}
+
+/** Import 400 yanıtındaki hata. index -1 ise dosyanın geneliyle ilgilidir. */
+export interface CommentFilterPatternImportErrorDTO {
+    index: number;
+    code: string;
+}
+
+export interface CommentFilterPatternImportResultDTO {
+    imported: number;
+    removed: number;
 }

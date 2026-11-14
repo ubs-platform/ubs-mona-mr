@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import {
     CommentFilterPatternAddDTO,
     CommentFilterPatternDTO,
+    CommentFilterPatternImportResultDTO,
 } from '@ubs-platform/social-common';
 import { CommentFilterPattern } from '@ubs-platform/social-entity-mongo';
 import {
@@ -11,6 +12,8 @@ import {
     FilterDecision,
     compilePattern,
     evaluatePatterns,
+    NON_STORING_ACTIONS,
+    validateImport,
     validatePatternSource,
 } from '../filter/comment-filter.engine';
 
@@ -94,15 +97,51 @@ export class CommentFilterService {
         return {
             pattern: dto.pattern.trim(),
             type: dto.type,
-            flag: dto.flag.trim(),
+            flag: NON_STORING_ACTIONS.includes(dto.action)
+                ? undefined
+                : dto.flag?.trim() || undefined,
             action: dto.action,
             banDurationHours:
                 dto.action === 'BAN_USER' ? dto.banDurationHours : undefined,
             entityGroup: dto.entityGroup?.trim() || undefined,
             obfuscationResistant: !!dto.obfuscationResistant,
             enabled: dto.enabled ?? true,
-            note: dto.note,
+            note: dto.note || undefined,
         };
+    }
+
+    /**
+     * Tüm pattern'leri dosyadakilerle değiştirir. Bir kayıt bile hatalıysa hiçbir şey yazılmaz.
+     * Transaction olmadığı için: önce yeniler batch işaretiyle eklenir, başarılıysa eskiler silinir;
+     * ekleme yarıda kalırsa sadece yeni batch geri alınır ve eski set korunur.
+     */
+    async importReplace(body: unknown): Promise<CommentFilterPatternImportResultDTO> {
+        const { items, errors } = validateImport(body);
+        if (errors.length) {
+            throw new BadRequestException({ message: 'import-invalid', errors });
+        }
+        const importBatchId = new Types.ObjectId().toString();
+        try {
+            await this.patternModel.insertMany(
+                items.map((a) => ({
+                    ...this.toEntityFields(a as CommentFilterPatternAddDTO),
+                    importBatchId,
+                })),
+            );
+        } catch (e) {
+            await this.patternModel.deleteMany({ importBatchId });
+            this.invalidate();
+            throw e;
+        }
+        const removed = await this.patternModel.deleteMany({
+            importBatchId: { $ne: importBatchId },
+        });
+        await this.patternModel.updateMany(
+            { importBatchId },
+            { $unset: { importBatchId: 1 } },
+        );
+        this.invalidate();
+        return { imported: items.length, removed: removed.deletedCount ?? 0 };
     }
 
     private toDto(a: any): CommentFilterPatternDTO {

@@ -1,5 +1,7 @@
 import {
+    MAX_IMPORT_ITEMS,
     compilePattern,
+    validateImport,
     evaluatePatterns,
     normalizeText,
     validatePatternSource,
@@ -112,5 +114,60 @@ describe('validatePatternSource', () => {
     });
     it('accepts a normal pattern', () => {
         expect(validatePatternSource(p({ pattern: 'merhaba' }))).toBeNull();
+    });
+});
+
+describe('flag optional for non-storing actions', () => {
+    it('allows empty flag for DROP / BAN_USER / REJECT_ERROR only', () => {
+        expect(validatePatternSource(p({ flag: '', action: 'DROP' }))).toBeNull();
+        expect(validatePatternSource(p({ flag: undefined as any, action: 'REJECT_ERROR' }))).toBeNull();
+        expect(
+            validatePatternSource(p({ flag: '', action: 'BAN_USER', banDurationHours: 1 })),
+        ).toBeNull();
+        expect(validatePatternSource(p({ flag: '', action: 'SHADOW' }))).toBe('flag-empty');
+        expect(validatePatternSource(p({ flag: ' ', action: 'FLAG_ONLY' }))).toBe('flag-empty');
+    });
+    it('does not add empty flags to the decision', () => {
+        const d = run(
+            [
+                p({ pattern: 'a', flag: undefined as any, action: 'DROP' }),
+                p({ pattern: 'a', flag: 'x', action: 'FLAG_ONLY' }),
+            ],
+            'a',
+        );
+        expect(d.flags).toEqual(['x']);
+        expect(d.action).toBe('DROP');
+    });
+});
+
+describe('validateImport', () => {
+    const ok = { pattern: 'abc', type: 'STRING', flag: 'f', action: 'FLAG_ONLY' };
+
+    it('accepts plain array and export wrapper', () => {
+        expect(validateImport([ok]).errors).toEqual([]);
+        expect(validateImport({ version: 1, patterns: [ok] }).errors).toEqual([]);
+    });
+    it('reports every invalid item with its index', () => {
+        const { errors } = validateImport([
+            ok,
+            'nope',
+            { ...ok, type: 'REGEX', pattern: '(a+)+$' },
+            ok,
+            { ...ok, enabled: 'yes' },
+            { ...ok, action: 'BAN_USER' },
+        ]);
+        expect(errors).toEqual([
+            { index: 1, code: 'item-not-object' },
+            { index: 2, code: 'regex-unsafe' },
+            { index: 4, code: 'boolean-invalid' },
+            { index: 5, code: 'ban-duration-required' },
+        ]);
+    });
+    it('rejects non-array, empty and oversized input', () => {
+        expect(validateImport({}).errors[0].code).toBe('import-not-array');
+        expect(validateImport([]).errors[0].code).toBe('import-empty');
+        expect(
+            validateImport(new Array(MAX_IMPORT_ITEMS + 1).fill(ok)).errors[0].code,
+        ).toBe('import-too-large');
     });
 });

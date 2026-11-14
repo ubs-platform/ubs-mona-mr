@@ -118,22 +118,15 @@ export class CommentService {
     }
 
     async renameCommenterUserFullname(u: UserAuthBackendDTO) {
-        //todo: bunu tekrar gözden geçir sanırım çalışmıyor?...
-
         await this.commentModel
-            .aggregate([
+            .updateMany(
                 {
-                    $match: {
-                        byUserId: u.id,
-                    },
+                    byUserId: u.id,
                 },
                 {
-                    $set: {
-                        byFullname: u.name + ' ' + u.surname,
-                    },
+                    byFullName: u.name + ' ' + u.surname,
                 },
-            ])
-            .exec();
+            ).exec();
     }
 
     // private fillChildrenWithParentIfEmpty(
@@ -325,7 +318,7 @@ export class CommentService {
                 ...(commentSearch.childEntityName
                     ? { childEntityName: commentSearch.childEntityName }
                     : {}),
-                    // TODO: Eğer özellikle belirtilirse child yorumları da getirelim ama default olarak getirme. Kitap sahibi yorumlara bakarken childler gözden kaçıyor...
+                // TODO: Eğer özellikle belirtilirse child yorumları da getirelim ama default olarak getirme. Kitap sahibi yorumlara bakarken childler gözden kaçıyor...
                 ...(commentSearch.childOfCommentId
                     ? {
                         childOfCommentId: commentSearch.childOfCommentId,

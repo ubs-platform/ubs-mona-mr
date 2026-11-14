@@ -40,11 +40,24 @@ Kod: `libs/social-webservice/src/filter/comment-filter.engine.ts` (saf motor),
 - Pattern'ler 60 sn bellekte cache'lenir; CRUD sonrası ilgili instance'ta hemen yenilenir, diğer instance'lar TTL ile yakalar.
 - Düzenlemede (`editComment`) de filtre çalışır; `DROP` düzenlemeyi uygulamadan eski yorumu döner.
 
+- Flag, yorumu saklayan aksiyonlarda (`FLAG_ONLY`, `PENALTY_POINT`, `SHADOW`) zorunludur; `DROP`/`REJECT_ERROR`/`BAN_USER`'da istenmez ve kaydedilmez (`NON_STORING_ACTIONS`).
+
+## JSON export / import
+
+- Export frontend'de yapılır (`GET filter-pattern` listesi, `_id`'siz): `{ version: 1, exportedAt, patterns: [...] }`.
+- Import gövdesi bu biçim ya da düz dizi olabilir. Önce **tüm** kayıtlar doğrulanır (şekil + `validatePatternSource`);
+  bir tane bile hatalıysa hiçbir şey yazılmaz ve `400 { message: 'import-invalid', errors: [{ index, code }] }` döner
+  (`index: -1` dosyanın geneli: `import-not-array`, `import-empty`, `import-too-large`).
+- Hata yoksa set **tamamen değiştirilir**: dosyada olmayan pattern'ler silinir. Transaction olmadığı için yeni kayıtlar önce
+  `importBatchId` ile eklenir, sonra eskiler silinir ve işaret kaldırılır; ekleme yarıda kalırsa sadece yeni batch silinir.
+- En fazla 1000 kayıt; ayrıca Express'in varsayılan 100 KB gövde sınırı geçerlidir (aşılırsa 413).
+
 ## Admin endpoint'leri (`UBS-SOCIAL:MODERATOR` veya `ADMIN`)
 
 | Endpoint | Açıklama |
 |---|---|
 | `GET/POST comment/admin/filter-pattern`, `PUT/DELETE .../:id` | Pattern CRUD |
+| `POST comment/admin/filter-pattern/import` | Tüm pattern'leri değiştirir (aşağıya bakın) |
 | `GET comment/admin/flagged?flags=a,b&moderationStatus=SHADOW&entityGroup=..&page&size` | Flag'li/shadow yorumlar (aimoderator için de uygun) |
 | `PUT comment/admin/:id/flags` `{add, remove}` | Manuel flag |
 | `PUT comment/admin/:id/shadow/keep` / `release` | Sakla / yayınla |

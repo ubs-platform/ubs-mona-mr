@@ -10,7 +10,7 @@ export class CommentFilterPattern {
     @Prop({ type: String, required: true })
     type: 'REGEX' | 'STRING';
 
-    @Prop({ type: String, required: true })
+    @Prop({ type: String, required: false })
     flag: string;
 
     @Prop({ type: String, required: true })
@@ -37,6 +37,10 @@ export class CommentFilterPattern {
 
     @Prop({ type: String })
     note?: string;
+
+    /** Sadece import sırasında: yarıda kalırsa bu batch geri silinir. Başarıda temizlenir. */
+    @Prop({ type: String })
+    importBatchId?: string;
 }
 
 export const CommentFilterPatternSchema =

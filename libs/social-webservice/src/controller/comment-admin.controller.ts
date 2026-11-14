@@ -71,6 +71,14 @@ export class CommentAdminController {
         return await this.filterService.create(dto);
     }
 
+    /** Tüm pattern'leri değiştirir. Hata varsa 400 { message: 'import-invalid', errors: [{index, code}] } */
+    @Post('filter-pattern/import')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles([ModeratorRole])
+    async importPatterns(@Body() body: unknown) {
+        return await this.filterService.importReplace(body);
+    }
+
     @Put('filter-pattern/:id')
     @UseGuards(JwtAuthGuard, RolesGuard)
     @Roles([ModeratorRole])
