@@ -491,24 +491,20 @@ export class CommentService {
     ): Promise<ExistCommentAbilityDTO> {
         const comment = await this.commentModel.findById(commentId);
         if (comment) {
+            const [
+                canEdit,
+                canRemove,
+                userContentAdmin
+            ] = await Promise.all([
+                this.commentAbilityCheckService.checkCanEdit(comment, currentUser),
+                this.commentAbilityCheckService.checkCanDelete(comment, currentUser),
+                this.commentAbilityCheckService.isUserOwnerOfRealEntity(comment, currentUser!),
+            ]);
             return {
-                canEdit: (
-                    await this.commentAbilityCheckService.checkCanEdit(
-                        comment,
-                        currentUser,
-                    )
-                ).allow,
-                canRemove: (
-                    await this.commentAbilityCheckService.checkCanDelete(
-                        comment,
-                        currentUser,
-                    )
-                ).allow,
-                userCommentAdmin:
-                    (await this.commentAbilityCheckService.isUserOwnerOfRealEntity(
-                        comment,
-                        currentUser!,
-                    )) != null,
+                canEdit: canEdit.allow,
+                canRemove: canRemove.allow,
+                // userCommentAdmin: userContentAdmin != null,
+                userCommentAdmin: userContentAdmin ? true : false,
             } as ExistCommentAbilityDTO;
         } else {
             throw new NotFoundException();

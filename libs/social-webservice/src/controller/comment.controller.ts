@@ -135,13 +135,21 @@ export class CommentController {
 
     @Put('block-user')
     @UseGuards(UserIntercept)
-    async banUser(@Body() comment: BanUserDTO) {
+    async banUser(@Body() comment: BanUserDTO, @CurrentUser() currentUser: UserAuthBackendDTO) {
+        const abilityCheck = await this.commentAbility.isUserOwnerOfRealEntity(comment as any, currentUser);
+        if (!abilityCheck) {
+            throw new UnauthorizedException('No Permission');
+        }
         await this.commntMetaService.banUser(comment);
     }
 
     @Put('unblock-user')
     @UseGuards(UserIntercept)
-    async unbanUser(@Body() comment: BanUserDTO) {
+    async unbanUser(@Body() comment: BanUserDTO, @CurrentUser() currentUser: UserAuthBackendDTO) {
+        const abilityCheck = await this.commentAbility.isUserOwnerOfRealEntity(comment as any, currentUser);
+        if (!abilityCheck) {
+            throw new UnauthorizedException('No Permission');
+        }
         await this.commntMetaService.unbanUser(comment);
     }
 
