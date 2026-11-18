@@ -6,6 +6,11 @@ export interface UploadFileCategoryResponse {
   volatile?: boolean;
   durationMiliseconds?: number;
   needAuthorizationAtView?: boolean;
+  /**
+   * When set, uploads whose declared mime type is not listed are rejected
+   * (e.g. `['application/pdf']` for CVs). Unset keeps the old behaviour.
+   */
+  allowedMimeTypes?: string[];
 }
 
 export interface UploadFileCategoryRequest {

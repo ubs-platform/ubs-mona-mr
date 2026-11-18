@@ -221,6 +221,11 @@ export class ImageFileController {
             }
         }
         if (fil) {
+            if (fil.needAuthorizationAtView) {
+                // Private files: no shared caches, no content sniffing.
+                response.header('Cache-Control', 'private, no-store');
+                response.header('X-Content-Type-Options', 'nosniff');
+            }
             return response.status(200).type(fil.mimetype).send(fil.file);
         } else {
             return response.status(404).send('File not found');
@@ -231,6 +236,18 @@ export class ImageFileController {
     async checkFileExistence(data: { category: string; name: string }) {
         const fil = await this.fservice.findByName(data.category, data.name);
         return fil != null;
+    }
+
+    /**
+     * Service-to-service deletion (not exposed over HTTP). The owning service
+     * decides who may delete; the file service only removes the record.
+     */
+    @MessagePattern('ubs/files/remove')
+    async removeFile(data: { category: string; name: string }): Promise<boolean> {
+        if (typeof data?.category !== 'string' || typeof data?.name !== 'string' || !data.category || !data.name) {
+            return false;
+        }
+        return this.fservice.removeByCategoryAndName(data.category, data.name);
     }
 
     async uploadFile1(
@@ -256,6 +273,12 @@ export class ImageFileController {
         const maxLimitBytes = categoryResponse.maxLimitBytes ?? 1000000;
         if (categoryResponse.category && categoryResponse.name) {
             console.info(file);
+            if (
+                categoryResponse.allowedMimeTypes?.length &&
+                !categoryResponse.allowedMimeTypes.includes(file?.mimetype)
+            ) {
+                throw new BadRequestException('file-type-not-allowed');
+            }
             this.assertFileLimit(maxLimitBytes, file);
             await this.fservice.uploadFile(
                 {

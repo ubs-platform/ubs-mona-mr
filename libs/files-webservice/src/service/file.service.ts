@@ -65,6 +65,17 @@ export class FileService {
     }
 
 
+    /**
+     * Deletes one file of a category. Used by owning services to erase
+     * personal data (e.g. a candidate's CV); unlike removeByName it cannot
+     * touch a file with the same name in another category.
+     */
+    async removeByCategoryAndName(category: string, name: string): Promise<boolean> {
+        const result = await this.fileModel.deleteOne({ category, name });
+        this.invalidateFileCache(category, name);
+        return result.deletedCount > 0;
+    }
+
     async updateVolatilities(volatilities: FileVolatileTag[]): Promise<void> {
         const updatePromises = volatilities.map(async (volatility) => {
             try {
@@ -295,14 +306,17 @@ export class FileService {
         }
     }
 
+    /**
+     * Sets only the volatility fields. It must not touch
+     * `needAuthorizationAtView`: both callers pass three arguments, so a
+     * default here used to reset protected files (invoices, CVs) to public.
+     */
     private setVolatility(
         file: any,
         volatile?: boolean,
         durationMilliseconds?: number,
-        needAuthorizationAtView?: boolean,
     ): void {
         file.volatile = volatile ?? true;
-        file.needAuthorizationAtView = needAuthorizationAtView ?? false;
         file.expireAt = new Date(
             Date.now() +
             (durationMilliseconds ?? DEFAULT_VOLATILITY_DURATION),
