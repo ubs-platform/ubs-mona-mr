@@ -6,4 +6,6 @@ export * from './entity-ownership.schema';
 export * from './entity-ownership-group.schema';
 export * from './entity-ownership-group-invitation.schema';
 export * from './entity-ownership-group-entity-capability';
+export * from './user-oauth-link.schema';
+export * from './oauth-login-session.schema';
 export * from './users-entity-mongo.module';

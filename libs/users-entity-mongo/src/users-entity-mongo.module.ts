@@ -7,6 +7,8 @@ import { PwResetRequest, PwResetRequestSchema } from './pw-reset-request.schema'
 import { EntityOwnership, EntityOwnershipSchema } from './entity-ownership.schema';
 import { EntityOwnershipGroup, EntityOwnershipGroupSchema } from './entity-ownership-group.schema';
 import { EntityOwnershipGroupInvitation, EntityOwnershipGroupInvitationSchema } from './entity-ownership-group-invitation.schema';
+import { UserOAuthLink, UserOAuthLinkSchema } from './user-oauth-link.schema';
+import { OAuthLoginSession, OAuthLoginSessionSchema } from './oauth-login-session.schema';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { EntityOwnershipGroupInvitation, EntityOwnershipGroupInvitationSchema } 
       { name: EntityOwnership.name, schema: EntityOwnershipSchema },
       { name: EntityOwnershipGroup.name, schema: EntityOwnershipGroupSchema },
       { name: EntityOwnershipGroupInvitation.name, schema: EntityOwnershipGroupInvitationSchema },
+      { name: UserOAuthLink.name, schema: UserOAuthLinkSchema },
+      { name: OAuthLoginSession.name, schema: OAuthLoginSessionSchema },
     ]),
   ],
   exports: [MongooseModule],

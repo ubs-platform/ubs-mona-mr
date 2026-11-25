@@ -339,6 +339,11 @@
   resolved "https://registry.npmjs.org/@css-inline/css-inline-linux-x64-gnu/-/css-inline-linux-x64-gnu-0.22.0.tgz"
   integrity sha512-l8QAh5/zEdYNlS1Ctqi/0D9tDXhEic9w9ou7FTxmQjMirAg2+oUmiraqWNnZr0YeYySPN500XHbCKDGq9ACYRg==
 
+"@css-inline/css-inline-linux-x64-musl@0.22.0":
+  version "0.22.0"
+  resolved "https://registry.npmjs.org/@css-inline/css-inline-linux-x64-musl/-/css-inline-linux-x64-musl-0.22.0.tgz"
+  integrity sha512-9LcUU2ZJl7VGfcCa6LGCeGQsnUomLgcxJvbnCWiSH7A8iP1O5tZ2HWIj9j8zpCEHciBwn9WklWewZ4gP0ZlB9A==
+
 "@css-inline/css-inline@0.22.0":
   version "0.22.0"
   resolved "https://registry.npmjs.org/@css-inline/css-inline/-/css-inline-0.22.0.tgz"

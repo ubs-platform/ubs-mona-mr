@@ -35,17 +35,18 @@ export class AuthService {
         let realUser = await this.userService.findUserWithPassword(userLogin);
         // const correspond = realUser.passwordEncyripted == passwdHashed;
         if (realUser) {
-            const payload = {
-                userId: realUser.id,
-            };
-            const token = this.jwtService.sign(payload);
-            return new UserAuthSuccess(token);
+            return this.issueToken(realUser.id);
         } else {
             throw new ErrorInformations(
                 UBSUsersErrorConsts.AUTHENTICATION_FAIL,
                 'User is not found or password does not match',
             );
         }
+    }
+
+    /** Issues this service's session token; every login method ends here. */
+    issueToken(userId: any): UserAuthSuccess {
+        return new UserAuthSuccess(this.jwtService.sign({ userId }));
     }
 
     async verifyToken(token: string) {

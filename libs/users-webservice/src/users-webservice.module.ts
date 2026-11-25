@@ -28,6 +28,9 @@ import { JwtLocalStrategy } from './strategies/jwt-local-strategy';
 import { EntityOwnershipMapper } from './mapper/entity-ownership.mapper';
 import { EntityOwnershipGroupMapper } from './mapper/entity-ownership-group.mapper';
 import { EogAssertions } from './util/eog-assertions';
+import { OAuthController } from './web/oauth.controller';
+import { OAuthService } from './services/oauth.service';
+import { OAuthProviderRegistry } from './oauth/oauth-provider-registry';
 
 @Module({
   imports: [
@@ -40,6 +43,7 @@ import { EogAssertions } from './util/eog-assertions';
   controllers: [
     UserController,
     AuthController,
+    OAuthController,
     UserAdminController,
     ResetPasswordController,
     EntityOwnershipController,
@@ -63,7 +67,9 @@ import { EogAssertions } from './util/eog-assertions';
     EntityOwnershipMapper,
     EntityOwnershipGroupService,
     EntityOwnershipGroupMapper,
-    EogAssertions
+    EogAssertions,
+    OAuthService,
+    OAuthProviderRegistry,
   ],
   exports: [UserService, UserCommonService, AuthService, EntityOwnershipService, EntityOwnershipGroupService],
 })
