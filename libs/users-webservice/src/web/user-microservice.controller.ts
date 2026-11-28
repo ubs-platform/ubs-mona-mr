@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { LegacyEventPattern } from '@ubs-platform/microservice-setup-util';
-import { UserService } from '../services/user.service';
+import { UserService, userAuthCacheKey } from '../services/user.service';
 import {
     UserAuthBackendDTO,
 } from '@ubs-platform/users-common';
@@ -32,7 +32,7 @@ export class UserMicroserviceController {
     @MessagePattern('user-by-id')
     async findUserAuthFromId(id: any): Promise<UserAuthBackendDTO> {
         const u = await this.cacheman.getOrCallAsync(
-            `${this.CACHE_PREFIX_MSCTRL} findUserAuthFromId ${id}`,
+            userAuthCacheKey(id),
             () => this.userService.findUserAuthBackend(id),
             { livetime: 1000, livetimeExtending: 'ON_GET' },
         );

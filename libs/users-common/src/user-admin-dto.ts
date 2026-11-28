@@ -9,4 +9,6 @@ export class UserAuthBackendDTO {
   roles: string[];
   localeCode: string;
   active: boolean;
+  /** Session generation; see `tokenVersionMatches`. Absent means 0. */
+  tokenVersion?: number;
 }

@@ -17,7 +17,10 @@ import { UserService } from '../services/user.service';
 import { JwtAuthLocalGuard } from '../guard/jwt-local.guard';
 import { CurrentUser } from '../local-current-user-decorator';
 import { EmailChangeRequestService } from '../services/email-change-request.service';
+import { AuthService } from '../services/auth.service';
 import {
+    PasswordChangeDto,
+    UserAuthSuccess,
     UserDTO,
     UserGeneralInfoDTO,
     UserRegisterDTO,
@@ -28,6 +31,7 @@ export class UserController {
     constructor(
         private userService: UserService,
         private emailChangeRequestService: EmailChangeRequestService,
+        private authService: AuthService,
     ) {}
 
     @Put('/current/general')
@@ -85,12 +89,8 @@ export class UserController {
     @UseGuards(JwtAuthLocalGuard)
     async changePassword(
         @CurrentUser() currentUser: UserDTO,
-        @Body()
-        pwChange: {
-            currentPassword: string;
-            newPassword: string;
-        },
-    ) {
+        @Body() pwChange: PasswordChangeDto,
+    ): Promise<UserAuthSuccess | void> {
         try {
             await this.userService.changePasswordLogged(
                 currentUser.id,
@@ -98,6 +98,11 @@ export class UserController {
             );
         } catch (error: any) {
             throw new HttpException(error, HttpStatus.BAD_REQUEST);
+        }
+        if (pwChange.logoutOtherSessions) {
+            // The caller's token was revoked along with the others; hand it a
+            // replacement so this device stays signed in.
+            return await this.authService.issueToken(currentUser.id);
         }
     }
 }

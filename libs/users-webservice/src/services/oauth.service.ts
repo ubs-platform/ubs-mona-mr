@@ -66,7 +66,7 @@ export class OAuthService {
                 this.assertCanLogin(user);
                 link.lastLoginAt = new Date();
                 await link.save();
-                return this.loggedIn(identity.provider, user._id);
+                return await this.loggedIn(identity.provider, user._id);
             }
             // The user was deleted; drop the orphaned link and continue.
             await link.deleteOne();
@@ -135,7 +135,7 @@ export class OAuthService {
         });
         await this.createLink(user.id, session);
         await session.deleteOne();
-        return this.loggedIn(session.provider, user.id);
+        return await this.loggedIn(session.provider, user.id);
     }
 
     async linkWithPassword(
@@ -179,7 +179,7 @@ export class OAuthService {
 
         await this.createLink(user._id, session);
         await session.deleteOne();
-        return this.loggedIn(session.provider, user._id);
+        return await this.loggedIn(session.provider, user._id);
     }
 
     async listLinks(userId: string): Promise<OAuthLinkDTO[]> {
@@ -301,11 +301,14 @@ export class OAuthService {
         }
     }
 
-    private loggedIn(provider: string, userId: any): OAuthLoginResultDTO {
+    private async loggedIn(
+        provider: string,
+        userId: any,
+    ): Promise<OAuthLoginResultDTO> {
         return {
             status: 'LOGGED_IN',
             provider,
-            token: this.authService.issueToken(userId).token,
+            token: (await this.authService.issueToken(userId)).token,
         };
     }
 

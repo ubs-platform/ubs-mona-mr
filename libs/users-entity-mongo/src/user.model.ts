@@ -75,6 +75,13 @@ export class User {
 
     @Prop({ type: String })
     localeCode!: string;
+
+    /**
+     * Session generation. Tokens carry it as the `tv` claim and are rejected
+     * once it no longer matches, so bumping it revokes every issued token.
+     */
+    @Prop({ type: Number, default: 0 })
+    tokenVersion!: number;
 }
 
 export type UserDoc = User & Document;

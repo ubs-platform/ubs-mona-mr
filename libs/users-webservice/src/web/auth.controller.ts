@@ -44,12 +44,18 @@ export class AuthController {
         return matchRolesOrAdm(roleList, user.roles);
     }
 
+    /**
+     * Single-device logout is client-side only: tokens are stateless, so
+     * revoking one device would need a per-session store.
+     */
     @Post('/logout')
     @UseGuards(UserIntercept)
-    async logout(@CurrentUser() user: UserAuthBackendDTO) {
-        if (user) {
-            // cmon do something
-        }
-        // cmon do something
+    async logout(@CurrentUser() user: UserAuthBackendDTO) {}
+
+    /** Revokes every session of the user, the calling one included. */
+    @Post('/logout-all')
+    @UseGuards(JwtAuthLocalGuard)
+    async logoutAll(@CurrentUser() user: UserAuthBackendDTO) {
+        await this.authService.logoutAllSessions(user.id);
     }
 }

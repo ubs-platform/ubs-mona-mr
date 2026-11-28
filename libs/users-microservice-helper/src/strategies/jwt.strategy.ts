@@ -4,7 +4,11 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { firstValueFrom } from 'rxjs';
 import { UserService } from '../service/user.service';
-import { UserDTO } from '@ubs-platform/users-common';
+import {
+    UserAuthBackendDTO,
+    UserDTO,
+    tokenVersionMatches,
+} from '@ubs-platform/users-common';
 import { JwtConstants } from '@ubs-platform/users-consts';
 
 @Injectable({})
@@ -17,7 +21,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         });
     }
 
-    async validate(validationPayload: { userId: any }): Promise<UserDTO> {
-        return this.userService.findUserAuth(validationPayload.userId);
+    async validate(validationPayload: {
+        userId: any;
+        tv?: number;
+    }): Promise<UserDTO | null> {
+        // `user-by-id` actually answers with the backend DTO, which carries
+        // the session generation.
+        const user = (await this.userService.findUserAuth(
+            validationPayload.userId,
+        )) as UserDTO & Pick<UserAuthBackendDTO, 'tokenVersion'>;
+        // Returning null makes passport answer 401.
+        return tokenVersionMatches(validationPayload, user) ? user : null;
     }
 }

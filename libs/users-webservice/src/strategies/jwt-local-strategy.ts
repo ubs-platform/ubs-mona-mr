@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { firstValueFrom } from 'rxjs';
 import { UserService } from '../services/user.service';
-import { UserDTO } from '@ubs-platform/users-common';
+import { UserDTO, tokenVersionMatches } from '@ubs-platform/users-common';
 import { JwtConstants } from '@ubs-platform/users-consts';
 
 @Injectable()
@@ -19,8 +19,12 @@ export class JwtLocalStrategy extends PassportStrategy(Strategy) {
 
     async validate(validationPayload: {
         userId: any;
+        tv?: number;
     }): Promise<UserDTO | null> {
-        // console.debug(validationPayload.userId);
-        return this.userService.findUserAuthBackend(validationPayload.userId);
+        const user = await this.userService.findUserAuthBackend(
+            validationPayload.userId,
+        );
+        // Returning null makes passport answer 401.
+        return tokenVersionMatches(validationPayload, user) ? user : null;
     }
 }

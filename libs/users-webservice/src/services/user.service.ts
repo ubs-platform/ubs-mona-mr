@@ -32,6 +32,15 @@ import { MongooseSearchUtil } from '@ubs-platform/crud-base';
 import { UserAdminSearch } from 'libs/users-common/src/user-admin-search.dto';
 import { exec } from 'child_process';
 import { MICROSERVICE_CLIENT } from '@ubs-platform/microservice-setup-util';
+import { CacheManagerService } from '@ubs-platform/cache-manager';
+
+/**
+ * Cache key of the `user-by-id` lookup that every service's JWT strategy goes
+ * through. Anything that changes whether a user's tokens are accepted must
+ * invalidate it, because `ON_GET` caching keeps an actively used entry alive.
+ */
+export const userAuthCacheKey = (id: any) =>
+    `usermsctrl findUserAuthFromId ${id}`;
 
 @Injectable()
 export class UserService {
@@ -43,6 +52,7 @@ export class UserService {
         @Inject(MICROSERVICE_CLIENT) private client: ClientKafka,
         private emailService: EmailService,
         private userCommonService: UserCommonService,
+        private cacheman: CacheManagerService,
     ) {
         void this.initOperationOncePerProcess();
     }
@@ -99,6 +109,9 @@ export class UserService {
                     pwChange.newPassword,
                 );
                 await u.save();
+                if (pwChange.logoutOtherSessions) {
+                    await this.revokeSessions(id);
+                }
                 await this.sendPasswordChangedMail(u);
                 return UserMapper.toAuthDto(u);
             }
@@ -113,11 +126,40 @@ export class UserService {
         if (u) {
             u.passwordEncyripted = await CryptoOp.encryptPassword(newPassword);
             await u.save();
+            // A reset usually means lost access or a compromise: always revoke.
+            await this.revokeSessions(id);
             await this.sendPasswordChangedMail(u);
             return UserMapper.toAuthDto(u);
         } else {
             throw 'not-found';
         }
+    }
+
+    /**
+     * Invalidates every token issued to the user so far and returns the new
+     * session generation, for issuing a replacement token when needed.
+     */
+    async revokeSessions(id: any): Promise<number> {
+        const u = await this.userModel.findByIdAndUpdate(
+            id,
+            { $inc: { tokenVersion: 1 } },
+            { new: true },
+        );
+        this.invalidateAuthCache(id);
+        if (!u) {
+            throw new NotFoundException();
+        }
+        return u.tokenVersion;
+    }
+
+    /** Current session generation, embedded into newly issued tokens. */
+    async findTokenVersion(id: any): Promise<number> {
+        const u = await this.userModel.findById(id, { tokenVersion: 1 });
+        return u?.tokenVersion ?? 0;
+    }
+
+    invalidateAuthCache(id: any) {
+        this.cacheman.invalidateStr(userAuthCacheKey(id));
     }
 
     async sendPasswordChangedMail(u: User) {
@@ -314,8 +356,16 @@ export class UserService {
         const user = await this.userModel.findById(data._id);
         console.info(user);
         if (user) {
+            const revoke =
+                (!user.suspended && !!data.suspended) || !!data.password;
             await UserMapper.userFullFromUser(user, data);
             await user.save();
+            if (revoke) {
+                await this.revokeSessions(user._id);
+            } else {
+                // Roles or the active flag may have changed.
+                this.invalidateAuthCache(user._id);
+            }
             UserMapper.toAuthDto(user);
         } else {
             throw 'not.found';

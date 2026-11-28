@@ -72,9 +72,7 @@ export class UserAdminController {
     @UseGuards(JwtAuthLocalGuard, RolesGuard)
     async deleteUser(@Param() params: { id: any }) {
         const removedUserInfo = await this.userService.deleteUser(params.id);
-        this.cacheman.invalidateStr(
-            `${this.CACHE_PREFIX_MSC} findUserAuthFromId ${params.id}`,
-        );
+        this.userService.invalidateAuthCache(params.id);
         return removedUserInfo;
     }
 }

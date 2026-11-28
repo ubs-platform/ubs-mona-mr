@@ -181,6 +181,7 @@ export class UserMapper {
             suspended: ub.suspended,
             localeCode: ub.localeCode,
             suspendReason: ub.suspendReason,
+            tokenVersion: ub.tokenVersion ?? 0,
         } as UserAuthBackendDTO;
     }
 

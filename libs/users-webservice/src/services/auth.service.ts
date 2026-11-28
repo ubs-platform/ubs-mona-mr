@@ -1,5 +1,7 @@
 import {
     ErrorInformations,
+    TOKEN_VERSION_CLAIM,
+    tokenVersionMatches,
     UBSUsersErrorConsts,
     UserAuth,
     UserAuthSuccess,
@@ -24,7 +26,11 @@ export class AuthService {
 
         const a = jwtDecoded['userId'];
         const ab = await this.userService.findUserAuth(a);
-        if (ab.active) {
+        const tokenVersion = await this.userService.findTokenVersion(a);
+        if (
+            ab.active &&
+            tokenVersionMatches(jwtDecoded, { tokenVersion })
+        ) {
             return ab;
         } else {
             throw new UnauthorizedException();
@@ -35,7 +41,7 @@ export class AuthService {
         let realUser = await this.userService.findUserWithPassword(userLogin);
         // const correspond = realUser.passwordEncyripted == passwdHashed;
         if (realUser) {
-            return this.issueToken(realUser.id);
+            return await this.issueToken(realUser.id);
         } else {
             throw new ErrorInformations(
                 UBSUsersErrorConsts.AUTHENTICATION_FAIL,
@@ -44,9 +50,23 @@ export class AuthService {
         }
     }
 
-    /** Issues this service's session token; every login method ends here. */
-    issueToken(userId: any): UserAuthSuccess {
-        return new UserAuthSuccess(this.jwtService.sign({ userId }));
+    /**
+     * Issues this service's session token; every login method ends here.
+     * The token is bound to the user's current session generation.
+     */
+    async issueToken(userId: any): Promise<UserAuthSuccess> {
+        const tokenVersion = await this.userService.findTokenVersion(userId);
+        return new UserAuthSuccess(
+            this.jwtService.sign({
+                userId,
+                [TOKEN_VERSION_CLAIM]: tokenVersion,
+            }),
+        );
+    }
+
+    /** Revokes every session of the user, including the calling one. */
+    async logoutAllSessions(userId: any): Promise<void> {
+        await this.userService.revokeSessions(userId);
     }
 
     async verifyToken(token: string) {
