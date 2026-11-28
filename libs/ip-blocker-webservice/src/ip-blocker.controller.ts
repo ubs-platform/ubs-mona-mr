@@ -1,4 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Logger, Post, UseGuards } from '@nestjs/common';
+import { isIP } from 'net';
 import { IpBlockerService } from './ip-blocker.service';
 import { LegacyEventPattern } from '@ubs-platform/microservice-setup-util';
 import { JwtAuthGuard } from '@ubs-platform/users-microservice-helper';
@@ -41,8 +42,8 @@ export class IpBlockerController {
   @Roles(["ADMIN"])
   async ban(@Body() body: ManualBanBody) {
     const ipAddress = body?.ipAddress?.trim();
-    if (!ipAddress) {
-      throw new BadRequestException('ipAddress is required');
+    if (!ipAddress || isIP(ipAddress) !== 4) {
+      throw new BadRequestException('ipAddress must be an IPv4 address');
     }
 
     return this.ipBlockerService.banManually(ipAddress, body.reason);
@@ -53,8 +54,8 @@ export class IpBlockerController {
   @Roles(["ADMIN"])
   async unban(@Body() body: ManualUnbanBody) {
     const ipAddress = body?.ipAddress?.trim();
-    if (!ipAddress) {
-      throw new BadRequestException('ipAddress is required');
+    if (!ipAddress || isIP(ipAddress) !== 4) {
+      throw new BadRequestException('ipAddress must be an IPv4 address');
     }
 
     return this.ipBlockerService.unbanManually(ipAddress);
